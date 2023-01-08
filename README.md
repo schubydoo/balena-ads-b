@@ -359,7 +359,9 @@ If you live in the US and have configuered UAT feeding, you can explore the data
 
 # Part 12 – Advanced configuration
 ## Disabling specific services
-You can disable any of the balena-ads-b services by creating a *Device Variable* named `DISABLED_SERVICES` with the services you want to disable as comma-separated values. For example, if you want to disable the dump1090fa service, you set the `DISABLED_SERVICES` variable to `dump1090fa`. If you want to disable the dump1090fa and kiosk services, you set the `DISABLED_SERVICES` variable to `dump1090fa, kiosk`.
+You can disable any of the balena-ads-b services by creating a *Device Variable* named `DISABLED_SERVICES` with the services you want to disable as comma-separated values. For example, if you want to disable the dump1090fa service, you set the `DISABLED_SERVICES` variable to `dump1090fa`. If you want to disable the dump1090fa and kiosk services, you set the `DISABLED_SERVICES` variable to `dump1090fa, piaware`.
+
+**Please note:** Due to how these services are integrated, it's not currently possible to disable the `wifi-connect` and `kiosk` services.
 
 ## Setting dump1090 antenna gain
 By default, dump1090 will run with adaptive gain in dynamic range mode. You can override this by setting a *Device Variable* named `DUMP1090_GAIN` with a value of your liking.  You can read more about manual gain optimization at the [adsb-wiki](https://github.com/wiedehopf/adsb-wiki/wiki/Optimizing-gain).
