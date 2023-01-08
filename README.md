@@ -1,3 +1,4 @@
+
 ![balena ADS-B Flight Tracker](https://raw.githubusercontent.com/ketilmo/balena-ads-b/master/docs/images/header.png)
 
 **ADS-B Flight Tracker running on balena with support for FlightAware, Flightradar24, Plane Finder, OpenSky Network, AirNav RadarBox, and ADSB Exchange.**
@@ -362,6 +363,31 @@ If you live in the US and have configuered UAT feeding, you can explore the data
 You can disable any of the balena-ads-b services by creating a *Device Variable* named `DISABLED_SERVICES` with the services you want to disable as comma-separated values. For example, if you want to disable the dump1090fa service, you set the `DISABLED_SERVICES` variable to `dump1090fa`. If you want to disable the dump1090fa and kiosk services, you set the `DISABLED_SERVICES` variable to `dump1090fa, piaware`.
 
 **Please note:** Due to how these services are integrated, it's not currently possible to disable the `wifi-connect` and `kiosk` services.
+
+## Adaptive gain configuration
+The dump1090-fa service can be configured to adapt the tuner gain to changing conditions automatically. You can [read more about how this works](https://github.com/flightaware/dump1090/blob/master/README.adaptive-gain.md#default-settings) at FlightAware's website. 
+
+### Adaptive gain in dynamic range mode
+From FlightAware's documentation: *The dynamic range adaptive gain mode attempts to set the receiver gain to maintain a given dynamic range - that is, it tries to set the gain so that general noise is at or below a given level.*
+
+This mode is *enabled* by default. If you specify the antenna gain manually (see below), it will be deactivated. You can manually disable this mode by setting a *Device Variable* named `DUMP1090_ADAPTIVE_DYNAMIC_RANGE` with the value `false`.  
+
+### Adaptive gain in "burst" signal mode
+From FlightAware's documentation: *The "burst" adaptive gain mode listens for loud bursts of signal that were _not_ successfully decoded as ADS-B messages, but which have approximately the right timing to be possible messages that were lost due to receiver overloading. When enough overly-loud signals are heard in a short period of time, dump1090 will _reduce_ the receiver gain to try to allow them to be received.*
+
+This mode is *disabled* by default. You can enable it by setting a *Device Variable* named `DUMP1090_ADAPTIVE_BURST` with the value `true`. 
+
+For this mode to work optimally, you should adjust *loud* and *quiet* ranges. You do this by creating two *Device Variables* named `DUMP1090_ADAPTIVE_BURST_LOUD_RATE` and `DUMP1090_ADAPTIVE_BURST_QUIET_RATE`, with the desired loud- and quiet targets as their values.
+
+### Limiting the gain range
+From FlightAware's documentation: *If you know in advance approximately what the gain setting should be, so you want to allow adaptive gain to change the gain only within a certain range, you can set minimum and maximum gain settings in dB. Adaptive gain will only adjust the gain within this range.*
+
+You can specify the target maximum and minimum gain by creating two *Device Variables* named `DUMP1090_ADAPTIVE_MIN_GAIN` and `DUMP1090_ADAPTIVE_MAX_GAIN`, with the desired maximum- and minimum gain as their values.
+
+### Reducing the CPU cost of adaptive gain
+From FlightAware's documentation: *The measurements needed to adjust gain have a CPU cost, and on slower devices it may be useful to reduce the amount of work that adaptive gain does. This can be done by adjusting the adaptive gain duty cycle. This is a percentage that controls what fraction of incoming data adaptive gain inspects. 100% means that every sample is inspected. Lower values reduce CPU use, with a tradeoff that adaptive gain has a less accurate picture of the RF environment. The default duty cycle is 50% on "fast" CPUs and 10% on "slow" CPUs (where currently "slow" means "armv6 architecture", for example the Pi Zero or Pi 1).* 
+
+You can reduce the duty cycle further by creating a *Device Variable* named `DUMP1090_SLOW_CPU`, with the desired duty cycle percentage as the value (1-100).
 
 ## Setting dump1090 antenna gain
 By default, dump1090 will run with adaptive gain in dynamic range mode. You can override this by setting a *Device Variable* named `DUMP1090_GAIN` with a value of your liking.  You can read more about manual gain optimization at the [adsb-wiki](https://github.com/wiedehopf/adsb-wiki/wiki/Optimizing-gain).
