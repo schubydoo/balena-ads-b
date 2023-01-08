@@ -1,4 +1,3 @@
 FROM bh.cr/balenalabs/wifi-connect-%%BALENA_ARCH%%
 COPY start.sh /
-
 ENTRYPOINT ["/bin/busybox", "--", "/start.sh"]

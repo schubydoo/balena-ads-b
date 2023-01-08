@@ -1,5 +1,4 @@
 FROM bh.cr/balenalabs/browser-%%BALENA_ARCH%%/2.4.6
 COPY start.sh /
 RUN install_packages cec-utils
-
 ENTRYPOINT ["/bin/bash", "--", "/start.sh"]
