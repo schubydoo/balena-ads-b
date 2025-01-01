@@ -102,13 +102,14 @@ Software packages downloaded, installed, and configured by the balena-ads-b scri
   * [Alternative A: Port an existing Wingbits receiver](#alternative-a-port-an-existing-wingbits-receiver)
   * [Alternative B: Setup a new Wingbits receiver](#alternative-b-setup-a-new-wingbits-receiver)
 - [Part 10 – Configure UAT (Optional and US only)](#part-10--configure-uat-optional-and-us-only)
-- [Part 11 – Add a digital display (Optional)](#part-11--add-a-digital-display-optional)
-- [Part 12 – Exploring flight traffic locally on your device](#part-12--exploring-flight-traffic-locally-on-your-device)
-- [Part 13 – Advanced configuration](#part-13--advanced-configuration)
+- [Part 11 - Configure tar1090 and graphs1090 (Optional)](#part-11--configure-tar1090-and-graphs1090-optional)
+- [Part 12 – Add a digital display (Optional)](#part-12--add-a-digital-display-optional)
+- [Part 13 – Exploring flight traffic locally on your device](#part-13--exploring-flight-traffic-locally-on-your-device)
+- [Part 14 – Advanced configuration](#part-14--advanced-configuration)
   * [Disabling specific services](#disabling-specific-services)
   * [Adaptive gain configuration](#adaptive-gain-configuration)
   * [Setting dump1090 antenna gain](#setting-dump1090-antenna-gain)
- - [Part 14 – Updating to the latest version](#part-14--updating-to-the-latest-version)
+ - [Part 15 – Updating to the latest version](#part-15--updating-to-the-latest-version)
 
 # Part 1 – Build the receiver
 
@@ -385,10 +386,15 @@ In the United States, aircraft can use either the ADS-B standard, which transmit
 15. Add a new variable named `UAT_ENABLED` and assign it the value `true`.
 16. Power on the device. You should now be feeding ADS-B and UAT data simultaneously to the services that support it (FlightAware, RadarBox and ADSB-Exchange).
 
-# Part 11 – Add a digital display (Optional)
+# Part 11 – Configure tar1090 and graphs1090 (Optional)
+[Tar1090](https://github.com/wiedehopf/tar1090) and [graphs1090](https://github.com/wiedehopf/graphs1090) are visualisation tools that can help you to see the output and determine the performance of your ADS-B plane tracking setup. These tools are pre-configured to run out-of-the-box as long as the `LAT` and `LON` parameters are set as described in [part 2 above](#part-2--setup-balena-and-configure-the-device). However, there is some significant customisation possible as this service uses the [docker-tar1090 container](https://github.com/sdr-enthusiasts/docker-tar1090) from [SDR Enthusiasts](https://github.com/sdr-enthusiasts). You can view all of the configuration options in the [README of the docker-tar1090 GitHub repo](https://github.com/sdr-enthusiasts/docker-tar1090/blob/main/README.md).
+
+By default, these viewers are fed with ADS-B data from the dump1090 container and with MLAT data from the adsb-exchange container, however you can also manually configure these. You can use the *Device Variables* `BEASTHOST` and `BEASTPORT` (default `dump1090-fa` and `30005` respectively) for ADS-B data input and the *Device Variables* `MLATHOST` and `MLATPORT` (default `adsb-exchange` and `30157` respectively) to configure the inputs you desire.
+
+# Part 12 – Add a digital display (Optional)
 balena also produces a project that can be easily configured to display a webpage in kiosk mode on a digital display called balenaDash. By dropping that project into this one, we can automatically display a feeder page directly from the Pi. We can then set a `LAUNCH_URL` device variable configured to connect to `http://{{YOURIP or YOURSERVICENAME}}:YOURSERVICEPORT` (where the service/port is one of the frontends above, like `http://planefinder:30053`) and that will automatically be displayed on the attached display. The balenaDash service can be configured locally by accessing the webserver on port 8081.
 
-# Part 12 – Exploring flight traffic locally on your device
+# Part 13 – Exploring flight traffic locally on your device
 If the setup goes well, you should feed flight traffic data to several online services. You will receive access to the providers' premium services in return for your efforts. But in addition to this, you can explore the data straight from your device, raw and unedited. And that's part of the magic, right?
 
 When you have local network access to your receiver, you can explore the data straight from the source. Start by opening your device page in the balena console and locate the `IP ADDRESS` field, e.g. `10.0.0.10`. Then, add the desired port numbers specified further below.
@@ -407,7 +413,13 @@ Less visual than the two other options, Flightradar24's status page gives you hi
 **Dump978's Radar View (Optional and US only)**
 If you live in the US and have configuered UAT feeding, you can explore the data using this view. When you are in your local network, head to `YOURIP:8978` to check it out. When remote, open balena's *Public Device URL* and add `/skyaware978/` to the tail end of the URL, e.g. `https://6g31f15653bwt4y251b18c1daf4qw164.balena-devices.com/skyaware978/`. However, keep in mind that UAT traffic is scarce. It might take several days before you see any traffic, depending on where in the US you are situated.
 
-# Part 13 – Advanced configuration
+**Tar1090 Radar View**
+[Tar1090](https://github.com/wiedehopf/tar1090) is a radar view of the plane traffic (ADS-B. MLAT etc) seen by the SDR. It is similar to the Dump1090 / skyaware radar view but has a number of other useful viewing options and data points. It is also highly configurable. When you are in your local network, head to `YOURIP/tar1090` to check it out. When remote, open balena's *Public Device URL* and add `/tar1090/` to the tail end of the URL, e.g. `https://6g31f15653bwt4y251b18c1daf4qw164.balena-devices.com/tar1090/`
+
+**Graphs1090 Stats Graphs**
+[Graphs1090](https://github.com/wiedehopf/graphs1090) is a graphical output that plots performance graphs of the interesting data from both your SDR data and your system data. You can see things like your ADS-B range, message rates, number of planes and signal levels as well as system data such as CPU and memory usage, temperature and bandwidth. When you are in your local network, head to `YOURIP/graphs1090` to check it out. When remote, open balena's *Public Device URL* and add `/graphs1090/` to the tail end of the URL, e.g. `https://6g31f15653bwt4y251b18c1daf4qw164.balena-devices.com/graphs1090/`
+
+# Part 14 – Advanced configuration
 ## Disabling specific services
 You can disable any of the balena-ads-b services by creating a *Device Variable* named `DISABLED_SERVICES` with the services you want to disable as comma-separated values. For example, if you want to disable the dump1090fa service, you set the `DISABLED_SERVICES` variable to `dump1090fa`. If you want to disable the dump1090fa and piaware services, you set the `DISABLED_SERVICES` variable to `dump1090fa, piaware`.
 
@@ -466,7 +478,7 @@ Automatically keep your balenaOS host release up-to-date. To enable this service
 - `HUP_CHECK_INTERVAL`: Interval between checking for available updates. Default is 1d.
 - `HUP_TARGET_VERSION`: The OS version you want balenaHUP to automatically update your device to. This is a required variable to be specified, otherwise, an update won't be performed by default. Set the variable to 'latest'/'recommended' for your device to always update to the latest OS version or set it to a specific version (e.g '2.107.10').
 
-# Part 14 – Updating to the latest version
+# Part 15 – Updating to the latest version
 Updating to the latest version is trivial. If you installed balena-ads-b using the blue Deploy with balena-button, you can click it again and overwrite your current application. Choose the "Deploy to existing fleet" option, then select the fleet you want to update. All settings will be preserved. For convenience, the button is right here:
 
 [![Deploy with button](https://www.balena.io/deploy.svg)](https://dashboard.balena-cloud.com/deploy?repoUrl=https://github.com/ketilmo/balena-ads-b&defaultDeviceType=raspberrypi4-64)
