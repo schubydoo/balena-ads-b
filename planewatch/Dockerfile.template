@@ -1,16 +1,21 @@
-FROM balenalib/%%BALENA_ARCH%%-debian:bookworm AS base
+FROM balenalib/%%BALENA_ARCH%%-debian-golang:bookworm AS buildstep
 LABEL maintainer="https://github.com/ketilmo"
 
-ENV PLANEWATCH_API_KEY=
-ENV RECEIVER_HOST dump1090-fa
-ENV RECEIVER_PORT 30005
-
+# specify plane.watch pw-feeder version
 # renovate: datasource=github-tags depName=plane-watch/pw-feeder versioning=loose
 ARG PLANEWATCH_VERSION=v0.0.4
 
+# specify mlat-client version
+ARG MLAT_VERSION=fe70767be859100176983b948140046b6ecdd34a
+
+# install build step pre-requs
+ARG TEMP_INSTALL="python3-dev python3-setuptools python3-venv"
 WORKDIR /tmp
+RUN apt update && \
+	apt install -y $TEMP_INSTALL
 
 # build pw-feeder binary from source
+WORKDIR /tmp
 RUN git clone --branch "$PLANEWATCH_VERSION" https://github.com/plane-watch/pw-feeder.git /tmp/pw-feeder && \
 	cd /tmp/pw-feeder/pw-feeder && \
 	go mod tidy && \
@@ -18,9 +23,17 @@ RUN git clone --branch "$PLANEWATCH_VERSION" https://github.com/plane-watch/pw-f
     go build -v ./cmd/pw-feeder/ && \
     ./pw-feeder -v
 
-WORKDIR /tmp/letsencrypt
+# build mlat-client from source
+WORKDIR /tmp
+RUN git clone --single-branch https://github.com/mutability/mlat-client.git /tmp/mlat-client && \
+    cd /tmp/mlat-client && \
+    git checkout "$MLAT_VERSION" && \
+    python3 -m venv /usr/local/share/mlat-client/venv/ && \
+    /usr/local/share/mlat-client/venv/bin/python3 ./setup.py build && \
+    /usr/local/share/mlat-client/venv/bin/python3 ./setup.py install
 
 # download let's encrypt CA certs
+WORKDIR /tmp/letsencrypt
 RUN curl -so isrg-root-x1.crt https://letsencrypt.org/certs/isrgrootx1.pem && \
     curl -so isrg-root-x2.crt https://letsencrypt.org/certs/isrg-root-x2.pem && \
     curl -so lets-encrypt-e5.crt https://letsencrypt.org/certs/2024/e5.pem && \
@@ -38,21 +51,43 @@ RUN curl -so isrg-root-x1.crt https://letsencrypt.org/certs/isrgrootx1.pem && \
     curl -so lets-encrypt-r3.crt https://letsencrypt.org/certs/lets-encrypt-r3.pem && \
     curl -so lets-encrypt-r4.crt https://letsencrypt.org/certs/lets-encrypt-r4.pem
 
-FROM base AS release
+FROM balenalib/%%BALENA_ARCH%%-debian:bookworm AS release
+
+ENV LAT=
+ENV LON=
+ENV ALT=
+ENV PLANEWATCH_API_KEY=
+ENV RECEIVER_HOST dump1090-fa
+ENV RECEIVER_PORT 30005
+
+# expose mlat-results
+EXPOSE 30105
+
+# install pre-requisite packages
+ARG PERM_INSTALL="python3-pip"
+RUN apt update && \
+	apt install -y $PERM_INSTALL && \
+	apt clean && apt autoclean && apt autoremove && \
+	rm -rf /var/lib/apt/lists/*
 
 # copy pw-feeder binary from buildstep
 COPY --from=buildstep /tmp/pw-feeder/pw-feeder/pw-feeder /usr/local/sbin/pw-feeder
 
 # copy let's encrypt ca certificates from buildstep
+RUN mkdir -p /usr/share/ca-certificates/letsencrypt
 COPY --from=buildstep /tmp/letsencrypt/*.crt /usr/share/ca-certificates/letsencrypt/
+
+# copy mlat-client from buildstep
+RUN mkdir -p /usr/local/share/mlat-client/venv
+COPY --from=buildstep /usr/local/share/mlat-client/venv/ /usr/local/share/mlat-client/venv/
 
 # copy startup script
 COPY start.sh /
 
 WORKDIR /tmp
 
-RUN # install let's encrypt ca certificates
-    cd /usr/share/ca-certificates && \
+RUN cd /usr/share/ca-certificates && \
+    # install let's encrypt ca certificates
     sh -c 'find letsencrypt/ -maxdepth 1 -type f -iname '*.crt' | tee -a /etc/ca-certificates.conf' && \
     # set start script to be executable
 	chmod +x /start.sh

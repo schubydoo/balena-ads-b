@@ -19,7 +19,9 @@ sleep 2
 missing_variables=false
         
 # Begin defining all the required configuration variables.
-
+[ -z "$LAT" ] && echo "Receiver latitude is missing, will abort startup." && missing_variables=true || echo "Receiver latitude is set: $LAT"
+[ -z "$LON" ] && echo "Receiver longitude is missing, will abort startup." && missing_variables=true || echo "Receiver longitude is set: $LON"
+[ -z "$ALT" ] && echo "Receiver altitude is missing, will abort startup." && missing_variables=true || echo "Receiver altitude is set: $ALT"
 [ -z "$PLANEWATCH_API_KEY" ] && echo "plane.watch API key is missing, will abort startup." && missing_variables=true || echo "plane.watch API Key is set: $PLANEWATCH_API_KEY"
 [ -z "$RECEIVER_HOST" ] && echo "Receiver host is missing, will abort startup." && missing_variables=true || echo "Receiver host is set: $RECEIVER_HOST"
 [ -z "$RECEIVER_PORT" ] && echo "Receiver port is missing, will abort startup." && missing_variables=true || echo "Receiver port is set: $RECEIVER_PORT"
@@ -56,7 +58,11 @@ echo " "
 
 # Variables are verified – continue with startup procedure.
 
-/usr/local/sbin/pw-feeder --beasthost "$RECEIVER_HOST" --beastport "$RECEIVER_PORT" --apikey "$PLANEWATCH_API_KEY"
+# start pw-feeder
+/usr/local/sbin/pw-feeder --beasthost "$RECEIVER_HOST" --beastport "$RECEIVER_PORT" --apikey "$PLANEWATCH_API_KEY" &
+
+# start mlat-client
+/usr/local/share/mlat-client/venv/bin/mlat-client --input-type dump1090 --no-udp --input-connect "$RECEIVER_HOST":"$RECEIVER_PORT" --user "$PLANEWATCH_API_KEY" --lat "$LAT" --lon "$LON" --alt "$ALT" --results "beast,listen,30105" --server 127.0.0.1:12346 2>&1 | stdbuf -o0 sed --unbuffered '/^$/d' | awk -W interactive '{print "[mlat-client]    "  $0}' &
 
 # Wait for any services to exit.
 wait -n

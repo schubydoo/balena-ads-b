@@ -255,7 +255,12 @@ services:
     image: planewatch
     restart: unless-stopped
     environment:
+      - LAT=
+      - LON=
+      - ALT=
       - PLANEWATCH_API_KEY=
+    expose:
+      - '30105'
     labels:
       io.balena.features.supervisor-api: '1'
   autohupr:
