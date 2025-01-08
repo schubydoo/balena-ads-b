@@ -3,7 +3,7 @@
 
 **ADS-B Flight Tracker running on balena with support for FlightAware, Flightradar24, Plane Finder, OpenSky Network, AirNav RadarBox, ADSB Exchange, Wingbits, adsb.fi, ADSB.lol, ADS-B One, airplanes.live, Planespotters.net, TheAirTraffic, AvDelphi, HP Radar, RadarPlane and Fly Italy ADSB.**
 
-Contribute to the flight tracking community! Feed your local ADS-B data from an [RTL-SDR](https://www.rtl-sdr.com/) USB dongle (or various other radio types) and a supported device (see below) running balenaOS to the tracking services [FlightAware](https://flightaware.com/), [Flightradar24](https://www.flightradar24.com/), [Plane Finder](https://planefinder.net/), [OpenSky Network](https://opensky-network.org/), [AirNav RadarBox](https://www.radarbox.com/), [ADSB Exchange](https://adsbexchange.com), [Wingbits](https://wingbits.com), [adsb.fi](https://adsb.fi/), [ADSB.lol](https://adsb.lol/), [ADS-B One](https://adsb.one) [airplanes.live](https://airplanes.live/), [Planespotters.net](https://www.planespotters.net/), [TheAirTraffic](https://theairtraffic.com/), [AvDelphi](https://www.avdelphi.com/), [HP Radar](https://hpradar.com/), [RadarPlane](https://radarplane.com/) and [Fly Italy ADSB](https://flyitalyadsb.com/). In return, you can receive complimentary premium accounts (or cryptocurrency tokens) worth several hundred dollars annually!
+Contribute to the flight tracking community! Feed your local ADS-B data from an [RTL-SDR](https://www.rtl-sdr.com/) USB dongle (or various other radio types) and a supported device (see below) running balenaOS to the tracking services [FlightAware](https://flightaware.com/), [Flightradar24](https://www.flightradar24.com/), [Plane Finder](https://planefinder.net/), [OpenSky Network](https://opensky-network.org/), [AirNav RadarBox](https://www.radarbox.com/), [ADSB Exchange](https://adsbexchange.com), [Wingbits](https://wingbits.com), [adsb.fi](https://adsb.fi/), [ADSB.lol](https://adsb.lol/), [ADS-B One](https://adsb.one) [airplanes.live](https://airplanes.live/), [Planespotters.net](https://www.planespotters.net/), [TheAirTraffic](https://theairtraffic.com/), [AvDelphi](https://www.avdelphi.com/), [HP Radar](https://hpradar.com/), [RadarPlane](https://radarplane.com/), [Fly Italy ADSB](https://flyitalyadsb.com/) and [plane.watch](https://plane.watch/). In return, you can receive complimentary premium accounts (or cryptocurrency tokens) worth several hundred dollars annually!
 
 # Stay in the loop
 
@@ -101,10 +101,13 @@ Software packages downloaded, installed, and configured by the balena-ads-b scri
 - [Part 9 – Configure Wingbits](#part-9--configure-wingbits)
   * [Alternative A: Port an existing Wingbits receiver](#alternative-a-port-an-existing-wingbits-receiver)
   * [Alternative B: Setup a new Wingbits receiver](#alternative-b-setup-a-new-wingbits-receiver)
-- [Part 10 – Configure UAT (Optional and US only)](#part-10--configure-uat-optional-and-us-only)
-- [Part 11 – Add a digital display (Optional)](#part-11--add-a-digital-display-optional)
-- [Part 12 – Exploring flight traffic locally on your device](#part-12--exploring-flight-traffic-locally-on-your-device)
-- [Part 13 – Advanced configuration](#part-13--advanced-configuration)
+- [Part 10 - Configure plane.watch](#part-10---configure-planewatch)
+  * [Alternative A: Port an existing plane.watch receiver](#alternative-a-port-an-existing-planewatch-receiver)
+  * [Alternative B: Setup a new plane.watch receiver](#alternative-b-setup-a-new-planewatch-receiver)
+- [Part 11 – Configure UAT (Optional and US only)](#part-11--configure-uat-optional-and-us-only-)
+- [Part 12 – Add a digital display (Optional)](#part-12--add-a-digital-display-optional)
+- [Part 13 – Exploring flight traffic locally on your device](#part-13--exploring-flight-traffic-locally-on-your-device)
+- [Part 14 – Advanced configuration](#part-14--advanced-configuration)
   * [Disabling specific services](#disabling-specific-services)
   * [Using different radio device types](#using-different-radio-device-types)
   * [Adaptive gain configuration](#adaptive-gain-configuration)
@@ -125,7 +128,7 @@ These sites suggest the Raspberry Pi 3 Model B+ as the preferred device. Still, 
 
 In addition to the device, you will need an RTL-SDR-compatible USB dongle. The dongles are based on a digital television tuner, and numerous types will work – both generic TV sticks and specialized ADS-B sticks (produced by FlightAware). Although both options work, the ADS-B sticks seem to perform a little better.
 
-If you live in the US, and want to track UAT traffic in addition to ADS-B traffic, you can use two dongles in parallell. Please note that the blue FlightAware USB devices should only be used for ADS-B traffic, as they have an integrated filter optimized explicitly for the 1090 MHz frequencies. The orange FlightAware USB devices work well for tracking UAT traffic. See [Part 10 – Configure UAT (Optional and US only)](#part-10--configure-uat-optional-and-us-only) for more details.
+If you live in the US, and want to track UAT traffic in addition to ADS-B traffic, you can use two dongles in parallell. Please note that the blue FlightAware USB devices should only be used for ADS-B traffic, as they have an integrated filter optimized explicitly for the 1090 MHz frequencies. The orange FlightAware USB devices work well for tracking UAT traffic. See [Part 11 – Configure UAT (Optional and US only)](#part-11--configure-uat-optional-and-us-only-) for more details.
 
 # Part 2 – Setup balena and configure the device
 
@@ -367,7 +370,26 @@ If you have not previously set up a Wingbits receiver that you want to reuse, do
  6. Restart the *wingbits* service under *Services* by clicking the "cycle" icon next to the service name.
  7. Wait a few minutes and then head back to the [Wingbits antennas tab](https://wingbits.com/dashboard/antennas), refresh the page and in the *Status* column of the table you should see the text `Online` with a green background. If you hover over this with your mouse you should see a tooltip text pop-up that says the last time data was receive e.g. `Last message: 22/11/2023, 03:17:40`.
 
-# Part 10 – Configure UAT (Optional and US only) 
+# Part 10 - Configure plane.watch
+
+## Alternative A: Port an existing plane.watch receiver
+If you have previously set up a plane.watch receiver and want to port it to Balena, you only have to do the following steps:
+
+1. Head back to the Balena dashboard and your device's page. Click on the *Device Variables*-button. Add a variable named `PLANEWATCH_API_KEY` and paste the value of your existing plane.watch receiver's API Key, e.g. `4e8413e6-52eb-11ea-8681-1c1b0d925d3g`. To get your feeder's API Key, visit the [plane.watch ATC (ADS-B Traffic Control) dashboard](https://atc.plane.watch), go to the *Feeders* section, press the show button (magnifying glass) next to the feeder in question, and copy the API key from the page that appears.
+2. Restart the *planewatch* service under *Services* by clicking the "cycle" icon next to the service name.
+
+## Alternative B: Setup a new plane.watch receiver
+If you have not previously set up a plane.watch receiver that you want to reuse, do the following steps:
+
+1. Register a new [plane.watch ATC account](https://atc.plane.watch). Make sure to activate it using the email that's sent to you.
+2. Login to your [plane.watch ATC account](https://atc.plane.watch), navigate to the *Feeders* tab and then click on *+ New Feeder*.
+3. Enter your location name, latitude and longitude, and elevation details in the boxes. Then scroll down and click *Save*. You will then be returned to the feeders page with a new entry in the list. Press the show button (magnifying glass) next to the feeder in question, and copy the API Key, e.g. `4e8413e6-52eb-11ea-8681-1c1b0d925d3g`.
+4. Head back to your device's page on the balena dashboard.
+5. Click on the *Device Variables*-button in the left-hand menu. Add a variable named `PLANEWATCH_API_KEY` and paste the value from step 3, e.g. `4e8413e6-52eb-11ea-8681-1c1b0d925d3g`.
+6. Restart the *planewatch* service under *Services* by clicking the "cycle" icon next to the service name.
+7. Wait a few minutes and then head back to your feeder's page within [plane.watch ATC](https://atc.plane.watch), refresh the page and in the *ADS-B Connection Status* and *MLAT Connection Status* columns of the table you should see the text `Online` in green text, with your connection details.
+
+# Part 11 – Configure UAT (Optional and US only) 
 ***Please note:** The following instructions involve making low-level changes to RTL-SDR USB sticks, such as changing the serial numbers. Proceed with caution, and only if you are comfortable with the steps involved. All changes made are at your own risk.*
 
 In the United States, aircraft can use either the ADS-B standard, which transmits at a frequency of 1090 MHz or the UAT protocol, which transmits at 978 MHz. If you live in the US and have an extra RTL-SDR dongle, you can track the UAT and ADS-B traffic. Please note that the blue FlightAware USB devices should only be used for ADS-B traffic, as they have an integrated filter optimized explicitly for the 1090 MHz frequencies. The orange FlightAware USB devices work well for tracking UAT traffic.
@@ -395,10 +417,10 @@ By default the gain for the UAT/dump978 service is set to `--sdr-auto-gain`. Thi
 
 In order to manually set the gain. click on the *Device Variables*-button in the left-hand menu in the balena dashboard. Add a new variable named `DUMP978_GAIN` and set its value to your required gain. You can choose from any of the following values: `0.0, 0.9, 1.4, 2.7, 3.7, 7.7, 8.7, 12.5, 14.4, 15.7, 16.6, 19.7, 20.7, 22.9, 25.4, 28.0, 29.7, 32.8, 33.8, 36.4, 37.2, 38.6, 40.2, 42.1, 43.4, 43.9, 44.5, 48.0, 49.6`
 
-# Part 11 – Add a digital display (Optional)
+# Part 12 – Add a digital display (Optional)
 balena also produces a project that can be easily configured to display a webpage in kiosk mode on a digital display called balenaDash. By dropping that project into this one, we can automatically display a feeder page directly from the Pi. We can then set a `LAUNCH_URL` device variable configured to connect to `http://{{YOURIP or YOURSERVICENAME}}:YOURSERVICEPORT` (where the service/port is one of the frontends above, like `http://planefinder:30053`) and that will automatically be displayed on the attached display. The balenaDash service can be configured locally by accessing the webserver on port 8081.
 
-# Part 12 – Exploring flight traffic locally on your device
+# Part 13 – Exploring flight traffic locally on your device
 If the setup goes well, you should feed flight traffic data to several online services. You will receive access to the providers' premium services in return for your efforts. But in addition to this, you can explore the data straight from your device, raw and unedited. And that's part of the magic, right?
 
 When you have local network access to your receiver, you can explore the data straight from the source. Start by opening your device page in the balena console and locate the `IP ADDRESS` field, e.g. `10.0.0.10`. Then, add the desired port numbers specified further below.
@@ -417,7 +439,7 @@ Less visual than the two other options, Flightradar24's status page gives you hi
 **Dump978's Radar View (Optional and US only)**
 If you live in the US and have configuered UAT feeding, you can explore the data using this view. When you are in your local network, head to `YOURIP:8978` to check it out. When remote, open balena's *Public Device URL* and add `/skyaware978/` to the tail end of the URL, e.g. `https://6g31f15653bwt4y251b18c1daf4qw164.balena-devices.com/skyaware978/`. However, keep in mind that UAT traffic is scarce. It might take several days before you see any traffic, depending on where in the US you are situated.
 
-# Part 13 – Advanced configuration
+# Part 14 – Advanced configuration
 ## Disabling specific services
 You can disable any of the balena-ads-b services by creating a *Device Variable* named `DISABLED_SERVICES` with the services you want to disable as comma-separated values. For example, if you want to disable the dump1090fa service, you set the `DISABLED_SERVICES` variable to `dump1090fa`. If you want to disable the dump1090fa and piaware services, you set the `DISABLED_SERVICES` variable to `dump1090fa, piaware`.
 

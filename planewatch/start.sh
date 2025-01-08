@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -e
+
+# Check if service has been disabled through the DISABLED_SERVICES environment variable.
+
+if [[ ",$(echo -e "${DISABLED_SERVICES}" | tr -d '[:space:]')," = *",$BALENA_SERVICE_NAME,"* ]]; then
+        echo "$BALENA_SERVICE_NAME is manually disabled. Sending request to stop the service:"
+        curl --header "Content-Type:application/json" "$BALENA_SUPERVISOR_ADDRESS/v2/applications/$BALENA_APP_ID/stop-service?apikey=$BALENA_SUPERVISOR_API_KEY" -d '{"serviceName": "'$BALENA_SERVICE_NAME'"}'
+        echo " "
+        balena-idle
+fi
+
+# Verify that all the required variables are set before starting up the application.
+
+echo "Verifying settings..."
+echo " "
+sleep 2
+
+missing_variables=false
+        
+# Begin defining all the required configuration variables.
+
+[ -z "$PLANEWATCH_API_KEY" ] && echo "plane.watch API key is missing, will abort startup." && missing_variables=true || echo "plane.watch API Key is set: $PLANEWATCH_API_KEY"
+[ -z "$RECEIVER_HOST" ] && echo "Receiver host is missing, will abort startup." && missing_variables=true || echo "Receiver host is set: $RECEIVER_HOST"
+[ -z "$RECEIVER_PORT" ] && echo "Receiver port is missing, will abort startup." && missing_variables=true || echo "Receiver port is set: $RECEIVER_PORT"
+
+# End defining all the required configuration variables.
+
+echo " "
+
+if [ "$missing_variables" = true ]
+then
+        echo "Settings missing, aborting..."
+        echo " "
+        balena-idle
+fi
+
+echo "Settings verified, proceeding with startup."
+echo " "
+
+# Check if pw-feeder is latest version
+
+local_version=v$(pw-feeder -v | grep version | cut -d ' ' -f 3)
+echo "Current local version: $local_version"
+
+version=$(git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags https://github.com/plane-watch/pw-feeder.git '*.*.*' | tail --lines=1 | cut --delimiter='/' --fields=3)
+echo "Latest available wingbits version: $version"
+
+if [ "$version" != "$local_version" ] || [ -z "$version" ]; then
+    echo "WARNING: You are not running the latest plane.watch pw-feeder version. Please update at your earliest convenience."
+else
+    echo "plane.watch pw-feeder is up to date"
+fi
+
+echo " "
+
+# Variables are verified – continue with startup procedure.
+
+/usr/local/sbin/pw-feeder --beasthost "$RECEIVER_HOST" --beastport "$RECEIVER_PORT" --apikey "$PLANEWATCH_API_KEY"
+
+# Wait for any services to exit.
+wait -n

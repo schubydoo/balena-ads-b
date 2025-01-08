@@ -248,6 +248,16 @@ services:
       - '30154'
     labels:
       io.balena.features.supervisor-api: '1'
+  planewatch:
+    depends_on:
+      - dump1090-fa
+    build: ./planewatch
+    image: planewatch
+    restart: unless-stopped
+    environment:
+      - PLANEWATCH_API_KEY=
+    labels:
+      io.balena.features.supervisor-api: '1'
   autohupr:
     build: ./autohupr
     tmpfs:

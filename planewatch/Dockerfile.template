@@ -1,0 +1,60 @@
+FROM balenalib/%%BALENA_ARCH%%-debian:bookworm AS base
+LABEL maintainer="https://github.com/ketilmo"
+
+ENV PLANEWATCH_API_KEY=
+ENV RECEIVER_HOST dump1090-fa
+ENV RECEIVER_PORT 30005
+
+# renovate: datasource=github-tags depName=plane-watch/pw-feeder versioning=loose
+ARG PLANEWATCH_VERSION=v0.0.4
+
+WORKDIR /tmp
+
+# build pw-feeder binary from source
+RUN git clone --branch "$PLANEWATCH_VERSION" https://github.com/plane-watch/pw-feeder.git /tmp/pw-feeder && \
+	cd /tmp/pw-feeder/pw-feeder && \
+	go mod tidy && \
+    go generate -v ./... && \
+    go build -v ./cmd/pw-feeder/ && \
+    ./pw-feeder -v
+
+WORKDIR /tmp/letsencrypt
+
+# download let's encrypt CA certs
+RUN curl -so isrg-root-x1.crt https://letsencrypt.org/certs/isrgrootx1.pem && \
+    curl -so isrg-root-x2.crt https://letsencrypt.org/certs/isrg-root-x2.pem && \
+    curl -so lets-encrypt-e5.crt https://letsencrypt.org/certs/2024/e5.pem && \
+    curl -so lets-encrypt-e6.crt https://letsencrypt.org/certs/2024/e6.pem && \
+    curl -so lets-encrypt-e7.crt https://letsencrypt.org/certs/2024/e7.pem && \
+    curl -so lets-encrypt-e8.crt https://letsencrypt.org/certs/2024/e8.pem && \
+    curl -so lets-encrypt-e9.crt https://letsencrypt.org/certs/2024/e9.pem && \
+    curl -so lets-encrypt-r10.crt https://letsencrypt.org/certs/2024/r10.pem && \
+    curl -so lets-encrypt-r11.crt https://letsencrypt.org/certs/2024/r11.pem && \
+    curl -so lets-encrypt-r12.crt https://letsencrypt.org/certs/2024/r12.pem && \
+    curl -so lets-encrypt-r13.crt https://letsencrypt.org/certs/2024/r13.pem && \
+    curl -so lets-encrypt-r14.crt https://letsencrypt.org/certs/2024/r14.pem && \
+    curl -so lets-encrypt-e1.crt https://letsencrypt.org/certs/lets-encrypt-e1.pem && \
+    curl -so lets-encrypt-e2.crt https://letsencrypt.org/certs/lets-encrypt-e2.pem && \
+    curl -so lets-encrypt-r3.crt https://letsencrypt.org/certs/lets-encrypt-r3.pem && \
+    curl -so lets-encrypt-r4.crt https://letsencrypt.org/certs/lets-encrypt-r4.pem
+
+FROM base AS release
+
+# copy pw-feeder binary from buildstep
+COPY --from=buildstep /tmp/pw-feeder/pw-feeder/pw-feeder /usr/local/sbin/pw-feeder
+
+# copy let's encrypt ca certificates from buildstep
+COPY --from=buildstep /tmp/letsencrypt/*.crt /usr/share/ca-certificates/letsencrypt/
+
+# copy startup script
+COPY start.sh /
+
+WORKDIR /tmp
+
+RUN # install let's encrypt ca certificates
+    cd /usr/share/ca-certificates && \
+    sh -c 'find letsencrypt/ -maxdepth 1 -type f -iname '*.crt' | tee -a /etc/ca-certificates.conf' && \
+    # set start script to be executable
+	chmod +x /start.sh
+
+ENTRYPOINT ["/usr/bin/tini", "--", "/start.sh"]
