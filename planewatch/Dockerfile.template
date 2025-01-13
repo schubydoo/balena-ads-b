@@ -45,11 +45,7 @@ RUN curl -so isrg-root-x1.crt https://letsencrypt.org/certs/isrgrootx1.pem && \
     curl -so lets-encrypt-r11.crt https://letsencrypt.org/certs/2024/r11.pem && \
     curl -so lets-encrypt-r12.crt https://letsencrypt.org/certs/2024/r12.pem && \
     curl -so lets-encrypt-r13.crt https://letsencrypt.org/certs/2024/r13.pem && \
-    curl -so lets-encrypt-r14.crt https://letsencrypt.org/certs/2024/r14.pem && \
-    curl -so lets-encrypt-e1.crt https://letsencrypt.org/certs/lets-encrypt-e1.pem && \
-    curl -so lets-encrypt-e2.crt https://letsencrypt.org/certs/lets-encrypt-e2.pem && \
-    curl -so lets-encrypt-r3.crt https://letsencrypt.org/certs/lets-encrypt-r3.pem && \
-    curl -so lets-encrypt-r4.crt https://letsencrypt.org/certs/lets-encrypt-r4.pem
+    curl -so lets-encrypt-r14.crt https://letsencrypt.org/certs/2024/r14.pem
 
 FROM balenalib/%%BALENA_ARCH%%-debian:bookworm AS release
 
@@ -74,8 +70,7 @@ RUN apt update && \
 COPY --from=buildstep /tmp/pw-feeder/pw-feeder/pw-feeder /usr/local/sbin/pw-feeder
 
 # copy let's encrypt ca certificates from buildstep
-RUN mkdir -p /usr/share/ca-certificates/letsencrypt
-COPY --from=buildstep /tmp/letsencrypt/*.crt /usr/share/ca-certificates/letsencrypt/
+COPY --from=buildstep /tmp/letsencrypt/*.crt /usr/local/share/ca-certificates/
 
 # copy mlat-client from buildstep
 RUN mkdir -p /usr/local/share/mlat-client/venv
@@ -86,10 +81,7 @@ COPY start.sh /
 
 WORKDIR /tmp
 
-RUN cd /usr/share/ca-certificates && \
-    # install let's encrypt ca certificates
-    sh -c 'find letsencrypt/ -maxdepth 1 -type f -iname '*.crt' | tee -a /etc/ca-certificates.conf' && \
-    # set start script to be executable
+RUN update-ca-certificates --verbose && \
 	chmod +x /start.sh
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/start.sh"]
