@@ -6,7 +6,8 @@ LABEL maintainer="https://github.com/ketilmo"
 ARG PLANEWATCH_VERSION=v0.0.4
 
 # specify mlat-client version
-ARG MLAT_VERSION=fe70767be859100176983b948140046b6ecdd34a
+# renovate: datasource=github-tags depName=mutability/mlat-client versioning=loose
+ARG MLAT_VERSION=v0.2.13
 
 # install build step pre-requs
 ARG TEMP_INSTALL="python3-dev python3-setuptools python3-venv"
@@ -25,9 +26,8 @@ RUN git clone --branch "$PLANEWATCH_VERSION" https://github.com/plane-watch/pw-f
 
 # build mlat-client from source
 WORKDIR /tmp
-RUN git clone --single-branch https://github.com/mutability/mlat-client.git /tmp/mlat-client && \
+RUN git clone --branch "$MLAT_VERSION" https://github.com/mutability/mlat-client.git /tmp/mlat-client && \
     cd /tmp/mlat-client && \
-    git checkout "$MLAT_VERSION" && \
     python3 -m venv /usr/local/share/mlat-client/venv/ && \
     /usr/local/share/mlat-client/venv/bin/python3 ./setup.py build && \
     /usr/local/share/mlat-client/venv/bin/python3 ./setup.py install
