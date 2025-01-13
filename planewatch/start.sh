@@ -46,7 +46,7 @@ local_version=v$(pw-feeder -v | grep version | cut -d ' ' -f 3)
 echo "Current local version: $local_version"
 
 version=$(git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags https://github.com/plane-watch/pw-feeder.git '*.*.*' | tail --lines=1 | cut --delimiter='/' --fields=3)
-echo "Latest available wingbits version: $version"
+echo "Latest available plane.watch pw-feeder version: $version"
 
 if [ "$version" != "$local_version" ] || [ -z "$version" ]; then
     echo "WARNING: You are not running the latest plane.watch pw-feeder version. Please update at your earliest convenience."
