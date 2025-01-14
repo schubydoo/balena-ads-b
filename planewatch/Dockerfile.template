@@ -34,7 +34,6 @@ RUN git clone --branch "$MLAT_VERSION" https://github.com/mutability/mlat-client
 
 # download let's encrypt CA certs
 WORKDIR /tmp/letsencrypt
-    curl -so isrg-root-x2.crt https://letsencrypt.org/certs/isrg-root-x2.pem && \
     curl -so lets-encrypt-e5.crt https://letsencrypt.org/certs/2024/e5.pem && \
     curl -so lets-encrypt-e6.crt https://letsencrypt.org/certs/2024/e6.pem && \
     curl -so lets-encrypt-e7.crt https://letsencrypt.org/certs/2024/e7.pem && \
