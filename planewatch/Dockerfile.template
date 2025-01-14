@@ -82,6 +82,9 @@ COPY start.sh /
 WORKDIR /tmp
 
 RUN update-ca-certificates --verbose && \
-	chmod +x /start.sh
+	chmod +x /start.sh && \
+    # fail if feeder binaries don't work \
+    /usr/local/sbin/pw-feeder --version && \
+    /usr/local/share/mlat-client/venv/bin/mlat-client -h
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/start.sh"]
