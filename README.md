@@ -66,7 +66,9 @@ Thanks to [Teko012](https://github.com/Teko012/) for modernising the repo, keepi
 
 Thanks to [schubydoo](https://github.com/schubydoo), [JPGMC](https://github.com/JPGMC), and [alanb128](https://github.com/alanb128) for beta testing the UAT support.
 
-And thanks to [Aaron Shaw (shawaj)](https://github.com/shawaj) for implementing Wingbits and Mode-S Beast support, fixing bugs, and improving the code.
+Thanks to [Aaron Shaw (shawaj)](https://github.com/shawaj) for implementing Wingbits and Mode-S Beast support, fixing bugs, and improving the code.
+
+And thanks to [mikenye](https://github.com/mikenye) for implementing [plane.watch](https://plane.watch/) support.
 
 You are all stars! 🤩
 
