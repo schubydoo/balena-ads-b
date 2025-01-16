@@ -27,7 +27,7 @@
       "matchStrings": [
         "WINGBITS_COMMIT_ID=(?<currentDigest>.*?)\\nENV WINGBITS_DATE=(?<currentValue>.*?)\\n"
       ],
-      "versioningTemplate": "regex:^(?<major>20\\d\\d)-(?<minor>\\d\\d)-(?<patch>\\d\\d).*$",
+      "versioningTemplate": "regex:^(?<major>20\\d\\d)-(?<minor>\\d\\d)-(?<patch>\\d\\d)T(?<build>\\d\\d)",
       "depNameTemplate": "wingbits-json",
       "datasourceTemplate": "custom.wingbits-json"
     },
