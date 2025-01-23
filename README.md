@@ -355,6 +355,8 @@ Lastly, these services all require a UUID to be passed to identify devices in th
 
 # Part 9 – Configure Wingbits
 
+**PLEASE NOTE:** No new BYOD (bring your own device) Wingbits stations can be [onboarded as of Oct 14th, 2024](https://docs.wingbits.com/project/wingbits-approved-hardware-program). Unless you have an already active Wingbits station and a [GeoSigner dongle](https://shop.wingbits.com/products/wingbits-geosigner) then you will not be able to earn Wingbits tokens using this software.
+
 ## Alternative A: Port an existing Wingbits receiver
 If you have previously set up a Wingbits receiver and want to port it to Balena, you only have to do the following steps:
 
