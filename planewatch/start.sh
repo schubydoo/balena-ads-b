@@ -59,7 +59,7 @@ echo " "
 # Variables are verified – continue with startup procedure.
 
 # start pw-feeder
-/usr/local/sbin/pw-feeder --beasthost "$RECEIVER_HOST" --beastport "$RECEIVER_PORT" --apikey "$PLANEWATCH_API_KEY" &
+/usr/local/sbin/pw-feeder --beasthost "$RECEIVER_HOST" --beastport "$RECEIVER_PORT" --apikey "$PLANEWATCH_API_KEY" 2>&1 | stdbuf -o0 sed --unbuffered '/^$/d' | awk -W interactive '{print "[planewatch-feeder]    "  $0}' &
 
 # start mlat-client
 /usr/local/share/mlat-client/venv/bin/mlat-client --input-type dump1090 --no-udp --input-connect "$RECEIVER_HOST":"$RECEIVER_PORT" --user "$PLANEWATCH_API_KEY" --lat "$LAT" --lon "$LON" --alt "$ALT" --results "beast,listen,30105" --server 127.0.0.1:12346 2>&1 | stdbuf -o0 sed --unbuffered '/^$/d' | awk -W interactive '{print "[mlat-client]    "  $0}' &
