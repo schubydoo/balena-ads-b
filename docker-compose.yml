@@ -241,12 +241,28 @@ services:
     build: ./wingbits
     image: wingbits
     restart: unless-stopped
+    privileged: true
     environment:
       - WINGBITS_DEVICE_ID=
       - LAT=
       - LON=
     expose:
       - '30154'
+    labels:
+      io.balena.features.supervisor-api: '1'
+  planewatch:
+    depends_on:
+      - dump1090-fa
+    build: ./planewatch
+    image: planewatch
+    restart: unless-stopped
+    environment:
+      - LAT=
+      - LON=
+      - ALT=
+      - PLANEWATCH_API_KEY=
+    expose:
+      - '30105'
     labels:
       io.balena.features.supervisor-api: '1'
   autohupr:
@@ -295,5 +311,6 @@ services:
 #      - LON=
 #      - ALT=
 #      - MLAT_CLIENT_USER=
+#      - MLAT_SERVER=
 #    labels:
 #      io.balena.features.supervisor-api: '1'
