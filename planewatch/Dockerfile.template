@@ -58,7 +58,7 @@ ENV RECEIVER_PORT 30005
 EXPOSE 30105
 
 # install pre-requisite packages
-ARG PERM_INSTALL="python3"
+ARG PERM_INSTALL="python3 tini"
 RUN apt update && \
 	apt install -y $PERM_INSTALL && \
 	apt clean && apt autoclean && apt autoremove && \
