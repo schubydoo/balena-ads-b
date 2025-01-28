@@ -69,7 +69,7 @@
       "format": "plain"
     },
     "wingbits-version": {
-      "defaultRegistryUrlTemplate": "https://install.wingbits.com/download.sh",
+      "defaultRegistryUrlTemplate": "https://gitlab.com/wingbits/config/-/raw/master/download.sh",
       "transformTemplates": [
         "{ \"releases\": [{ \"version\": $trim($[0].releases.version.$match(/WINGBITS_CONFIG_VERSION=\"([^\\s]+)\"/).groups[0]) }] }"
       ],
