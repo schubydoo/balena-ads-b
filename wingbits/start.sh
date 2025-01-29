@@ -61,13 +61,14 @@ case "$(uname -m)" in
 		;;
 esac
 
-WINGBITS_PATH="/etc/wingbits"
-local_version=$(cat $WINGBITS_PATH/version)
-local_json_version=$(cat $WINGBITS_PATH/json-version)
+WINGBITS_PATH="/usr/local/bin"
+WINGBITS_VERSION_PATH="/etc/wingbits"
+local_version=$(cat $WINGBITS_VERSION_PATH/version)
+local_json_version=$(wingbits -v | grep -oP '(?<=Version: )[^"]*')
 echo "Current local version: $local_version"
 echo "Current local build: $local_json_version"
 
-SCRIPT_URL="https://install.wingbits.com/download.sh"
+SCRIPT_URL="https://gitlab.com/wingbits/config/-/raw/master/download.sh"
 JSON_URL="https://install.wingbits.com/$GOOS-$GOARCH.json"
 script=$(curl -s $SCRIPT_URL)
 version=$(echo "$script" | grep -oP '(?<=WINGBITS_CONFIG_VERSION=")[^"]*')
@@ -85,10 +86,8 @@ if [ "$version" != "$local_version" ] || [ "$json_version" != "$local_json_versi
     rm -rf $WINGBITS_PATH/wingbits
     gunzip $WINGBITS_PATH/wingbits.gz 
     chmod +x $WINGBITS_PATH/wingbits
-    rm -rf $WINGBITS_PATH/config.json
-    curl -s -o $WINGBITS_PATH/config.json "https://install.wingbits.com/config.json"
-    echo "$version" > $WINGBITS_PATH/version
-    echo "$json_version" > $WINGBITS_PATH/json-version
+    echo "$version" > $WINGBITS_VERSION_PATH/version
+    echo "$json_version" > $WINGBITS_VERSION_PATH/json-version
     echo "New Wingbits version installed: $version"
     echo "New Wingbits build installed: $json_version"
 else
@@ -99,17 +98,12 @@ echo " "
 
 # Variables are verified – continue with startup procedure.
 
-# Place correct station ID in config.json and /etc/wingbits/device
-station="$(jq --arg a "$WINGBITS_DEVICE_ID" '.station = $a' $WINGBITS_PATH/config.json)"
-echo -E "${station}" > $WINGBITS_PATH/config.json
-echo -E "${WINGBITS_DEVICE_ID}" > $WINGBITS_PATH/device
-
-# Move to wingbits folder
-cd $WINGBITS_PATH
+# Place correct station ID in /etc/wingbits/device
+echo -E "${WINGBITS_DEVICE_ID}" > $WINGBITS_VERSION_PATH/device
 
 # Start readsb and wingbits feeder and put in the background.
 /usr/bin/feed-wingbits --net --net-only --debug=n --quiet --net-connector localhost,30006,json_out --write-json /run/wingbits-feed --net-beast-reduce-interval 0.5 --net-heartbeat 60 --net-ro-size 1280 --net-ro-interval 0.2 --net-ro-port 0 --net-sbs-port 0 --net-bi-port 30154 --net-bo-port 0 --net-ri-port 0 --net-connector "$RECEIVER_HOST","$RECEIVER_PORT",beast_in 2>&1 | stdbuf -o0 sed --unbuffered '/^$/d' |  awk -W interactive '{print "[readsb-wingbits]     " $0}' &
-./wingbits feeder start 2>&1 | stdbuf -o0 sed --unbuffered '/^$/d' |  awk -W interactive '{print "[wingbits-feeder]     " $0}' &
+wingbits feeder start 2>&1 | stdbuf -o0 sed --unbuffered '/^$/d' |  awk -W interactive '{print "[wingbits-feeder]     " $0}' &
 
 # Wait for any services to exit.
 wait -n
