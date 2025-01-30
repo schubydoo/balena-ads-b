@@ -22,13 +22,15 @@ function setup_wingbits_client() {
 			exit 1
 			;;
 	esac
-	WINGBITS_PATH="/etc/wingbits"
+	WINGBITS_PATH="/usr/local/bin"
+        WINGBITS_VERSION_PATH="/etc/wingbits"
 	echo "Architecture: $GOOS-$GOARCH"
 	mkdir -p $WINGBITS_PATH
+        mkdir -p $WINGBITS_VERSION_PATH
 	curl -o $WINGBITS_PATH/wingbits.gz "https://install.wingbits.com/$WINGBITS_COMMIT_ID/$GOOS-$GOARCH.gz"
 	gunzip $WINGBITS_PATH/wingbits.gz 
 	chmod +x $WINGBITS_PATH/wingbits
-	curl -o $WINGBITS_PATH/config.json "https://install.wingbits.com/config.json"
+	PATH=$WINGBITS_PATH:$PATH
 }
 
 setup_wingbits_client
