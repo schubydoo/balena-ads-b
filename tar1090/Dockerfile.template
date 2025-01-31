@@ -21,7 +21,8 @@ RUN rm -f /etc/nginx/nginx-tar1090-webroot.conf && \
     sed -i -e 's/webroot/tar1090/g' /etc/s6-overlay/scripts/tar1090-update && \
     sed -i -e 's/nginx-tar1090-webroot/nginx-tar1090/g' /etc/nginx.tar1090/sites-enabled/tar1090 && \
     sed -i -e 's/nginx-tar1090-webroot/nginx-tar1090/g' /etc/nginx/sites-enabled/tar1090 && \
-    sed -i -e 's/nginx-tar1090-webroot/nginx-tar1090/g' /etc/s6-overlay/startup.d/07-nginx-configure
+    sed -i -e 's/nginx-tar1090-webroot/nginx-tar1090/g' /etc/s6-overlay/startup.d/07-nginx-configure && \
+    chmod +x /etc/s6-overlay/startup.d/00-startup-checks
 
 # Disable healthcheck in base image (as it was causing the services to lock for 10 minutes at startup, likely due to quirk of balena)
 HEALTHCHECK NONE
