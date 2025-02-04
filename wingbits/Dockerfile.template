@@ -9,7 +9,7 @@ ENV RECEIVER_HOST=dump1090-fa
 ENV RECEIVER_PORT=30005
 
 # renovate: datasource=custom.wingbits-version depName=wingbits-version versioning=loose
-ENV WINGBITS_CONFIG_VERSION=0.0.9
+ENV WINGBITS_CONFIG_VERSION=0.1.0
 # renovate: datasource=custom.wingbits-json depName=wingbits-json versioning=loose
 ENV WINGBITS_COMMIT_ID=b17a48e1
 ENV WINGBITS_DATE=2025-02-03T11:35:08.231109346Z
