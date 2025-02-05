@@ -37,6 +37,11 @@ check_true () {
    	fi
 }
 
+if [ $(check_true ADSB_EXCHANGE_ENABLE_ALL) != "true" ] && [ $(check_true ADSB_EXCHANGE_ENABLE_ALL_BUT_ADSBX) != "true" ]
+then
+	ADSB_EXCHANGE_ENABLE="true"
+fi
+
 if [ $(check_true ADSB_EXCHANGE_ENABLE_ALL) = "true" ]
 then
 	ADSB_EXCHANGE_ENABLE="true"
@@ -126,6 +131,7 @@ then
   	fi
  	if [ "$adsb_exchange" = "true" ]
 	then
+         	echo "All ADS-B Exchange parameters set. ADS-B Exchange service enabled."
         	adsb="true"
 	 	mlat="true"
    		ADSB_NET_CONNECTOR+=("--net-connector=feed1.adsbexchange.com,30004,beast_reduce_plus_out,feed2.adsbexchange.com,64004")
