@@ -35,6 +35,15 @@ then
         balena-idle
 fi
 
+# Check for idle variable (for manual flash of GeoSigner)
+if [ -z "$WINGBITS_IDLE" ]
+then
+	echo "Wingbits idle not set. Continuing container startup."
+else
+	echo "Wingbits idle set. Idling container to allow manually flashing GeoSigner."
+ 	balena-idle
+fi
+
 echo "Settings verified, proceeding with startup."
 echo " "
 
@@ -61,10 +70,11 @@ case "$(uname -m)" in
 		;;
 esac
 
+echo "Architecture is $GOOS-$GOARCH"
 WINGBITS_PATH="/usr/local/bin"
 WINGBITS_VERSION_PATH="/etc/wingbits"
 local_version=$(cat $WINGBITS_VERSION_PATH/version)
-local_json_version=$(wingbits -v | grep -oP '(?<=Version: )[^"]*')
+local_json_version=$(wingbits -v | grep -oP '(?<=wingbits version )[^"]*')
 echo "Current local version: $local_version"
 echo "Current local build: $local_json_version"
 
@@ -78,9 +88,26 @@ json_version=$(echo "$script_json" | jq -r '.Version')
 echo "Latest available Wingbits version: $version"
 echo "Latest available Wingbits build: $json_version"
 
+# Check for Wingbits release hash override
+if [ -z "$WINGBITS_RELEASE_HASH" ]
+then
+    echo "Wingbits release hash override not set. Proceeding..."
+else
+    echo "Wingbits release hash override set to $WINGBITS_RELEASE_HASH. Updating client to this version instead of latest version $json_version."
+    json_version=$WINGBITS_RELEASE_HASH
+fi
+
 if [ "$version" != "$local_version" ] || [ "$json_version" != "$local_json_version" ] || [ -z "$json_version" ] || [ -z "$version" ]; then
-    echo "WARNING: You are not running the latest Wingbits version. Updating..."
-    echo "Architecture: $GOOS-$GOARCH"
+
+    # Change update message based on presence of release hash override
+    if [ -z "$WINGBITS_RELEASE_HASH" ]
+    then
+        echo "WARNING: You are not running the latest Wingbits version. Updating..."
+    else
+        echo "Getting updated client to match overriden version provided ($WINGBITS_RELEASE_HASH)"
+    fi
+
+    echo "Getting update for architecture $GOOS-$GOARCH"
     rm -rf $WINGBITS_PATH/wingbits.gz
     curl -s -o $WINGBITS_PATH/wingbits.gz "https://install.wingbits.com/$json_version/$GOOS-$GOARCH.gz"
     rm -rf $WINGBITS_PATH/wingbits
