@@ -13,6 +13,8 @@ Contribute to the flight tracking community! Feed your local ADS-B data from an 
 
 💬&nbsp; [Ask a question](https://github.com/ketilmo/balena-ads-b/discussions) in our discussion board
 
+🖥️&nbsp; Join the [SDR Enthusiasts Discord Server](https://discord.gg/bqDDwwfM) and chat to us in the [balena-ads-b channel](https://discord.com/channels/734090820684349521/1328170413859012609)
+
 ✏️&nbsp; [Create a post](https://forums.balena.io/t/the-balena-ads-b-thread/272290) in our balena forum thread
 
 🚨&nbsp; [Raise an issue](https://github.com/ketilmo/balena-ads-b/issues) on GitHub
