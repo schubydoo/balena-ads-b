@@ -377,6 +377,11 @@ If you have not previously set up a Wingbits receiver that you want to reuse, do
  6. Restart the *wingbits* service under *Services* by clicking the "cycle" icon next to the service name.
  7. Wait a few minutes and then head back to the [Wingbits antennas tab](https://wingbits.com/dashboard/antennas), refresh the page and in the *Status* column of the table you should see the text `Online` with a green background. If you hover over this with your mouse you should see a tooltip text pop-up that says the last time data was receive e.g. `Last message: 22/11/2023, 03:17:40`.
 
+## Wingbits status commands
+You will notice that the [documentation for the new Wingbits client](https://docs.wingbits.com/get-started/byod-stations/installing-the-client#confirm-status-of-the-client-and-geosigner-if-installed) discusses how to check that your GeoSigner is working correctly using the `wingbits status` command. Unfortunately, as this command uses systemctl under the hood, it will not run correctly as balena containers do not use systemctl by default.
+
+However, it is still possible to check that your GeoSigner is working correctly using the command `wingbits geosigner info`.
+
 # Part 10 - Configure plane.watch
 
 ## Alternative A: Port an existing plane.watch receiver
