@@ -11,8 +11,8 @@ ENV RECEIVER_PORT=30005
 # renovate: datasource=custom.wingbits-version depName=wingbits-version versioning=loose
 ENV WINGBITS_CONFIG_VERSION=0.1.0
 # renovate: datasource=custom.wingbits-json depName=wingbits-json versioning=loose
-ENV WINGBITS_COMMIT_ID=900cf2ce
-ENV WINGBITS_DATE=2025-02-12T07:55:51.177514962Z
+ENV WINGBITS_COMMIT_ID=67b9e792
+ENV WINGBITS_DATE=2025-02-17T11:06:18.783772236Z
 
 ARG PERM_INSTALL="curl gettext-base tini ncurses-dev zlib1g jq python3-pip python3-venv wget"
 
