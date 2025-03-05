@@ -108,7 +108,7 @@ Software packages downloaded, installed, and configured by the balena-ads-b scri
 - [Part 10 - Configure plane.watch](#part-10---configure-planewatch)
   * [Alternative A: Port an existing plane.watch receiver](#alternative-a-port-an-existing-planewatch-receiver)
   * [Alternative B: Setup a new plane.watch receiver](#alternative-b-setup-a-new-planewatch-receiver)
-- [Part 11 – Configure UAT (Optional and US only)](#part-11--configure-uat-optional-and-us-only-)
+- [Part 11 – Configure UAT (Optional and US only)](#part-11--configure-uat-optional-and-us-only)
 - [Part 12 - Configure tar1090 and graphs1090 (Optional)](#part-12--configure-tar1090-and-graphs1090-optional)
 - [Part 13 – Add a digital display (Optional)](#part-13--add-a-digital-display-optional)
 - [Part 14 – Exploring flight traffic locally on your device](#part-14--exploring-flight-traffic-locally-on-your-device)
