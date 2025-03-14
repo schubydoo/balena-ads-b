@@ -1,6 +1,6 @@
 [client]
 network_mode=true
-key=${RADARBOX_KEY}
+key=${AIRNAV_RADAR_KEY}
 lat=${LAT}
 lon=${LON}
 alt=${ALT}
@@ -12,8 +12,8 @@ external_port=${RECEIVER_PORT}
 
 [mlat]
 autostart_mlat=true
-mlat_cmd=/usr/local/share/mlat-client/venv/bin/mlat-client <- From previous versions of balena-ads-b
+mlat_cmd=/usr/local/share/mlat-client/venv/bin/mlat-client
 
 [dump978]
-dump978_enabled=${UAT_RB_ENABLED}
+dump978_enabled=${UAT_ANR_ENABLED}
 dump978_port=30979
