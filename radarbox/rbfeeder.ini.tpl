@@ -12,7 +12,7 @@ external_port=${RECEIVER_PORT}
 
 [mlat]
 autostart_mlat=true
-mlat_cmd=/usr/local/share/mlat-client/venv/bin/mlat-client
+mlat_cmd=/usr/local/share/mlat-client/venv/bin/mlat-client <- From previous versions of balena-ads-b
 
 [dump978]
 dump978_enabled=${UAT_RB_ENABLED}

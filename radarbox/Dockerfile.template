@@ -1,4 +1,4 @@
-FROM balenalib/%%BALENA_ARCH%%-debian:bullseye AS base
+FROM balenalib/%%BALENA_ARCH%%-debian:bookworm AS base
 LABEL maintainer="https://github.com/ketilmo"
 
 EXPOSE 32088
@@ -38,7 +38,7 @@ RUN git clone --single-branch https://github.com/wiedehopf/mlat-client && \
 FROM base AS release
 
 COPY start.sh /
-COPY radarbox_installer.sh /tmp
+COPY airnavradar_installer.sh /tmp
 COPY rbfeeder.ini.tpl /etc
 COPY showkey.sh /
 
@@ -47,12 +47,12 @@ WORKDIR /tmp
 RUN mkdir -p /usr/local/share/mlat-client/venv/
 COPY --from=buildstep /usr/local/share/mlat-client/venv/ /usr/local/share/mlat-client/venv/
 
-# Slight hack to make RadarBox work on i386 and amd64 architectures.
+# Slight hack to make AirNav Radar work on i386 and amd64 architectures.
 RUN	mkdir -p /var/radarbox/thermal/thermal_zone0/ && \
 	rm -f /var/radarbox/thermal/thermal_zone0/temp &&  \
 	echo 24000 > /var/radarbox/thermal/thermal_zone0/temp && \
-	chmod +x /tmp/radarbox_installer.sh && \
-	./radarbox_installer.sh && \
+	chmod +x /tmp/airnavradar_installer.sh && \
+	./airnavradar_installer.sh && \
 	chmod +x /start.sh && \
 	chmod +x /showkey.sh && \
 	rm -rf /tmp/*

@@ -8,7 +8,7 @@ apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1D043681
 /bin/rm -f /etc/apt/sources.list.d/rb24.list
 
 # Create a new debian repository source file
-echo 'deb https://apt.rb24.com/ bullseye main' > /etc/apt/sources.list.d/rb24.list
+echo 'deb https://apt.rb24.com/ bookworm main' > /etc/apt/sources.list.d/rb24.list
 
 arch="$(dpkg --print-architecture)"
 echo System Architecture: $arch

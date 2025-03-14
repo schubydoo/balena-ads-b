@@ -20,7 +20,7 @@ missing_variables=false
 
 # Begin defining all the required configuration variables.
 
-[ -z "$RADARBOX_KEY" ] && echo "RadarBox key latitude is missing, fetching from server." || echo "RadarBox key latitude is set: $RADARBOX_KEY"
+[ -z "$RADARBOX_KEY" ] && echo "AirNav Radar key is missing, fetching from server." || echo "AirNav Radar key is set: $RADARBOX_KEY"
 [ -z "$LAT" ] && echo "Receiver latitude is missing, will abort startup." && missing_variables=true || echo "Receiver latitude is set: $LAT"
 [ -z "$LON" ] && echo "Receiver longitude is missing, will abort startup." && missing_variables=true || echo "Receiver longitude is set: $LON"
 [ -z "$ALT" ] && echo "Receiver altitude is missing, will abort startup." && missing_variables=true || echo "Receiver altitude is set: $ALT"
@@ -64,7 +64,7 @@ if [[ "$UAT_ENABLED" = "true" ]]; then
 	socat TCP-LISTEN:30979,fork TCP:dump978-fa:30979 &
 fi
 
-# If host architecture is i386 or amd64, run RadarBox through armhf software emulation.
+# If host architecture is i386 or amd64, run AirNav Radar through armhf software emulation.
 if [ "$arch" = "i386" ] || [ "$arch" = "amd64" ]; then 
 	/usr/bin/qemu-arm-static /usr/bin/rbfeeder &
 else 
