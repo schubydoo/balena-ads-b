@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
 set -e
 
-while :
-do
-        if [ -z $RADARBOX_KEY ]; then
-                echo "The Radarbox service is deprecated, and replaced by airnav-radar. This service will now shut down. " && curl --retry 10 --retry-all-errors --header "Content-Type:application/json" "$BALENA_SUPERVISOR_ADDRESS/v2/applications/$BALENA_APP_ID/stop-service?apikey=$BALENA_SUPERVISOR_API_KEY" -d '{"serviceName": "'$BALENA_SERVICE_NAME'"}';                                                                         
-        else
+if [ -z $RADARBOX_KEY ]; then
+        echo "The legacy radarbox service is deprecated, and replaced by airnav-radar. This service will now shut down. "
+        echo " "
+        curl --retry 10 --retry-all-errors --header "Content-Type:application/json" "$BALENA_SUPERVISOR_ADDRESS/v2/applications/$BALENA_APP_ID/stop-service?apikey=$BALENA_SUPERVISOR_API_KEY" -d '{"serviceName": "'$BALENA_SERVICE_NAME'"}';                                                                         
+else
+        python3 server.py 2>&1 &
+
+        while :
+        do
+
                 echo "##############################################################"
                 echo "                CONFIGURATION CHANGE REQUIRED!                "
                 echo "##############################################################"
@@ -26,14 +31,13 @@ do
                 echo "For detailed instructions, visit the documentation page:      "
                 echo "https://bit.ly/anrbmigration                                  "
                 echo "                                                              "
-                echo "Note: If you have overridden the default docker-compose.yml,  "
+                echo "Note: If you have modified the default docker-compose.yml,    "
                 echo "you must update it accordingly.                               "
                 echo "                                                              "
                 echo "##############################################################"                                                                                                   
-                echo "                                                              "                                                                                     
-        fi                                                                                           
-        sleep 60;  
-done
-
+                echo "                                                              "                                                                                                                                               
+                sleep 600;  
+        done
+  fi    
 # Wait for any services to exit.
 wait -n
