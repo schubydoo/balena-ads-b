@@ -300,7 +300,7 @@ If you have not previously set up an OpenSky Network receiver that you want to r
 If you have previously set up a AirNav Radar receiver and want to port it to Balena, you only have to do the following steps:
 
  1. Head back to the Balena dashboard and your device's page. Click on the *Device Variables*-button.
- 2. Add a variable named `AIRNAV_RADAR_KEY` for the service `airnav-radar`, and paste the value of your existing AirNav Radar key, e.g. `546b69e69b4671a742b82b10c674cdc1`. 
+ 2. Add a variable named `AIRNAV_RADAR_KEY` and paste the value of your existing AirNav Radar key, e.g. `546b69e69b4671a742b82b10c674cdc1`. 
  3. Click the button *Apply all changes* to activate the changes. The *airnav-radar* service will automatically restart to load the new settings.
  4. Optional: If you need to get your key, issue the following command at your current AirNav Radar device: `sudo rbfeeder --showkey --no-start`.
 
@@ -313,7 +313,7 @@ If you have not previously set up a AirNav Radar receiver that you want to reuse
  3. Inside the *Terminal* section, click *Select a target*, then *airnav-radar*, and finally *Start terminal session*.
  4. This will open a terminal which lets you interact directly with your AirNav Radar container.
  5. At the prompt, enter `/showkey.sh`. Your AirNav Radar key will be displayed and look similar to this: `546b69e69b4671a742b82b10c674cdc1`.
- 6. Click on the *Device Variables*-button. Add a variable named `AIRNAV_RADAR_KEY` for the service `airnav-radar`, and paste the key from step 5, e.g. `546b69e69b4671a742b82b10c674cdc1`. 
+ 6. Click on the *Device Variables*-button. Add a variable named `AIRNAV_RADAR_KEY`, and paste the key from step 5, e.g. `546b69e69b4671a742b82b10c674cdc1`. 
  7. Click the button *Apply all changes* to activate the changes. The *airnav-radar* service will automatically restart to load the new settings.
  8. Head to AirNav Radar's [Claim Your Raspberry Pi](https://www.airnavradar.com/raspberry-pi/claim) page. Locate the input field named *Sharing Key,* and paste the value from step 5, e.g. `546b69e69b4671a742b82b10c674cdc1`.
  9. You might be asked to enter your feeder's location and altitude *above the ground.* Enter the same values you entered earlier in the `LAT` and `LON` variables. When asked for the antenna's altitude, specify it in meters (or feet) *above the ground* – NOT above sea level, as done previously. If you are not asked to enter this information, you can do it manually by clicking the *Edit* link under your receiver's ID on the left-hand side of the screen. 

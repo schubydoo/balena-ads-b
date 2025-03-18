@@ -20,72 +20,25 @@ missing_variables=false
 
 # Begin defining all the required configuration variables.
 
-# Temporary legacy RADARBOX_KEY usage check
+# Temporary legacy RADARBOX_KEY usage check.
 
-# Function to fetch service status
-get_service_status() {
-    RESPONSE=$(curl -s -f "$BALENA_SUPERVISOR_ADDRESS/v2/state/status?apikey=$BALENA_SUPERVISOR_API_KEY") || {
-        # echo "Failed to fetch service status from Balena Supervisor API."
-        exit 1
-    }
-    
-    STATUS=$(echo "$RESPONSE" | jq -r '.containers[] | select(.serviceName=="radarbox") | .status')
-    echo "$STATUS"
-}
+# Function to fetch service status.
 
 if [ -n "$AIRNAV_RADAR_KEY" ] && [ -n "$RADARBOX_KEY" ]; then
     echo "RADARBOX_KEY is deprecated. Please remove it from your environment variables."
+    echo " "
 elif [ -z "$AIRNAV_RADAR_KEY" ] && [ -n "$RADARBOX_KEY" ]; then
     export AIRNAV_RADAR_KEY="$RADARBOX_KEY"
     echo "Found legacy radarbox variable RADARBOX_KEY. Using it to set AIRNAV_RADAR_KEY."
     echo "RADARBOX_KEY is deprecated. Please transfer its contents to AIRNAV_RADAR_KEY and remove it."
+    echo " "
 elif [ -z "$AIRNAV_RADAR_KEY" ] && [ -z "$RADARBOX_KEY" ]; then
-    # Check if there is a legacy radarbox container running
-
-
-    # Check for radarbox service status
-    while true; do
-        SERVICE_STATUS=$(get_service_status)
-        
-        if [ -z "$SERVICE_STATUS" ]; then
-            #echo "Service 'radarbox' not found. Exiting."
-            break
-        fi
-
-        case "$SERVICE_STATUS" in
-            "Running")
-                #echo "Service 'radarbox' is running. Fetching RADARBOX_KEY..."
-                RESPONSE=$(curl -s -f http://radarbox:32088/RADARBOX_KEY) || RESPONSE=""
-                
-                if [ -n "$RESPONSE" ]; then
-                    PARSED_KEY=$(echo "$RESPONSE" | jq -r '.RADARBOX_KEY')
-                    
-                    if [ -n "$PARSED_KEY" ]; then
-                        export AIRNAV_RADAR_KEY="$PARSED_KEY"
-                        echo "Found legacy radarbox variable RADARBOX_KEY. Using it to set AIRNAV_RADAR_KEY."
-                        echo "RADARBOX_KEY is deprecated. Please transfer its contents to AIRNAV_RADAR_KEY and remove it."
-                    else
-                        echo " "
-                       # echo "Failed to extract a valid key from the endpoint response."
-                    fi
-                else
-                    echo " "
-                    #echo "Failed to fetch RADARBOX_KEY from the legacy endpoint."
-                fi
-                
-                break
-                ;;
-            "exited"|"stopped")
-                echo " "
-                # echo "Service 'radarbox' is stopping or has exited."
-                break
-                ;;
-            *)
-                echo "Legacy service 'radarbox' has status '$SERVICE_STATUS'. Retrying in a few seconds to check for key..."
-                sleep 5
-                ;;
-        esac
-    done
+    export AIRNAV_RADAR_KEY="$RADARBOX_KEY"
+    echo "Important notice to RadarBox feeders:"
+    echo "The airnav-radar service replaced radarbox in March 2025."
+    echo "If you were feeding RadarBox with RADARBOX_KEY, please transfer its value to AIRNAV_RADAR_KEY to continue feeding."
+    echo "For more details, refer to the README."
+    echo " "
 fi
 
 # End temporary legacy RADARBOX_KEY usage check

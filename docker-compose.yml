@@ -211,17 +211,9 @@ services:
       - LON=
       - ALT=
     volumes:
-      #Slight hack to make RadarBox run on i386 and amd64 architectures.
+      #Slight hack to make AirNav Radar run on i386 and amd64 architectures.
       - 'airnav-radar:/sys/class/thermal:ro'
       - 'airnav-radar:/var/radarbox/thermal'
-    labels:
-      io.balena.features.supervisor-api: '1'
-  radarbox:
-    build: ./radarbox
-    image: radarbox
-    restart: unless-stopped
-    environment:
-      - RADARBOX_KEY=
     labels:
       io.balena.features.supervisor-api: '1'
   adsb-exchange:
