@@ -29,7 +29,9 @@ ARG RTLSDR_VERSION=v2.0.2
 ARG DUMP1090_VERSION=v10.0
 # renovate: datasource=github-tags depName=flightaware/beast-splitter versioning=loose
 ARG BEAST_SPLITTER_VERSION=v10.0
-ARG TEMP_INSTALL="git build-essential fakeroot cmake debhelper pkg-config libncurses5-dev libbladerf-dev libhackrf-dev liblimesuite-dev libusb-1.0-0-dev libsoapysdr-dev librtlsdr-dev apt-utils apt-transport-https debhelper"
+# renovate: datasource=git-refs depName=wiedehopf/airspy-conf versioning=loose
+ARG AIRSPY_VERSION=3837fd27f960f44086353c2752510e7f4a4dcc4d
+ARG TEMP_INSTALL="git build-essential fakeroot cmake debhelper pkg-config libncurses5-dev libbladerf-dev libhackrf-dev liblimesuite-dev libusb-1.0-0-dev libsoapysdr-dev librtlsdr-dev apt-utils apt-transport-https debhelper wget"
 
 RUN apt update && \
 	apt install -y $TEMP_INSTALL
@@ -58,28 +60,34 @@ RUN git clone https://github.com/flightaware/beast-splitter && \
 	git checkout tags/${BEAST_SPLITTER_VERSION} && \
 	dpkg-buildpackage -b --no-sign
 
+COPY airspy_adsb_installer.sh /tmp
+RUN chmod +x /tmp/airspy_adsb_installer.sh && /tmp/airspy_adsb_installer.sh
+
 FROM base AS release
 
 COPY --from=buildstep /tmp/librtlsdr0_*.deb /tmp/
 COPY --from=buildstep /tmp/rtl-sdr_*.deb /tmp/
 COPY --from=buildstep /tmp/dump1090-fa_*.deb /tmp/
 COPY --from=buildstep /tmp/beast-splitter_*.deb /tmp/
+COPY --from=buildstep /tmp/airspy_adsb /usr/bin/
 COPY start.sh /
 COPY add-serial-1090.sh /
 COPY showstrongmessages.sh /
 
 WORKDIR /tmp
 
-RUN 	dpkg -i librtlsdr0_*.deb && \
+RUN dpkg -i librtlsdr0_*.deb && \
 	dpkg -i rtl-sdr_*.deb && \
 	apt-mark hold librtlsdr0 rtl-sdr && \
 	dpkg -i dump1090-fa_*.deb && \
-        ln -s /bin/udevadm /sbin/udevadm && \
-        dpkg -i beast-splitter_*.deb && \
+    ln -s /bin/udevadm /sbin/udevadm && \
+    dpkg -i beast-splitter_*.deb && \
 	rm -rf /tmp/* && \
 	mkdir -p /run/dump1090-fa && \
+	mkdir -p mkdir -p /run/airspy_adsb && \
 	chmod +x /start.sh && \
 	chmod +x /add-serial-1090.sh && \
-	chmod +x /showstrongmessages.sh
+	chmod +x /showstrongmessages.sh && \
+	chmod +x /usr/bin/airspy_adsb
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/start.sh"]
