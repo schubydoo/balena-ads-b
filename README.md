@@ -55,6 +55,7 @@ The project was inspired by and has borrowed code from the following repos and f
  - https://github.com/mikenye/
  - [https://discussions.flightaware.com/](https://discussions.flightaware.com/t/howto-install-piaware-4-0-on-debian-10-amd64-ubuntu-20-amd64-kali-2020-amd64-on-pc/69753/3)
  - https://github.com/marcelstoer/docker-adsbexchange
+ - https://github.com/wiedehopf/airspy-conf
 
 Thanks to [compujuckel](https://github.com/compujuckel/), [Glenn Stewart](https://bitbucket.org/inodes/), [wercsy](https://github.com/wercsy/), [mikenye](https://github.com/mikenye/), [abcd567a](https://github.com/abcd567a) and [marcelstoer](https://github.com/marcelstoer) for sharing!
 
