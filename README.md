@@ -70,7 +70,9 @@ Thanks to [schubydoo](https://github.com/schubydoo), [JPGMC](https://github.com/
 
 Thanks to [Aaron Shaw (shawaj)](https://github.com/shawaj) for implementing Wingbits and Mode-S Beast support, fixing bugs, and improving the code.
 
-And thanks to [mikenye](https://github.com/mikenye) for implementing [plane.watch](https://plane.watch/) support.
+Thanks to [mikenye](https://github.com/mikenye) for implementing [plane.watch](https://plane.watch/) support.
+
+And thanks to [jediksd](https://github.com/jediksd) for squashing a OpenSky Network issue.
 
 You are all stars! 🤩
 
