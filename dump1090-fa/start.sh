@@ -55,7 +55,7 @@ then
         dump1090configuration="--device-type none --device "none" --net-only --net-bo-port 30105"
 elif [ "$radio_device_lower" = "airspy" ]
 then
-        dump1090configuration="--device-type none --device "none" --net-only --net-bo-port 30005"
+        dump1090configuration="--device-type none --device "none" --net-only --net-bo-port 30105"
 elif [ "$radio_device_lower" = "hackrf" ]
 then
         dump1090configuration="--device-type hackrf --device "$DUMP1090_DEVICE" --net-bo-port 30005,30105"
@@ -119,15 +119,9 @@ if [ "$radio_device_lower" = "modesbeast" ]
 then
         /usr/bin/beast-splitter --serial /dev/ttyUSB0 --listen 30005:R --connect 0.0.0.0:30104:R 2>&1 | stdbuf -o0 sed --unbuffered '/^$/d' | awk -W interactive '{print "[beast-splitter]    "  $0}' &
 elif [ "$radio_device_lower" = "airspy" ]
-then
-        AIRSPY_OPTIONS="-v -t 90 -f 1 -w 5 -P 8 -C 60 -E 20"
-        AIRSPY_NET="-l 47787:beast -c 127.0.0.1:30004:beast"
-        AIRSPY_G="-g"
-        AIRSPY_GAIN="auto"
-        AIRSPY_M="-m"
-        AIRSPY_SAMPLE_RATE="12"
-        AIRSPY_STATS="-S /run/airspy_adsb/stats.json"
-        /usr/bin/airspy_adsb $AIRSPY_OPTIONS $AIRSPY_NET $AIRSPY_G $AIRSPY_GAIN $AIRSPY_M $AIRSPY_SAMPLE_RATE $AIRSPY_STATS 2>&1 | stdbuf -o0 sed --unbuffered '/^$/d' | awk -W interactive '{print "[airspy]     "  $0}' &
+then    
+        if [ -n "$AIRSPY_ADSB_SERIAL" ]; then AIRSPY_ADSB_SERIAL_COMMAND="-s $AIRSPY_ADSB_SERIAL"; else AIRSPY_ADSB_SERIAL_COMMAND=""; fi
+        /usr/bin/airspy_adsb -l 30005:beast -c 0.0.0.0:30104:beast $AIRSPY_ADSB_SERIAL_COMMAND $AIRSPY_ADSB_OPTIONS -b $AIRSPY_ADSB_BIASTEE $AIRSPY_ADSB_NET -g $AIRSPY_ADSB_GAIN -m $AIRSPY_ADSB_SAMPLE_RATE $AIRSPY_ADSB_STATS 2>&1 | stdbuf -o0 sed --unbuffered '/^$/d' | awk -W interactive '{print "[airspy]            "  $0}' &
 fi
 
 # Start dump1090-fa and put it in the background.
