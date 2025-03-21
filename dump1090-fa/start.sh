@@ -120,8 +120,13 @@ then
         /usr/bin/beast-splitter --serial /dev/ttyUSB0 --listen 30005:R --connect 0.0.0.0:30104:R 2>&1 | stdbuf -o0 sed --unbuffered '/^$/d' | awk -W interactive '{print "[beast-splitter]    "  $0}' &
 elif [ "$radio_device_lower" = "airspy" ]
 then    
-        if [ -n "$AIRSPY_ADSB_SERIAL" ]; then AIRSPY_ADSB_SERIAL_COMMAND="-s $AIRSPY_ADSB_SERIAL"; else AIRSPY_ADSB_SERIAL_COMMAND=""; fi
-        /usr/bin/airspy_adsb -l 30005:beast -c 0.0.0.0:30104:beast $AIRSPY_ADSB_SERIAL_COMMAND $AIRSPY_ADSB_OPTIONS -b $AIRSPY_ADSB_BIASTEE $AIRSPY_ADSB_NET -g $AIRSPY_ADSB_GAIN -m $AIRSPY_ADSB_SAMPLE_RATE $AIRSPY_ADSB_STATS 2>&1 | stdbuf -o0 sed --unbuffered '/^$/d' | awk -W interactive '{print "[airspy]            "  $0}' &
+        AIRSPY_ADSB_CMD="-l 30005:beast -c 0.0.0.0:30104:beast"
+        if [ -n "$AIRSPY_ADSB_SERIAL" ]; then AIRSPY_ADSB_CMD+=" -s $AIRSPY_ADSB_SERIAL"; fi
+        if [ -n "$AIRSPY_ADSB_GAIN" ]; then AIRSPY_ADSB_CMD+=" -g $AIRSPY_ADSB_GAIN"; fi
+        if [ -n "$AIRSPY_ADSB_SAMPLE_RATE" ]; then AIRSPY_ADSB_CMD+=" -m $AIRSPY_ADSB_SAMPLE_RATE"; fi
+        if [ "$AIRSPY_ADSB_BIASTEE" == "true" ]; then AIRSPY_ADSB_CMD+=" -b"; fi
+        if [ "$AIRSPY_ADSB_STATS" == "true" ]; then AIRSPY_ADSB_CMD+=" -S /run/airspy_adsb/stats.json"; fi
+        /usr/bin/airspy_adsb $AIRSPY_ADSB_CMD $AIRSPY_ADSB_OPTIONS 2>&1 | stdbuf -o0 sed --unbuffered '/^$/d' | awk -W interactive '{print "[airspy]            "  $0}' &
 fi
 
 # Start dump1090-fa and put it in the background.

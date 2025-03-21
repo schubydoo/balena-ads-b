@@ -14,11 +14,11 @@ ENV DUMP1090_ADAPTIVE_MAX_GAIN=""
 ENV DUMP1090_SLOW_CPU=""
 ENV REBOOT_DEVICE_ON_SERVICE_EXIT=""
 ENV AIRSPY_ADSB_SERIAL=""
+ENV AIRSPY_ADSB_BIASTEE="false"
 ENV AIRSPY_ADSB_OPTIONS="-v -t 90 -f 1 -e 4 -w 5 -P 8 -C 60 -E 20 -R rms -D 24,25,26,27,28,29,30,31"
 ENV AIRSPY_ADSB_GAIN="auto"
 ENV AIRSPY_ADSB_SAMPLE_RATE="12"
-ENV AIRSPY_ADSB_BIASTEE="false"
-#ENV AIRSPY_ADSB_STATS="-S /run/airspy_adsb/stats.json"
+ENV AIRSPY_ADSB_STATS="false"
 
 ARG PERM_INSTALL="tini lighttpd gettext-base libusb-1.0-0 libbladerf2 libhackrf0 liblimesuite22.09-1 libsoapysdr0.8 libncurses6 libboost-system-dev libboost-program-options-dev libboost-regex-dev"
 
