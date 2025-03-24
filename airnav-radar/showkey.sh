@@ -10,8 +10,8 @@ if [ -n "$AIRNAV_RADAR_KEY" ]; then
     exit
 fi
 
-# Purge old log file.
-rm /tmp/rbfeeder.log
+# Purge old log file if it exists.
+rm -f /tmp/rbfeeder.log
 
 if [ "$arch" = "i386" ] || [ "$arch" = "amd64" ]; then 
     /usr/bin/qemu-arm-static /usr/bin/rbfeeder > /tmp/rbfeeder.log 2>&1 &
