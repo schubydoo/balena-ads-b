@@ -79,6 +79,7 @@ COPY --from=buildstep /tmp/airspy_adsb /usr/bin/
 COPY start.sh /
 COPY add-serial-1090.sh /
 COPY showstrongmessages.sh /
+COPY 87-airspy.conf /etc/lighttpd/conf-available/
 
 WORKDIR /tmp
 
@@ -86,14 +87,16 @@ RUN dpkg -i librtlsdr0_*.deb && \
 	dpkg -i rtl-sdr_*.deb && \
 	apt-mark hold librtlsdr0 rtl-sdr && \
 	dpkg -i dump1090-fa_*.deb && \
-    ln -s /bin/udevadm /sbin/udevadm && \
-    dpkg -i beast-splitter_*.deb && \
+	ln -s /bin/udevadm /sbin/udevadm && \
+	dpkg -i beast-splitter_*.deb && \
 	rm -rf /tmp/* && \
 	mkdir -p /run/dump1090-fa && \
 	mkdir -p mkdir -p /run/airspy_adsb && \
 	chmod +x /start.sh && \
 	chmod +x /add-serial-1090.sh && \
 	chmod +x /showstrongmessages.sh && \
-	chmod +x /usr/bin/airspy_adsb
+	chmod +x /usr/bin/airspy_adsb && \
+	chmod 644 /etc/lighttpd/conf-available/87-airspy.conf && \
+	ln -s /etc/lighttpd/conf-available/87-airspy.conf /etc/lighttpd/conf-enabled/87-airspy.conf
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/start.sh"]
