@@ -3,7 +3,7 @@
 
 **ADS-B Flight Tracker running on balena with support for FlightAware, Flightradar24, Plane Finder, OpenSky Network, AirNav Radar, ADSB Exchange, Wingbits, adsb.fi, ADSB.lol, ADS-B One, airplanes.live, Planespotters.net, TheAirTraffic, AvDelphi, HP Radar, RadarPlane, Fly Italy ADSB and plane.watch.**
 
-Contribute to the flight tracking community! Feed your local ADS-B data from an [RTL-SDR](https://www.rtl-sdr.com/) USB dongle (or various other radio types) and a supported device (see below) running balenaOS to the tracking services [FlightAware](https://flightaware.com/), [Flightradar24](https://www.flightradar24.com/), [Plane Finder](https://planefinder.net/), [OpenSky Network](https://opensky-network.org/), [AirNav Radar](https://www.airnavradar.com/), [ADSB Exchange](https://adsbexchange.com), [Wingbits](https://wingbits.com), [adsb.fi](https://adsb.fi/), [ADSB.lol](https://adsb.lol/), [ADS-B One](https://adsb.one), [airplanes.live](https://airplanes.live/), [Planespotters.net](https://www.planespotters.net/), [TheAirTraffic](https://theairtraffic.com/), [AvDelphi](https://www.avdelphi.com/), [HP Radar](https://hpradar.com/), [RadarPlane](https://radarplane.com/), [Fly Italy ADSB](https://flyitalyadsb.com/) and [plane.watch](https://plane.watch/). In return, you can receive complimentary premium accounts (or cryptocurrency tokens) worth several hundred dollars annually!
+Contribute to the flight tracking community! Feed your local [ADS-B data](https://mode-s.org/1090mhz/content/ads-b/1-basics.html) from an [RTL-SDR](https://www.rtl-sdr.com/) USB dongle (or various other radio types) and a supported device (see below) running balenaOS to the tracking services [FlightAware](https://flightaware.com/), [Flightradar24](https://www.flightradar24.com/), [Plane Finder](https://planefinder.net/), [OpenSky Network](https://opensky-network.org/), [AirNav Radar](https://www.airnavradar.com/), [ADSB Exchange](https://adsbexchange.com), [Wingbits](https://wingbits.com), [adsb.fi](https://adsb.fi/), [ADSB.lol](https://adsb.lol/), [ADS-B One](https://adsb.one), [airplanes.live](https://airplanes.live/), [Planespotters.net](https://www.planespotters.net/), [TheAirTraffic](https://theairtraffic.com/), [AvDelphi](https://www.avdelphi.com/), [HP Radar](https://hpradar.com/), [RadarPlane](https://radarplane.com/), [Fly Italy ADSB](https://flyitalyadsb.com/) and [plane.watch](https://plane.watch/). In return, you can receive complimentary premium accounts (or cryptocurrency tokens) worth several hundred dollars annually!
 
 # Stay in the loop
 
@@ -501,10 +501,21 @@ If you have multiple Airspy modules connected to the same device, you can differ
 **Important:** If the serial number is in hexadecimal format, prefix it with `0x`, e.g., `0x00B512CD22524212`.
 
 There are some other *Device Variables* you can use as well:
-- `AIRSPY_ADSB_STATS` defaults to false, as it causes additional writes to the SD card. However, if you are using [graphs1090](#:~:text=Graphs1090%20Stats%20Graphs) and would like to see additional Airspy specific graph output you can create a *Device Variable* and set its value to `true`.
+- `AIRSPY_ADSB_STATS` defaults to false, as it causes additional writes to the SD card. However, if you are using [graphs1090](#part-14--exploring-flight-traffic-locally-on-your-device) and would like to see additional Airspy specific graph output you can create a *Device Variable* and set its value to `true`.
 - `AIRSPY_ADSB_GAIN` has a default setting of `auto`. The auto setting works very well so it is not recommended to change it. However, if you have a specific reason to you can use a setting from 0 to 21.
 - `AIRSPY_ADSB_SAMPLE_RATE` has a default setting of 12. On the Airspy R2 you can also use 20 or 24 however these can be unstable so are not recommended unless you have a specific reason.
 - `AIRSPY_ADSB_OPTIONS` contains all of the rest of the settings which Airspy starts up with. The default value is set as `-v -t 90 -f 1 -e 4 -w 5 -P 8 -C 60 -E 20 -R rms -D 24,25,26,27,28,29,30,31` - for a full description of what these mean you can take a look at the [airspy-conf](https://github.com/wiedehopf/airspy-conf/blob/master/airspy_adsb.default) and [airspy_adsb](https://github.com/sdr-enthusiasts/airspy_adsb?tab=readme-ov-file#environment-variables) repositories which explain all of the settings. It is not recommended to change any of these unless you know why you are doing so.
+
+## RTL-SDR dongle with software enabled bias tee
+
+If you are using an [RTL-SDR blog dongle](https://www.rtl-sdr.com/tag/shop/) or any other dongle with software enabled bias tee capability you can enable the bias tee using a *Device Variable*. This is possible in both the `dump1090-fa` and `dump978-fa` containers and they can be controlled individually. 
+
+- The `dump1090-fa` container handles the main ADS-B feed at 1090 MHz. To enable the bias tee in this container, create a *Device Variable* named `RTL1090_BIASTEE_ENABLE` and set its value to `true`.
+- If you are also using the `dump978-fa` container to feed [UAT 978 MHz data](#part-11--configure-uat-optional-and-us-only), you can enable the bias tee in this container by creating a *Device Variable* with name `RTL978_BIASTEE_ENABLE` and setting its value to `true`.
+
+For both containers, the bias tee enable setting will respect the `DUMP1090_DEVICE` and `DUMP978_DEVICE` variables if they are set. This means that if you are using multiple radio modules (as described in the [UAT section](#part-11--configure-uat-optional-and-us-only)) and only want to enable the bias tee on one of them, this feature will always enable the bias tee on the correct device based on the serial number set in the *Device Variables* for that container.
+
+In order to turn the bias tee off, you should remove the corresponding *Device Variable* and then reboot your device from the *Actions* dropdown menu on the main device summary page.
 
 ## Adaptive gain configuration
 The dump1090-fa service can be configured to adapt the tuner gain to changing conditions automatically. You can [read more about how this works](https://github.com/flightaware/dump1090/blob/master/README.adaptive-gain.md#default-settings) at FlightAware's website. 
