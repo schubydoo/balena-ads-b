@@ -58,21 +58,29 @@ then
         dump1090configuration="--device-type none --device "none" --net-only --net-bo-port 30105"
 elif [ "$radio_device_lower" = "hackrf" ]
 then
-        dump1090configuration="--device-type hackrf --device "$DUMP1090_DEVICE" --net-bo-port 30005,30105"
+        dump1090configuration="--device-type hackrf --device "none" --net-bo-port 30005,30105"
 elif [ "$radio_device_lower" = "bladerf" ]
 then
         dump1090configuration="--device-type bladerf --device "$DUMP1090_DEVICE" --net-bo-port 30005,30105"
 elif [ "$radio_device_lower" = "limesdr" ]
 then
-        dump1090configuration="--device-type limesdr --device "$DUMP1090_DEVICE" --net-bo-port 30005,30105"
-elif [ "$radio_device_lower" = "soapysdr" ]
+        dump1090configuration="--device-type limesdr --device "none" --net-bo-port 30005,30105"
+elif [ "$radio_device_lower" = "soapy" ]
 then
-        dump1090configuration="--device-type soapysdr --device "$DUMP1090_DEVICE" --net-bo-port 30005,30105"
+        dump1090configuration="--device-type soapy --device "$DUMP1090_DEVICE" --net-bo-port 30005,30105"
 else
-        dump1090configuration="--device-type rtlsdr --device "$DUMP1090_DEVICE" --net-bo-port 30005,30105"
+        radio_device_lower="rtlsdr"
+	dump1090configuration="--device-type rtlsdr --device "${DUMP1090_DEVICE:=0}" --net-bo-port 30005,30105"
 fi
 
 echo "Radio device type set to $radio_device_lower"
+
+# rtl-sdr bias tee enable
+if [ "$radio_device_lower" = "rtlsdr" ] && [ "$RTL1090_BIASTEE_ENABLE" = "true" ]
+then
+	echo "Enabling rtl-sdr bias tee for device $DUMP1090_DEVICE"
+ 	rtl_biast -d "$DUMP1090_DEVICE" -b 1
+fi
 
 # Build dump1090 configuration
 dump1090configuration="${dump1090configuration} --lat "$LAT" --lon "$LON" --fix --ppm "$DUMP1090_PPM" --max-range "$DUMP1090_MAX_RANGE" --net --net-heartbeat 60 --net-ro-size 1000 --net-ro-interval 0.05 --net-http-port 0 --net-ri-port 0 --net-ro-port 30002,30102 --net-sbs-port 30003 --net-bi-port 30004,30104 --raw --json-location-accuracy 2 --write-json /run/dump1090-fa --quiet"

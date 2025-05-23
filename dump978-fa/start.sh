@@ -59,6 +59,13 @@ else
  	balena-idle
 fi
 
+# rtl-sdr bias tee enable (this container only supports rtl-sdr so no need to check radio device type)
+if [ "$RTL978_BIASTEE_ENABLE" = "true" ]
+then
+	echo "Enabling rtl-sdr bias tee for device ${DUMP978_DEVICE:=0}"
+ 	rtl_biast -d "$DUMP978_DEVICE" -b 1
+fi
+
 # Check for gain value
 if [ -z "$DUMP978_GAIN" ]
 then
