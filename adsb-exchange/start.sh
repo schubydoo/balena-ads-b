@@ -291,7 +291,7 @@ echo " "
 
 # Variables are verified – continue with startup procedure.
 
-# If UAT is enabled through config, enable feeding of UAT data to Wingbits.
+# If UAT is enabled through config, enable feeding of UAT data to ADSB Exchange and others.
 if [[ "$UAT_ENABLED" = "true" ]]; then
     ADSB_NET_CONNECTOR+=("--net-connector=dump978-fa,30978,uat_in")
 fi
