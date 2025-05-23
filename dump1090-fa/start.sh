@@ -72,6 +72,8 @@ else
         dump1090configuration="--device-type rtlsdr --device "$DUMP1090_DEVICE" --net-bo-port 30005,30105"
 fi
 
+echo "Radio device type set to $radio_device_lower"
+
 # Build dump1090 configuration
 dump1090configuration="${dump1090configuration} --lat "$LAT" --lon "$LON" --fix --ppm "$DUMP1090_PPM" --max-range "$DUMP1090_MAX_RANGE" --net --net-heartbeat 60 --net-ro-size 1000 --net-ro-interval 0.05 --net-http-port 0 --net-ri-port 0 --net-ro-port 30002,30102 --net-sbs-port 30003 --net-bi-port 30004,30104 --raw --json-location-accuracy 2 --write-json /run/dump1090-fa --quiet"
 if [[ -z "$DUMP1090_GAIN" ]] && [[ "$DUMP1090_ADAPTIVE_DYNAMIC_RANGE" != "false" ]]; then
@@ -120,16 +122,19 @@ then
         /usr/bin/beast-splitter --serial /dev/ttyUSB0 --listen 30005:R --connect 0.0.0.0:30104:R 2>&1 | stdbuf -o0 sed --unbuffered '/^$/d' | awk -W interactive '{print "[beast-splitter]    "  $0}' &
 elif [ "$radio_device_lower" = "airspy" ]
 then    
-        AIRSPY_ADSB_CMD="-l 30005:beast -c 0.0.0.0:30104:beast"
-        if [ -n "$AIRSPY_ADSB_SERIAL" ]; then AIRSPY_ADSB_CMD+=" -s $AIRSPY_ADSB_SERIAL"; fi
-        if [ -n "$AIRSPY_ADSB_GAIN" ]; then AIRSPY_ADSB_CMD+=" -g $AIRSPY_ADSB_GAIN"; fi
-        if [ -n "$AIRSPY_ADSB_SAMPLE_RATE" ]; then AIRSPY_ADSB_CMD+=" -m $AIRSPY_ADSB_SAMPLE_RATE"; fi
+	AIRSPY_ADSB_CMD="-l 30005:beast -c 0.0.0.0:30104:beast"
+        if [ -n "$AIRSPY_ADSB_SERIAL" ]; then AIRSPY_ADSB_CMD+=" -s $AIRSPY_ADSB_SERIAL" && echo "Using Airspy with serial $AIRSPY_ADSB_SERIAL"; fi
+        if [ -n "$AIRSPY_ADSB_GAIN" ]; then AIRSPY_ADSB_CMD+=" -g $AIRSPY_ADSB_GAIN" && echo "Airspy gain set to $AIRSPY_ADSB_GAIN"; fi
+        if [ -n "$AIRSPY_ADSB_SAMPLE_RATE" ]; then AIRSPY_ADSB_CMD+=" -m $AIRSPY_ADSB_SAMPLE_RATE" && echo "Airspy sample rate set to $AIRSPY_ADSB_SAMPLE_RATE"; fi
         if [ "$AIRSPY_ADSB_BIASTEE" == "true" ]; then AIRSPY_ADSB_CMD+=" -b" && echo "Airspy bias tee enabled"; fi
         if [ "$AIRSPY_ADSB_STATS" == "true" ]; then 
 	  AIRSPY_ADSB_CMD+=" -S /run/airspy_adsb/stats.json"
           ln -sf /etc/lighttpd/conf-available/87-airspy.conf /etc/lighttpd/conf-enabled/87-airspy.conf
 	  echo "Airspy stats enabled in /run/airspy_adsb/stats.json"
 	fi
+        if [ "$AIRSPY_ADSB_OPTIONS" != "-v -t 90 -f 1 -e 4 -w 5 -P 8 -C 60 -E 20 -R rms -D 24,25,26,27,28,29,30,31" ]; then 
+	  echo "Default AIRSPY_ADSB_OPTIONS settings overriden! New settings: $AIRSPY_ADSB_OPTIONS"
+        fi
         /usr/bin/airspy_adsb $AIRSPY_ADSB_CMD $AIRSPY_ADSB_OPTIONS 2>&1 | stdbuf -o0 sed --unbuffered '/^$/d' | awk -W interactive '{print "[airspy]            "  $0}' &
 fi
 
