@@ -490,11 +490,19 @@ In order to configure the particular device type you are using, you need to crea
 
 For example if you have a Mode-S Beast, you set the `RADIO_DEVICE_TYPE` variable to `modesbeast`. Remember to save the device variable settings after you have updated them. Your device should restart automatically once you configure this and the radio should now work.
 
-If you use Airspy and need to power active antennas or preamplifiers, you can enable bias tee by setting a Device Variable named `AIRSPY_ADSB_BIASTEE` to `true`.
+### Airspy Setup
 
-If you have multiple Airspy sticks connected to the same device, you can differentiate between them using their serial numbers. The serial number appears in the console logs when `dump1090-fa` starts up. Copy the serial number and set it as the value of a *Device Variable* named `AIRSPY_ADSB_SERIAL`.
+If you use Airspy and need to power active antennas or preamplifiers, you can enable the bias tee by setting a *Device Variable* named `AIRSPY_ADSB_BIASTEE` to `true`.
+
+If you have multiple Airspy modules connected to the same device, you can differentiate between them using their serial numbers. The serial number appears in the console logs when `dump1090-fa` starts up. Copy the serial number and set it as the value of a *Device Variable* named `AIRSPY_ADSB_SERIAL`. You can do this multiple times, plugging a single Airspy in at a time, to the serials of additional devices - but make sure to write a label on each one so you know which is which!
 
 **Important:** If the serial number is in hexadecimal format, prefix it with `0x`, e.g., `0x00B512CD22524212`.
+
+There are some other *Device Variables* you can use as well:
+- `AIRSPY_ADSB_STATS` defaults to false, as it causes additional writes to the SD card. However, if you are using graphs1090 and would like to see additional Airspy specific graph output you can create a *Device Variable* and set its value to `true`.
+- `AIRSPY_ADSB_GAIN` has a default setting of `auto`. The auto setting works very well so it is not recommended to change it. However, if you have a specific reason to you can use a setting from 0 to 21.
+- `AIRSPY_ADSB_SAMPLE_RATE` has a default setting of 12. On the Airspy R2 you can also use 20 or 24 however these can be unstable so are not recommended unless you have a specific reason.
+- `AIRSPY_ADSB_OPTIONS` contains all of the rest of the settings which Airspy starts up with. The default value is set as `-v -t 90 -f 1 -e 4 -w 5 -P 8 -C 60 -E 20 -R rms -D 24,25,26,27,28,29,30,31` - for a full description of what these mean you can take a look at the [airspy-conf](https://github.com/wiedehopf/airspy-conf/blob/master/airspy_adsb.default) and [airspy_adsb](https://github.com/sdr-enthusiasts/airspy_adsb?tab=readme-ov-file#environment-variables) repositories which explain all of the settings. It is not recommended to change any of these unless you know why you are doing so.
 
 ## Adaptive gain configuration
 The dump1090-fa service can be configured to adapt the tuner gain to changing conditions automatically. You can [read more about how this works](https://github.com/flightaware/dump1090/blob/master/README.adaptive-gain.md#default-settings) at FlightAware's website. 
