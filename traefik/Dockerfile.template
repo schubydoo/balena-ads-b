@@ -12,7 +12,7 @@ RUN apt update && \
 
 FROM base AS buildstep
 
-# renovate: datasource=github-releases depName=traefik/traefik versioning=loose
+# renovate: datasource=github-releases depName=traefik/traefik versioning=semver
 ARG TRAEFIK_VERSION=3.4.1
 ARG TEMP_INSTALL="wget"
 
