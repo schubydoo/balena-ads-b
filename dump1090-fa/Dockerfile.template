@@ -32,7 +32,7 @@ FROM base AS buildstep
 # renovate: datasource=github-tags depName=osmocom/rtl-sdr versioning=loose
 ARG RTLSDR_VERSION=v2.0.2
 # renovate: datasource=github-tags depName=flightaware/dump1090 versioning=loose
-ARG DUMP1090_VERSION=v10.1
+ARG DUMP1090_VERSION=v10.2
 # renovate: datasource=github-tags depName=flightaware/beast-splitter versioning=loose
 ARG BEAST_SPLITTER_VERSION=v10.1
 # renovate: datasource=git-refs depName=wiedehopf/airspy-conf versioning=loose
