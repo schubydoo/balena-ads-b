@@ -36,7 +36,7 @@ ARG DUMP1090_VERSION=v10.2
 # renovate: datasource=github-tags depName=flightaware/beast-splitter versioning=loose
 ARG BEAST_SPLITTER_VERSION=v10.2
 # renovate: datasource=git-refs depName=wiedehopf/airspy-conf versioning=loose
-ARG AIRSPY_VERSION=3837fd27f960f44086353c2752510e7f4a4dcc4d
+ARG AIRSPY_VERSION=88c8785246ce7a1edd7fdc6658ae97aecf82bc0a
 ARG TEMP_INSTALL="git build-essential fakeroot cmake debhelper pkg-config libncurses5-dev libbladerf-dev libhackrf-dev liblimesuite-dev libusb-1.0-0-dev libsoapysdr-dev librtlsdr-dev apt-utils apt-transport-https debhelper wget"
 
 RUN apt update && \
