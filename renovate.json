@@ -100,7 +100,7 @@
       ]
     },
     "opensky": {
-      "defaultRegistryUrlTemplate": "https://s3.opensky-network.org/website-public-repos/debian/dists/opensky/custom/binary-amd64/Packages",
+      "defaultRegistryUrlTemplate": "https://s3.opensky-network.org/website-public-repos/debian/dists/opensky/custom/binary-arm64/Packages",
       "transformTemplates": [
         "{ \"releases\": [{ \"version\": $trim($[0].releases.version.$match(/Version: ([^\\s]+)/).groups[0]) }] }"
       ],
