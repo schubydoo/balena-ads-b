@@ -30,7 +30,6 @@ jobs:
           title: Update OpenSky Package file
           body: Update OpenSky Package file to the latest version.
           add-paths: opensky-network/.Packages
-          labels: dependencies
 
   keepalive-update:
     runs-on: ubuntu-latest
