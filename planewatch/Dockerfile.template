@@ -1,6 +1,16 @@
 FROM balenalib/%%BALENA_ARCH%%-debian-golang:bookworm AS buildstep
 LABEL maintainer="https://github.com/ketilmo"
 
+# Update go version
+ENV GO_VERSION 1.24.0
+
+RUN rm -rf /usr/local/go \
+	&& mkdir -p /usr/local/go \
+	&& curl -SLO "https://storage.googleapis.com/golang/go$GO_VERSION.linux-arm64.tar.gz" \
+	&& echo "c3fa6d16ffa261091a5617145553c71d21435ce547e44cc6dfb7470865527cc7  go$GO_VERSION.linux-arm64.tar.gz" | sha256sum -c - \
+	&& tar -xzf "go$GO_VERSION.linux-arm64.tar.gz" -C /usr/local/go --strip-components=1 \
+	&& rm -f go$GO_VERSION.linux-arm64.tar.gz
+
 # specify plane.watch pw-feeder version
 # renovate: datasource=github-tags depName=plane-watch/pw-feeder versioning=loose
 ARG PLANEWATCH_VERSION=v0.0.5
