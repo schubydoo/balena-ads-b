@@ -13,6 +13,7 @@ jobs:
     name: "Deploy-to-Balena-Draft"
     runs-on: "ubuntu-latest"
     strategy:
+      fail-fast: false
       matrix:
         architecture: ["aarch64", "amd64", "armv7hf"]
     steps:
