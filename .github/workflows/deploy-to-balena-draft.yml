@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        architecture: ["aarch64", "amd64", "armv7hf"]
+        architecture: ["aarch64", "amd64", "armv7hf"] # Not supported, but valid: rpi, i386, i386-nlp
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@v5
