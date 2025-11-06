@@ -5,11 +5,10 @@ LABEL maintainer="https://github.com/ketilmo"
 ENV GO_VERSION 1.25.4
 
 # Detect architecture and set appropriate Go download URL
-ARG TARGETARCH
-RUN case ${TARGETARCH} in \
+RUN case $BALENA_ARCH in \
         "amd64")  GOARCH=amd64; GOHASH="9fa5ffeda4170de60f67f3aa0f824e426421ba724c21e133c1e35d6159ca1bec" ;; \
-        "arm64")  GOARCH=arm64; GOHASH="a68e86d4b72c2c2fecf7dfed667680b6c2a071221bbdb6913cf83ce3f80d9ff0" ;; \
-        "arm/v7") GOARCH=armv6l; GOHASH="ff86a6406310d840edb170f539a51a7efac0ac2b2f84527b1b2bf5935fc4ab6d" ;; \
+        "aarch64")  GOARCH=arm64; GOHASH="a68e86d4b72c2c2fecf7dfed667680b6c2a071221bbdb6913cf83ce3f80d9ff0" ;; \
+        "armv7hf") GOARCH=armv6l; GOHASH="ff86a6406310d840edb170f539a51a7efac0ac2b2f84527b1b2bf5935fc4ab6d" ;; \
         *)        echo "Unsupported architecture: ${TARGETARCH}" && exit 1 ;; \
     esac && \
     rm -rf /usr/local/go && \
