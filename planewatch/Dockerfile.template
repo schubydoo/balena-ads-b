@@ -4,6 +4,8 @@ LABEL maintainer="https://github.com/ketilmo"
 # Update go version
 ENV GO_VERSION 1.25.4
 
+ARG BALENA_ARCH=%%BALENA_ARCH%%
+
 # Detect architecture and set appropriate Go download URL
 RUN case $BALENA_ARCH in \
         "amd64")  GOARCH=amd64; GOHASH="9fa5ffeda4170de60f67f3aa0f824e426421ba724c21e133c1e35d6159ca1bec" ;; \
