@@ -280,7 +280,7 @@ echo " "
 
 if [ "$adsb" = "true" ]
 then
-	/usr/bin/feed-adsbx --net --net-only --debug=n --quiet --uuid-file="${UUID_FILE}" --write-json /run/adsbexchange-feed "${ADSB_NET_CONNECTOR[@]}" --net-beast-reduce-interval 0.5 --net-heartbeat 60 --net-ro-size 1280 --net-ro-interval 0.2 --net-ro-port 0 --net-sbs-port 0 --net-bi-port 30154 --net-bo-port 0 --net-ri-port 0 --net-connector "$RECEIVER_HOST","$RECEIVER_PORT",beast_in --lat "$LAT" --lon "$LON" 2>&1 | stdbuf -o0 sed --unbuffered '/^$/d' |  awk -W interactive '{print "[feed-adsbx]     " $0}' &
+	/usr/bin/feed-adsbx --net --net-only --debug=$ADSB_EXCHANGE_DEBUG --quiet --uuid-file="${UUID_FILE}" --write-json /run/adsbexchange-feed "${ADSB_NET_CONNECTOR[@]}" --net-beast-reduce-interval 0.5 --net-heartbeat 60 --net-ro-size 1280 --net-ro-interval 0.2 --net-ro-port 0 --net-sbs-port 0 --net-bi-port 30154 --net-bo-port 0 --net-ri-port 0 --net-connector "$RECEIVER_HOST","$RECEIVER_PORT",beast_in --lat "$LAT" --lon "$LON" 2>&1 | stdbuf -o0 sed --unbuffered '/^$/d' |  awk -W interactive '{print "[feed-adsbx]     " $0}' &
 fi
 
 if [ "$mlat" = "true" ]
