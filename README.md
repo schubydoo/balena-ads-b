@@ -26,15 +26,15 @@ Contribute to the flight tracking community! Feed your local [ADS-B data](https:
 🗞&nbsp; [Read past newsletters](https://buttondown.email/balena-ads-b/archive/)
 
 # Supported devices
-|                                                                                                                        | Device                          |
-|------------------------------------------------------------------------------------------------------------------------|---------------------------------|
-| <img alt="Intel NUC" height="24px" src="https://docs.balena.io/img/device/intel-nuc.svg"/>                             | Intel NUC                       |
-| <img alt="Nvidia Jetson Nano SD-CARD" height="24px" src="https://docs.balena.io/img/device/jetson-nano.svg"/>          | NVIDIA Jetson Nano (SD Card)    |
-| <img alt="Raspberry Pi 3 Model B+" height="24px" src="https://docs.balena.io/img/device/raspberrypi3.svg"/>            | Raspberry Pi 3 Model B+         |
-| <img alt="Raspberry Pi 3 (using 64bit OS)" height="24px" src="https://docs.balena.io/img/device/raspberrypi3-64.svg"/> | Raspberry Pi 3 (using 64bit OS) |
-| <img alt="Raspberry Pi 4 (using 64bit OS)" height="24px" src="https://docs.balena.io/img/device/raspberrypi4-64.svg"/> | Raspberry Pi 4 (using 64bit OS) |
-| <img alt="Raspberry Pi 400" height="24px" src="https://docs.balena.io/img/device/raspberrypi400-64.svg"/>              | Raspberry Pi 400                |
-| <img alt="Raspberry Pi 5" height="24px" src="https://docs.balena.io/img/device/raspberrypi5.svg"/>                     | Raspberry Pi 5                  |
+|                                                                                                                                                                                                         | Device                          |
+|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------|
+| <img alt="Intel NUC" height="24px" src="https://raw.githubusercontent.com/balena-io/docs/ac492824b6b23e2f7923df32bc81ad91e6cbaa90/pages/.gitbook/assets/dt-intel-nuc.svg"/>                             | Intel NUC                       |
+| <img alt="Nvidia Jetson Nano SD-CARD" height="24px" src="https://raw.githubusercontent.com/balena-io/docs/ac492824b6b23e2f7923df32bc81ad91e6cbaa90/pages/.gitbook/assets/dt-jetson-nano.svg"/>          | NVIDIA Jetson Nano (SD Card)    |
+| <img alt="Raspberry Pi 3 Model B+" height="24px" src="https://raw.githubusercontent.com/balena-io/docs/ac492824b6b23e2f7923df32bc81ad91e6cbaa90/pages/.gitbook/assets/dt-raspberrypi3.svg"/>            | Raspberry Pi 3 Model B+         |
+| <img alt="Raspberry Pi 3 (using 64bit OS)" height="24px" src="https://raw.githubusercontent.com/balena-io/docs/ac492824b6b23e2f7923df32bc81ad91e6cbaa90/pages/.gitbook/assets/dt-raspberrypi3-64.svg"/> | Raspberry Pi 3 (using 64bit OS) |
+| <img alt="Raspberry Pi 4 (using 64bit OS)" height="24px" src="https://raw.githubusercontent.com/balena-io/docs/ac492824b6b23e2f7923df32bc81ad91e6cbaa90/pages/.gitbook/assets/dt-raspberrypi4-64.svg"/> | Raspberry Pi 4 (using 64bit OS) |
+| <img alt="Raspberry Pi 400" height="24px" src="https://raw.githubusercontent.com/balena-io/docs/ac492824b6b23e2f7923df32bc81ad91e6cbaa90/pages/.gitbook/assets/dt-raspberrypi400-64.svg"/>              | Raspberry Pi 400                |
+| <img alt="Raspberry Pi 5" height="24px" src="https://raw.githubusercontent.com/balena-io/docs/ac492824b6b23e2f7923df32bc81ad91e6cbaa90/pages/.gitbook/assets/dt-raspberrypi5.svg"/>                     | Raspberry Pi 5                  |
 
 Please [let us know](https://github.com/ketilmo/balena-ads-b/discussions/new) if you are successfully running balena-ads-b on a hardware platform not listed here!
 
@@ -44,17 +44,17 @@ This software defaults to using an RTL-SDR radio device. However, it is also com
 
 # Credits
 
-The balena-ads-b project was created by [Ketil Moland Olsen](https://github.com/ketilmo/). It is now maintained as a team effort by Ketil, [Aaron Shaw (shawaj)](https://github.com/shawaj), and [Teko012](https://github.com/Teko012/). 
+The balena-ads-b project was created by [Ketil Moland Olsen](https://github.com/ketilmo/). It is now maintained as a team effort by Ketil, [Aaron Shaw (shawaj)](https://github.com/shawaj), and [Teko012](https://github.com/Teko012/).
 
-The project was inspired by and has borrowed code from the following repos and forum threads:  
+The project was inspired by and has borrowed code from the following repos and forum threads:
 
- - https://github.com/compujuckel/adsb-docker
- - https://bitbucket.org/inodes/resin-docker-rtlsdr
- - https://github.com/wercsy/balena-ads-b
- - https://github.com/mikenye/
- - [https://discussions.flightaware.com/](https://discussions.flightaware.com/t/howto-install-piaware-4-0-on-debian-10-amd64-ubuntu-20-amd64-kali-2020-amd64-on-pc/69753/3)
- - https://github.com/marcelstoer/docker-adsbexchange
- - https://github.com/wiedehopf/airspy-conf
+- https://github.com/compujuckel/adsb-docker
+- https://bitbucket.org/inodes/resin-docker-rtlsdr
+- https://github.com/wercsy/balena-ads-b
+- https://github.com/mikenye/
+- [https://discussions.flightaware.com/](https://discussions.flightaware.com/t/howto-install-piaware-4-0-on-debian-10-amd64-ubuntu-20-amd64-kali-2020-amd64-on-pc/69753/3)
+- https://github.com/marcelstoer/docker-adsbexchange
+- https://github.com/wiedehopf/airspy-conf
 
 Thanks to [compujuckel](https://github.com/compujuckel/), [Glenn Stewart](https://bitbucket.org/inodes/), [wercsy](https://github.com/wercsy/), [mikenye](https://github.com/mikenye/), [abcd567a](https://github.com/abcd567a) and [marcelstoer](https://github.com/marcelstoer) for sharing!
 
@@ -87,46 +87,46 @@ Software packages downloaded, installed, and configured by the balena-ads-b scri
 - [Part 1 – Build the receiver](#part-1--build-the-receiver)
 - [Part 2 – Setup balena and configure the device](#part-2--setup-balena-and-configure-the-device)
 - [Part 3 – Configure FlightAware](#part-3--configure-flightaware)
-  * [Alternative A: Port an existing FlightAware receiver](#alternative-a-port-an-existing-flightaware-receiver)
-  * [Alternative B: Setup a new FlightAware receiver](#alternative-b-setup-a-new-flightaware-receiver)
+    * [Alternative A: Port an existing FlightAware receiver](#alternative-a-port-an-existing-flightaware-receiver)
+    * [Alternative B: Setup a new FlightAware receiver](#alternative-b-setup-a-new-flightaware-receiver)
 - [Part 4 – Configure Flightradar24](#part-4--configure-flightradar24)
-  * [Alternative A: Port an existing Flightradar24 receiver](#alternative-a-port-an-existing-flightradar24-receiver)
-  * [Alternative B: Setup a new Flightradar24 receiver](#alternative-b-setup-a-new-flightradar24-receiver)
+    * [Alternative A: Port an existing Flightradar24 receiver](#alternative-a-port-an-existing-flightradar24-receiver)
+    * [Alternative B: Setup a new Flightradar24 receiver](#alternative-b-setup-a-new-flightradar24-receiver)
 - [Part 5 – Configure Plane Finder](#part-5--configure-plane-finder)
-  * [Alternative A: Port an existing Plane Finder receiver](#alternative-a-port-an-existing-plane-finder-receiver)
-  * [Alternative B: Setup a new Plane Finder receiver](#alternative-b-setup-a-new-plane-finder-receiver)
+    * [Alternative A: Port an existing Plane Finder receiver](#alternative-a-port-an-existing-plane-finder-receiver)
+    * [Alternative B: Setup a new Plane Finder receiver](#alternative-b-setup-a-new-plane-finder-receiver)
 - [Part 6 – Configure OpenSky Network](#part-6--configure-opensky-network)
-  * [Alternative A: Port an existing OpenSky Network receiver](#alternative-a-port-an-existing-opensky-network-receiver)
-  * [Alternative B: Setup a new OpenSky Network receiver](#alternative-b-setup-a-new-opensky-network-receiver)
+    * [Alternative A: Port an existing OpenSky Network receiver](#alternative-a-port-an-existing-opensky-network-receiver)
+    * [Alternative B: Setup a new OpenSky Network receiver](#alternative-b-setup-a-new-opensky-network-receiver)
 - [Part 7 – Configure AirNav Radar](#part-7--configure-airnav-radar)
-  * [Alternative A: Port an existing AirNav Radar receiver](#alternative-a-port-an-existing-airnavn-radar-receiver)
-  * [Alternative B: Setup a new AirNav Radar receiver](#alternative-b-setup-a-new-airnav-radar-receiver)
+    * [Alternative A: Port an existing AirNav Radar receiver](#alternative-a-port-an-existing-airnav-radar-receiver)
+    * [Alternative B: Setup a new AirNav Radar receiver](#alternative-b-setup-a-new-airnav-radar-receiver)
 - [Part 8 – Configure ADSB Exchange and clones](#part-8--configure-adsb-exchange-and-clones)
-  * [Enable ADSB Exchange](#enable-adsb-exchange)
-  * [Enable ADSB Exchange Clones](#enable-adsb-exchange-clones)
+    * [Enable ADSB Exchange](#enable-adsb-exchange)
+    * [Enable ADSB Exchange Clones](#enable-adsb-exchange-clones)
 - [Part 9 – Configure Wingbits](#part-9--configure-wingbits)
-  * [Alternative A: Port an existing Wingbits receiver](#alternative-a-port-an-existing-wingbits-receiver)
-  * [Alternative B: Setup a new Wingbits receiver](#alternative-b-setup-a-new-wingbits-receiver)
+    * [Alternative A: Port an existing Wingbits receiver](#alternative-a-port-an-existing-wingbits-receiver)
+    * [Alternative B: Setup a new Wingbits receiver](#alternative-b-setup-a-new-wingbits-receiver)
 - [Part 10 - Configure plane.watch](#part-10---configure-planewatch)
-  * [Alternative A: Port an existing plane.watch receiver](#alternative-a-port-an-existing-planewatch-receiver)
-  * [Alternative B: Setup a new plane.watch receiver](#alternative-b-setup-a-new-planewatch-receiver)
+    * [Alternative A: Port an existing plane.watch receiver](#alternative-a-port-an-existing-planewatch-receiver)
+    * [Alternative B: Setup a new plane.watch receiver](#alternative-b-setup-a-new-planewatch-receiver)
 - [Part 11 – Configure UAT (Optional and US only)](#part-11--configure-uat-optional-and-us-only)
 - [Part 12 - Configure tar1090 and graphs1090 (Optional)](#part-12--configure-tar1090-and-graphs1090-optional)
 - [Part 13 – Add a digital display (Optional)](#part-13--add-a-digital-display-optional)
 - [Part 14 – Exploring flight traffic locally on your device](#part-14--exploring-flight-traffic-locally-on-your-device)
 - [Part 15 – Advanced configuration](#part-15--advanced-configuration)
-  * [Disabling specific services](#disabling-specific-services)
-  * [Using different radio device types](#using-different-radio-device-types)
-  * [Adaptive gain configuration](#adaptive-gain-configuration)
-  * [Setting dump1090 antenna gain](#setting-dump1090-antenna-gain)
-  * [Device reboot on service exit](#device-reboot-on-service-exit)
-  * [Automatic balenaOS host updates](#automatic-balenaos-host-updates)
-  * [Custom MLAT client](#custom-mlat-client)
- - [Part 16 – Updating to the latest version](#part-16--updating-to-the-latest-version)
+    * [Disabling specific services](#disabling-specific-services)
+    * [Using different radio device types](#using-different-radio-device-types)
+    * [Adaptive gain configuration](#adaptive-gain-configuration)
+    * [Setting dump1090 antenna gain](#setting-dump1090-antenna-gain)
+    * [Device reboot on service exit](#device-reboot-on-service-exit)
+    * [Automatic balenaOS host updates](#automatic-balenaos-host-updates)
+    * [Custom MLAT client](#custom-mlat-client)
+- [Part 16 – Updating to the latest version](#part-16--updating-to-the-latest-version)
 
 # Part 1 – Build the receiver
 
-We'll build the receiver using the parts that are outlined on the Flightradar24, FlightAware, and AirNav Radar websites: 
+We'll build the receiver using the parts that are outlined on the Flightradar24, FlightAware, and AirNav Radar websites:
 - https://www.flightradar24.com/build-your-own
 - https://www.flightaware.com/adsb/piaware/build
 - https://www.airnavradar.com/raspberry-pi
@@ -143,23 +143,23 @@ If you live in the US, and want to track UAT traffic in addition to ADS-B traffi
 
 or
 
- 1. [Create a free balena account](https://dashboard.balena-cloud.com/signup). You will be asked to upload your public SSH key during the process. If you don't have a public SSH key yet, you can [create one](https://help.github.com/en/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent).
- 2. Sign in to balena and head to the [*Fleets*](https://dashboard.balena-cloud.com/fleets) panel.
- 3. Create a fleet with the name of your choice for your device type. Please take note of the fleet name. You will need it later. In the dialog that appears, pick a *Default Device Type* that matches your device. Specify the SSID and password if you want to use WiFi (and your device supports it). (If your device comes up without an active connection to the Internet, the `wifi-connect` container will create a network with a captive portal to connect to a local WiFi network. The SSID for the created hotspot is `balenaWiFi`, and the password is`balenaWiFi`. When connected, visit `http://192.168.42.1:8181/` in your web browser to set up the connection.
- 4. balena will create an SD card image for you, which will start downloading automatically after a few seconds. Flash the image to an SD card using balena's dedicated tool [balenaEtcher](https://www.balena.io/etcher/).
- 5. Insert the SD card in your receiver, and connect it to your cabled network (unless you plan to use WiFi only and configured that in step 3). 
- 6. Power up the receiver.
- 7. From the balena dashboard, navigate to the fleet you created. A new device with an automatically generated name should appear within a few minutes. Click on it to open it.
- 8. Rename your device to your taste by clicking on the pencil icon next to the current device name.
- 9. Next, we'll configure the receiver with its geographic location. Unless you know this by heart, you can use [Google Maps](https://maps.google.com) to find it. The corresponding coordinates should appear when you click on your desired location on the map. We are looking for the decimal coordinates, which should look like *60.395429, 5.325127.*
- 10. Back in the balena console, verify that you have opened the view for your desired device. Click on the *Device Variables*-button. Add the following two variables: `LAT` *(Receiver Latitude)*, e.g. with a value such as `60.12345` and `LON` *(Receiver Longitude)*, e.g. with a value such as `4.12345`.
- 11. Now, you're going to enter the receiver's altitude in *meters* above sea level in a new variable named `ALT`. If you need to find the altitude, you can find it using [one of several online services](https://www.maps.ie/coordinates.html). Remember to add the approximate number of corresponding meters if your antenna is mounted above ground level.
- 12. Almost there! Next, we will push this code to your device through the balena cloud. We'll do that using the [balena CLI](https://github.com/balena-io/balena-cli). Follow the [official instructions](https://github.com/balena-io/balena-cli/blob/master/INSTALL.md) to download and install the CLI for your platform of choice.
- 13. Head into your terminal and log in to balena with the following command: `balena login`. Then follow the instructions on the screen.
- 14. Next, clone the balena-ads-b repository to your local computer with your Git client of choice or the standard command line tool: `git clone git@github.com:ketilmo/balena-ads-b.git`. If you want to make changes to the repo, you can also fork it.
- 15. Head into the folder of the newly cloned repo by typing `cd balena-ads-b`.
- 16. Do you remember your fleet name from earlier? Good. Now, we are ready to push the applications to balena's servers by typing `balena push YOUR–FLEET–NAME–HERE`.
- 17. Now, wait while the Docker containers build on balena's servers. If the process is successful, you will see a beautiful piece of ASCII art depicting a unicorn right in your terminal window:
+1. [Create a free balena account](https://dashboard.balena-cloud.com/signup). You will be asked to upload your public SSH key during the process. If you don't have a public SSH key yet, you can [create one](https://help.github.com/en/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent).
+2. Sign in to balena and head to the [*Fleets*](https://dashboard.balena-cloud.com/fleets) panel.
+3. Create a fleet with the name of your choice for your device type. Please take note of the fleet name. You will need it later. In the dialog that appears, pick a *Default Device Type* that matches your device. Specify the SSID and password if you want to use WiFi (and your device supports it). (If your device comes up without an active connection to the Internet, the `wifi-connect` container will create a network with a captive portal to connect to a local WiFi network. The SSID for the created hotspot is `balenaWiFi`, and the password is`balenaWiFi`. When connected, visit `http://192.168.42.1:8181/` in your web browser to set up the connection.
+4. balena will create an SD card image for you, which will start downloading automatically after a few seconds. Flash the image to an SD card using balena's dedicated tool [balenaEtcher](https://www.balena.io/etcher/).
+5. Insert the SD card in your receiver, and connect it to your cabled network (unless you plan to use WiFi only and configured that in step 3).
+6. Power up the receiver.
+7. From the balena dashboard, navigate to the fleet you created. A new device with an automatically generated name should appear within a few minutes. Click on it to open it.
+8. Rename your device to your taste by clicking on the pencil icon next to the current device name.
+9. Next, we'll configure the receiver with its geographic location. Unless you know this by heart, you can use [Google Maps](https://maps.google.com) to find it. The corresponding coordinates should appear when you click on your desired location on the map. We are looking for the decimal coordinates, which should look like *60.395429, 5.325127.*
+10. Back in the balena console, verify that you have opened the view for your desired device. Click on the *Device Variables*-button. Add the following two variables: `LAT` *(Receiver Latitude)*, e.g. with a value such as `60.12345` and `LON` *(Receiver Longitude)*, e.g. with a value such as `4.12345`.
+11. Now, you're going to enter the receiver's altitude in *meters* above sea level in a new variable named `ALT`. If you need to find the altitude, you can find it using [one of several online services](https://www.maps.ie/coordinates.html). Remember to add the approximate number of corresponding meters if your antenna is mounted above ground level.
+12. Almost there! Next, we will push this code to your device through the balena cloud. We'll do that using the [balena CLI](https://github.com/balena-io/balena-cli). Follow the [official instructions](https://github.com/balena-io/balena-cli/blob/master/INSTALL.md) to download and install the CLI for your platform of choice.
+13. Head into your terminal and log in to balena with the following command: `balena login`. Then follow the instructions on the screen.
+14. Next, clone the balena-ads-b repository to your local computer with your Git client of choice or the standard command line tool: `git clone git@github.com:ketilmo/balena-ads-b.git`. If you want to make changes to the repo, you can also fork it.
+15. Head into the folder of the newly cloned repo by typing `cd balena-ads-b`.
+16. Do you remember your fleet name from earlier? Good. Now, we are ready to push the applications to balena's servers by typing `balena push YOUR–FLEET–NAME–HERE`.
+17. Now, wait while the Docker containers build on balena's servers. If the process is successful, you will see a beautiful piece of ASCII art depicting a unicorn right in your terminal window:
 <pre>
 			    \
 			     \
@@ -186,140 +186,140 @@ or
 			             <'
 
 </pre>
- 18. Wait a few moments while the Docker containers are deployed and installed on your device. The groundwork is now done – good job!
+18. Wait a few moments while the Docker containers are deployed and installed on your device. The groundwork is now done – good job!
 
 
 # Part 3 – Configure FlightAware
 ## Alternative A: Port an existing FlightAware receiver
 If you have previously set up a standalone FlightAware receiver and want to port it to balena, you only have to do the following steps:
 
- 1. Head to your device's page in the balena dashboard and click on the *Device Variables*-button. Add the following variable: `FLIGHTAWARE_FEEDER_ID`, then paste your *Unique Identifier* key, e.g. `134cdg7d-7533-5gd4-d31d-r31r52g63v12`. The ID can be found on the FlightAware website's *My ADS-B* section.
- 2. From the balena dashboard, restart the *piaware* service under *Services* by clicking the "cycle" icon next to the service name.
+1. Head to your device's page in the balena dashboard and click on the *Device Variables*-button. Add the following variable: `FLIGHTAWARE_FEEDER_ID`, then paste your *Unique Identifier* key, e.g. `134cdg7d-7533-5gd4-d31d-r31r52g63v12`. The ID can be found on the FlightAware website's *My ADS-B* section.
+2. From the balena dashboard, restart the *piaware* service under *Services* by clicking the "cycle" icon next to the service name.
 
 ## Alternative B: Setup a new FlightAware receiver
 If you have not previously set up a FlightAware receiver that you want to reuse, do the following steps:
 
- 1. Head back to your device's *Summary* page. Inside the *Terminal* section, click *Select a target*, then *piaware*, and finally *Start terminal session*. This will open a terminal which lets you interact directly with your PiAware container.
- 2. Once the terminal prompt appears, enter `/getid.sh` (including the leading slash), then press return.
- 3. If everything goes according to plan, your FlightAware feeder id will soon appear. Copy it.
- 4. Click on the *Device Variables*-button in the left-hand menu. Add a variable named `FLIGHTAWARE_FEEDER_ID` and paste the value from the previous step, e.g. `134cdg7d-7533-5gd4-d31d-r31r52g63v12`.
- 5. Go back to your device's *Summary* page. Restart the *piaware* service under *Services* by clicking the “cycle” icon next to the service name.
- 6. Register [a new account](https://flightaware.com/account/join/) at FlightAware, then log in using your newly created credentials.
- 7. **Important:** While being connected to *the same network* (either cabled or wireless) as your receiver is connected to, head to FlightAware's *[Claim Receiver](https://flightaware.com/adsb/piaware/claim)* page. (If this doesn't work, you can try using this link: https://flightaware.com/adsb/piaware/claim/98395c99-xxxxxxxxx16e. Replace the part after "claim" with your `FLIGHTAWARE_FEEDER_ID`.)
- 8. Check if any receivers appear under the *Linked PiAware Receivers* heading. (If not, wait a few minutes and click the *Check Again for my PiAware*-button.) Hopefully, your receiver is now visible under the *Linked PiAware Receivers* header.
- 9. In the left-hand-side menu on the top of the page, click the *My ADBS-B* menu item. Your device should be listed in an orange rectangle. Next, click the cogwheel icon on the right-hand side of the screen.
- 10. Click the *Configure Location*-button, and verify that the location matches the coordinates you entered earlier. If not, correct them.
- 11. Click the *Configure Height*-button, and specify the altitude of your receiver. The value should match the number you entered in the `ALT` variable in part 1.
- 12. If you don't face any bandwidth constraints, enable multilateration (MLAT). Enabling MLAT lets your receiver connect to other nearby receivers to multilaterate the aircraft's positions that do not report their position through ADS-B. This option increases bandwidth usage but gives more visible aircraft positions in return. 
- 13. Specify the other settings in the FlightAware lightbox according to your preferences. Close the lightbox.
- 14. Finally, verify that FlightAware is receiving data from your receiver. You'll find your receiver's dashboard by clicking on the *My ADS-B* top menu item at [flightaware.com](https://www.flightaware.com). 
- 
+1. Head back to your device's *Summary* page. Inside the *Terminal* section, click *Select a target*, then *piaware*, and finally *Start terminal session*. This will open a terminal which lets you interact directly with your PiAware container.
+2. Once the terminal prompt appears, enter `/getid.sh` (including the leading slash), then press return.
+3. If everything goes according to plan, your FlightAware feeder id will soon appear. Copy it.
+4. Click on the *Device Variables*-button in the left-hand menu. Add a variable named `FLIGHTAWARE_FEEDER_ID` and paste the value from the previous step, e.g. `134cdg7d-7533-5gd4-d31d-r31r52g63v12`.
+5. Go back to your device's *Summary* page. Restart the *piaware* service under *Services* by clicking the “cycle” icon next to the service name.
+6. Register [a new account](https://flightaware.com/account/join/) at FlightAware, then log in using your newly created credentials.
+7. **Important:** While being connected to *the same network* (either cabled or wireless) as your receiver is connected to, head to FlightAware's *[Claim Receiver](https://flightaware.com/adsb/piaware/claim)* page. (If this doesn't work, you can try using this link: https://flightaware.com/adsb/piaware/claim/98395c99-xxxxxxxxx16e. Replace the part after "claim" with your `FLIGHTAWARE_FEEDER_ID`.)
+8. Check if any receivers appear under the *Linked PiAware Receivers* heading. (If not, wait a few minutes and click the *Check Again for my PiAware*-button.) Hopefully, your receiver is now visible under the *Linked PiAware Receivers* header.
+9. In the left-hand-side menu on the top of the page, click the *My ADS-B* menu item. Your device should be listed in an orange rectangle. Next, click the cogwheel icon on the right-hand side of the screen.
+10. Click the *Configure Location*-button, and verify that the location matches the coordinates you entered earlier. If not, correct them.
+11. Click the *Configure Height*-button, and specify the altitude of your receiver. The value should match the number you entered in the `ALT` variable in part 1.
+12. If you don't face any bandwidth constraints, enable multilateration (MLAT). Enabling MLAT lets your receiver connect to other nearby receivers to multilaterate the aircraft's positions that do not report their position through ADS-B. This option increases bandwidth usage but gives more visible aircraft positions in return.
+13. Specify the other settings in the FlightAware lightbox according to your preferences. Close the lightbox.
+14. Finally, verify that FlightAware is receiving data from your receiver. You'll find your receiver's dashboard by clicking on the *My ADS-B* top menu item at [flightaware.com](https://www.flightaware.com).
+
 ## Part 4 – Configure Flightradar24
 ## Alternative A: Port an existing Flightradar24 receiver
 If you have previously set up a Flightradar24 receiver and want to port it to balena, you only have to do the following steps:
 
- 1. Head back to the balena dashboard and your device's page. Click on the *Device Variables*-button. Add a variable named `FR24_KEY` and paste the value of your existing Flightradar24 key, e.g. `dv4rrt2g122g7233`. The key is located in the Flightradar24 config file, usually found here: `/etc/fr24feed.ini`. (If you cannot locate your old key, retrieve or create a new one by following the steps in alternative B.)
- 2. Restart the *fr24feed* service under *Services* by clicking the "cycle" icon next to the service name.
+1. Head back to the balena dashboard and your device's page. Click on the *Device Variables*-button. Add a variable named `FR24_KEY` and paste the value of your existing Flightradar24 key, e.g. `dv4rrt2g122g7233`. The key is located in the Flightradar24 config file, usually found here: `/etc/fr24feed.ini`. (If you cannot locate your old key, retrieve or create a new one by following the steps in alternative B.)
+2. Restart the *fr24feed* service under *Services* by clicking the "cycle" icon next to the service name.
 
 ## Alternative B: Setup a new Flightradar24 receiver
 If you have not previously set up a Flightradar24 receiver that you want to reuse, do the following steps:
 
- 1. Head back to your device's page on the balena dashboard.
- 2. Inside the *Terminal* section, click *Select a target*, then *fr24feed*, and finally *Start terminal session*.
- 3. This will open a terminal which lets you interact directly with your Flightradar24 container.
- 4. At the prompt, enter `fr24feed --signup`.
- 5. When asked, enter your email address.
- 6. You will be asked if you have a Flightradar24 sharing key. Unless you have one from the past that you would like to reuse, press return here.
- 7. If you want to activate multilateration, type `yes` at the next prompt. If you have restricted bandwidth, consider leaving it off by typing `no`. 
- 8. Enter the receiver's latitude. This should be the same value you entered in the `LAT` variable in part 1.
- 9. Enter the receiver's longitude. This should be the same value you entered in the `LON` variable in part 1.
- 10. Finally, enter the receiver's altitude in *feet*. You can calculate this by multiplying the value you entered in the `ALT` variable in part 1 by 3.28.
- 11. Now, a summary of your settings will be displayed. If you are happy with the result, type `yes` to continue.
- 12. Under receiver type, choose `4` for ModeS Beast.
- 13. Under connection type, choose `1` for network connection.
- 14. When asked for your receiver's IP address/hostname, enter `dump1090-fa`.
- 15. Next, enter the data port number: `30005`.
- 16. Type `no` to disable the RAW data feed on port 30334.
- 17. Type `no` to disable the BaseStation data feed on port 30003.
- 18. Enter `0` to disable log file writing.
- 19. When asked for a log file path, just hit return.
- 20. The configuration will now be submitted, and you will be redirected back to the terminal.
- 21. At the prompt, type `cat /etc/fr24feed.ini`. Your Flightradar24 settings will be displayed. 
- 22. Find the line starting with `fr24key=`, and copy the string between the quotes. It will look something like this: `dv4rrt2g122g7233`.
- 23. Click on the *Device Variables*-button in the left-hand menu. Add a variable named `FR24_KEY` and paste the value from the previous step, e.g. `dv4rrt2g122g7233`.
- 24. Restart the *fr24feed* service under *Services* by clicking the "cycle" icon next to the service name.
- 25. Head over to [Flightradar24's website](https://www.flightradar24.com/premium/signup) and create a new *Basic* account, using the *exact same email address* that you filled in in step 5.
- 26. Shortly after your receiver starts feeding data to Flightradar24, your *Basic* account will be upgraded to their *Business* plan. Enjoy!
+1. Head back to your device's page on the balena dashboard.
+2. Inside the *Terminal* section, click *Select a target*, then *fr24feed*, and finally *Start terminal session*.
+3. This will open a terminal which lets you interact directly with your Flightradar24 container.
+4. At the prompt, enter `fr24feed --signup`.
+5. When asked, enter your email address.
+6. You will be asked if you have a Flightradar24 sharing key. Unless you have one from the past that you would like to reuse, press return here.
+7. If you want to activate multilateration, type `yes` at the next prompt. If you have restricted bandwidth, consider leaving it off by typing `no`.
+8. Enter the receiver's latitude. This should be the same value you entered in the `LAT` variable in part 1.
+9. Enter the receiver's longitude. This should be the same value you entered in the `LON` variable in part 1.
+10. Finally, enter the receiver's altitude in *feet*. You can calculate this by multiplying the value you entered in the `ALT` variable in part 1 by 3.28.
+11. Now, a summary of your settings will be displayed. If you are happy with the result, type `yes` to continue.
+12. Under receiver type, choose `4` for ModeS Beast.
+13. Under connection type, choose `1` for network connection.
+14. When asked for your receiver's IP address/hostname, enter `dump1090-fa`.
+15. Next, enter the data port number: `30005`.
+16. Type `no` to disable the RAW data feed on port 30334.
+17. Type `no` to disable the BaseStation data feed on port 30003.
+18. Enter `0` to disable log file writing.
+19. When asked for a log file path, just hit return.
+20. The configuration will now be submitted, and you will be redirected back to the terminal.
+21. At the prompt, type `cat /etc/fr24feed.ini`. Your Flightradar24 settings will be displayed.
+22. Find the line starting with `fr24key=`, and copy the string between the quotes. It will look something like this: `dv4rrt2g122g7233`.
+23. Click on the *Device Variables*-button in the left-hand menu. Add a variable named `FR24_KEY` and paste the value from the previous step, e.g. `dv4rrt2g122g7233`.
+24. Restart the *fr24feed* service under *Services* by clicking the "cycle" icon next to the service name.
+25. Head over to [Flightradar24's website](https://www.flightradar24.com/premium/signup) and create a new *Basic* account, using the *exact same email address* that you filled in in step 5.
+26. Shortly after your receiver starts feeding data to Flightradar24, your *Basic* account will be upgraded to their *Business* plan. Enjoy!
 
 # Part 5 – Configure Plane Finder
 ## Alternative A: Port an existing Plane Finder receiver
 If you have previously set up a Plane Finder receiver and want to port it to balena, you only have to do the following steps:
 
- 1. Head back to the balena dashboard and your device's page. Click on the *Device Variables*-button. Add a variable named `PLANEFINDER_SHARECODE` and paste the value of your existing Plane Finder key, e.g. `7e3q8n45wq369`. You can find your key at Plane Finder's *[Your Receivers](https://planefinder.net/account/receivers)* page.
- 2. On your device's page in the balena dashboard, restart the *planefinder* service under *Services* by clicking the "cycle" icon next to the service name.
+1. Head back to the balena dashboard and your device's page. Click on the *Device Variables*-button. Add a variable named `PLANEFINDER_SHARECODE` and paste the value of your existing Plane Finder key, e.g. `7e3q8n45wq369`. You can find your key at Plane Finder's *[Your Receivers](https://planefinder.net/account/receivers)* page.
+2. On your device's page in the balena dashboard, restart the *planefinder* service under *Services* by clicking the "cycle" icon next to the service name.
 
 ## Alternative B: Setup a new Plane Finder receiver
 If you have not previously set up a Plane Finder receiver that you want to reuse, do the following steps:
 
- 1. Register a new [Plane Finder account](https://planefinder.net) or log into your existing account.
- 2. Inside the *Terminal* section, click *Select a target*, then *planefinder*, and finally *Start terminal session*.
- 3. This will open a terminal which lets you interact directly with your Plane Finder container.
- 4. Once the terminal prompt appears, enter `pfclient`, then press return.
- 5. If everything goes according to plan, you will see some output log messages in the terminal section.
- 6. Scroll to the top of the page and look for the *Local IP Address* of your device - it should look something like `192.168.2.35` - if there is more than one IP address, any of them should work. Click the button next to the IP address to copy it to the clipboard.
- 7. Open a browser window, paste in the IP address and then press return. This should load the Plane Finder sharecode generator page.
- 8. Fill in the form to generate a Plane Finder share code. Use the same email address you used when registering for the Plane Finder account. For *Receiver Lat*, use the value from the `LAT` variable in part 2. For *Receiver Lon*, use the value from the `LON` variable. Lastly, click the *Create new sharecode* button. A sharecode should appear in a few seconds. It should look similar to `6g34asr1gvvx7`. Copy it to your clipboard. Disregard the rest of the form – you don't have to fill this out.
- 9. Open Plane Finder's *[Your Receivers](https://planefinder.net/account/receivers)* page. Under the *Add a Receiver* heading, locate the *Share Code* input field. Paste the sharecode from the previous step, then click the *Add Receiver*-button.
- 10. Head back to the Balena dashboard and your device's page. Click on the *Device Variables*-button. Add a variable named `PLANEFINDER_SHARECODE` and paste the value of the Plane Finder key you just created, e.g. `7e3q8n45wq369`.
- 11. On your device's page in the Balena dashboard, restart the *planefinder* service under *Services* by clicking the "cycle" icon next to the service name.
+1. Register a new [Plane Finder account](https://planefinder.net) or log into your existing account.
+2. Inside the *Terminal* section, click *Select a target*, then *planefinder*, and finally *Start terminal session*.
+3. This will open a terminal which lets you interact directly with your Plane Finder container.
+4. Once the terminal prompt appears, enter `pfclient`, then press return.
+5. If everything goes according to plan, you will see some output log messages in the terminal section.
+6. Scroll to the top of the page and look for the *Local IP Address* of your device - it should look something like `192.168.2.35` - if there is more than one IP address, any of them should work. Click the button next to the IP address to copy it to the clipboard.
+7. Open a browser window, paste in the IP address and then press return. This should load the Plane Finder sharecode generator page.
+8. Fill in the form to generate a Plane Finder share code. Use the same email address you used when registering for the Plane Finder account. For *Receiver Lat*, use the value from the `LAT` variable in part 2. For *Receiver Lon*, use the value from the `LON` variable. Lastly, click the *Create new sharecode* button. A sharecode should appear in a few seconds. It should look similar to `6g34asr1gvvx7`. Copy it to your clipboard. Disregard the rest of the form – you don't have to fill this out.
+9. Open Plane Finder's *[Your Receivers](https://planefinder.net/account/receivers)* page. Under the *Add a Receiver* heading, locate the *Share Code* input field. Paste the sharecode from the previous step, then click the *Add Receiver*-button.
+10. Head back to the Balena dashboard and your device's page. Click on the *Device Variables*-button. Add a variable named `PLANEFINDER_SHARECODE` and paste the value of the Plane Finder key you just created, e.g. `7e3q8n45wq369`.
+11. On your device's page in the Balena dashboard, restart the *planefinder* service under *Services* by clicking the "cycle" icon next to the service name.
 
 # Part 6 – Configure OpenSky Network
 ## Alternative A: Port an existing OpenSky Network receiver
 If you have previously set up an OpenSky Network receiver and want to port it to balena, you only have to do the following steps:
 
- 1. Head back to the balena dashboard and your device's page. Click on the *Device Variables*-button – *Vx*.
- 2. Add a variable named `OPENSKY_USERNAME` and paste your OpenSky Network username, e.g. `JohnDoe123`. You can find your username on your OpenSky Network *[Dashboard](https://opensky-network.org/my-opensky)* page.
- 3. Add a variable named `OPENSKY_SERIAL` and paste the value of your existing OpenSky Network serial number, e.g. `1663421823`. You can find your serial on your OpenSky Network *[Dashboard](https://opensky-network.org/my-opensky)* page.
- 4. On your device's page in the balena dashboard, restart the *opensky-network* service under *Services* by clicking the "cycle" icon next to the service name.
+1. Head back to the balena dashboard and your device's page. Click on the *Device Variables*-button.
+2. Add a variable named `OPENSKY_USERNAME` and paste your OpenSky Network username, e.g. `JohnDoe123`. You can find your username on your OpenSky Network *[Dashboard](https://opensky-network.org/my-opensky)* page.
+3. Add a variable named `OPENSKY_SERIAL` and paste the value of your existing OpenSky Network serial number, e.g. `1663421823`. You can find your serial on your OpenSky Network *[Dashboard](https://opensky-network.org/my-opensky)* page.
+4. On your device's page in the balena dashboard, restart the *opensky-network* service under *Services* by clicking the "cycle" icon next to the service name.
 
 ## Alternative B: Setup a new OpenSky Network receiver
 If you have not previously set up an OpenSky Network receiver that you want to reuse, do the following steps:
 
- 1. Register a new [OpenSky Network account](https://opensky-network.org/index.php?option=com_users&view=registration). Make sure to activate it using the email that's sent to you. Please take note of your username. You will need it soon.
- 2. Head back to your device's page on the balena dashboard. Click on the *Device Variables*-button in the left-hand menu. Add a variable named `OPENSKY_USERNAME` and populate it with your newly created OpenSky Username, e.g.  `JohnDoe123`.
- 3. Head back to your device's *Summary* page. Restart the *opensky-network* service under *Services* by clicking the "cycle" icon next to the service name. Wait for the service to finish restarting.
- 4. Inside the *Terminal* section, click *Select a target*, then *opensky-network*, and finally *Start terminal session*.
- 5. This will open a terminal which lets you interact directly with your OpenSky Network container.
- 6. Once the terminal prompt appears, enter `/getserial.sh` (including the leading slash), then press return.
- 7. If everything goes according to plan, your OpenSky Network serial number will soon appear. Copy it.
- 8. Click on the *Device Variables*-button in the left-hand menu. Add a variable named `OPENSKY_SERIAL` and paste the value from the previous step, e.g. `1267385439`.
- 9. Go back to your device's *Summary* page. Restart the *opensky-network* service under *Services* by clicking the “cycle” icon next to the service name.
- 10. Head over to your OpenSky Network *[Dashboard](https://opensky-network.org/my-opensky)* and verify that your receiver shows up and feeds data.
+1. Register a new [OpenSky Network account](https://opensky-network.org/index.php?option=com_users&view=registration). Make sure to activate it using the email that's sent to you. Please take note of your username. You will need it soon.
+2. Head back to your device's page on the balena dashboard. Click on the *Device Variables*-button in the left-hand menu. Add a variable named `OPENSKY_USERNAME` and populate it with your newly created OpenSky Username, e.g.  `JohnDoe123`.
+3. Head back to your device's *Summary* page. Restart the *opensky-network* service under *Services* by clicking the "cycle" icon next to the service name. Wait for the service to finish restarting.
+4. Inside the *Terminal* section, click *Select a target*, then *opensky-network*, and finally *Start terminal session*.
+5. This will open a terminal which lets you interact directly with your OpenSky Network container.
+6. Once the terminal prompt appears, enter `/getserial.sh` (including the leading slash), then press return.
+7. If everything goes according to plan, your OpenSky Network serial number will soon appear. Copy it.
+8. Click on the *Device Variables*-button in the left-hand menu. Add a variable named `OPENSKY_SERIAL` and paste the value from the previous step, e.g. `1267385439`.
+9. Go back to your device's *Summary* page. Restart the *opensky-network* service under *Services* by clicking the “cycle” icon next to the service name.
+10. Head over to your OpenSky Network *[Dashboard](https://opensky-network.org/my-opensky)* and verify that your receiver shows up and feeds data.
 
 # Part 7 – Configure AirNav Radar
 
 ## Alternative A: Port an existing AirNav Radar receiver
 If you have previously set up a AirNav Radar receiver and want to port it to Balena, you only have to do the following steps:
 
- 1. Head back to the Balena dashboard and your device's page. Click on the *Device Variables*-button.
- 2. Add a variable named `AIRNAV_RADAR_KEY` and paste the value of your existing AirNav Radar key, e.g. `546b69e69b4671a742b82b10c674cdc1`. 
- 3. Click the button *Apply all changes* to activate the changes. The *airnav-radar* service will automatically restart to load the new settings.
- 4. Optional: If you need to get your key, issue the following command at your current AirNav Radar device: `sudo rbfeeder --showkey --no-start`.
+1. Head back to the Balena dashboard and your device's page. Click on the *Device Variables*-button.
+2. Add a variable named `AIRNAV_RADAR_KEY` and paste the value of your existing AirNav Radar key, e.g. `546b69e69b4671a742b82b10c674cdc1`.
+3. Click the button *Apply all changes* to activate the changes. The *airnav-radar* service will automatically restart to load the new settings.
+4. Optional: If you need to get your key, issue the following command at your current AirNav Radar device: `sudo rbfeeder --showkey --no-start`.
 
 
 ## Alternative B: Setup a new AirNav Radar receiver
 If you have not previously set up a AirNav Radar receiver that you want to reuse, do the following steps:
 
- 1. Register a new [AirNav Radar account](https://www.airnavradar.com/register/). Make sure to activate it using the email that's sent to you.
- 2. Head back to your device's page on the balena dashboard.
- 3. Inside the *Terminal* section, click *Select a target*, then *airnav-radar*, and finally *Start terminal session*.
- 4. This will open a terminal which lets you interact directly with your AirNav Radar container.
- 5. At the prompt, enter `/showkey.sh`. Your AirNav Radar key will be displayed and look similar to this: `546b69e69b4671a742b82b10c674cdc1`.
- 6. Click on the *Device Variables*-button. Add a variable named `AIRNAV_RADAR_KEY`, and paste the key from step 5, e.g. `546b69e69b4671a742b82b10c674cdc1`. 
- 7. Click the button *Apply all changes* to activate the changes. The *airnav-radar* service will automatically restart to load the new settings.
- 8. Head to AirNav Radar's [Claim Your Raspberry Pi](https://www.airnavradar.com/raspberry-pi/claim) page. Locate the input field named *Sharing Key,* and paste the value from step 5, e.g. `546b69e69b4671a742b82b10c674cdc1`.
- 9. You might be asked to enter your feeder's location and altitude *above the ground.* Enter the same values you entered earlier in the `LAT` and `LON` variables. When asked for the antenna's altitude, specify it in meters (or feet) *above the ground* – NOT above sea level, as done previously. If you are not asked to enter this information, you can do it manually by clicking the *Edit* link under your receiver's ID on the left-hand side of the screen. 
- 10. Finally, verify that AirNav Radar is receiving data from your receiver. You'll find your receiver by clicking on the *Account* menu at [airnavradar.com](https://www.airnavradar.com) under the *Stations* accordion. 
+1. Register a new [AirNav Radar account](https://www.airnavradar.com/register/). Make sure to activate it using the email that's sent to you.
+2. Head back to your device's page on the balena dashboard.
+3. Inside the *Terminal* section, click *Select a target*, then *airnav-radar*, and finally *Start terminal session*.
+4. This will open a terminal which lets you interact directly with your AirNav Radar container.
+5. At the prompt, enter `/showkey.sh`. Your AirNav Radar key will be displayed and look similar to this: `546b69e69b4671a742b82b10c674cdc1`.
+6. Click on the *Device Variables*-button. Add a variable named `AIRNAV_RADAR_KEY`, and paste the key from step 5, e.g. `546b69e69b4671a742b82b10c674cdc1`.
+7. Click the button *Apply all changes* to activate the changes. The *airnav-radar* service will automatically restart to load the new settings.
+8. Head to AirNav Radar's [Claim Your Raspberry Pi](https://www.airnavradar.com/raspberry-pi/claim) page. Locate the input field named *Sharing Key,* and paste the value from step 5, e.g. `546b69e69b4671a742b82b10c674cdc1`.
+9. You might be asked to enter your feeder's location and altitude *above the ground.* Enter the same values you entered earlier in the `LAT` and `LON` variables. When asked for the antenna's altitude, specify it in meters (or feet) *above the ground* – NOT above sea level, as done previously. If you are not asked to enter this information, you can do it manually by clicking the *Edit* link under your receiver's ID on the left-hand side of the screen.
+10. Finally, verify that AirNav Radar is receiving data from your receiver. You'll find your receiver by clicking on the *Account* menu at [airnavradar.com](https://www.airnavradar.com) under the *Stations* accordion.
 
 # Part 8 – Configure ADSB Exchange and clones
 
@@ -330,8 +330,8 @@ If you have not previously set up a AirNav Radar receiver that you want to reuse
 4. Click on the *Device Variables*-button. Add a variable named `ADSB_EXCHANGE_UUID` with the value from step 2.
 5. Click on the *Device Variables*-button. Add a variable named `ADSB_EXCHANGE_SITENAME` with the value from step 3.
 6. Restart the *adsb-exchange* service under *Services* by clicking the "cycle" icon next to the service names.
-7. Next, wait a minute or two for the service to restart and head over to ADSB Exchange's 
-[Feeder Status](https://www.adsbexchange.com/myip/) page from a PC on the same network as the feeder. Verify that your feeder is shown as registered and that ADSB Exchange is receiving your feed and MLAT data. You can also verify your feeder's performance at the [ADSB Exchange Feeder Map](https://map.adsbexchange.com/mlat-map/) by searching for your site name.
+7. Next, wait a minute or two for the service to restart and head over to ADSB Exchange's
+   [Feeder Status](https://www.adsbexchange.com/myip/) page from a PC on the same network as the feeder. Verify that your feeder is shown as registered and that ADSB Exchange is receiving your feed and MLAT data. You can also verify your feeder's performance at the [ADSB Exchange Feeder Map](https://map.adsbexchange.com/mlat-map/) by searching for your site name.
 
 If you want to turn on debug mode, you can add a variable named `ADSB_EXCHANGE_DEBUG` with the following values: `n` for network, `P` for CPR or `S` for speed check.
 
@@ -369,19 +369,19 @@ Lastly, these services all require a UUID to be passed to identify devices in th
 ## Alternative A: Port an existing Wingbits receiver
 If you have previously set up a Wingbits receiver and want to port it to Balena, you only have to do the following steps:
 
- 1. Head back to the Balena dashboard and your device's page. Click on the *Device Variables*-button. Add a variable named `WINGBITS_DEVICE_ID` and paste the value of your existing Wingbits ID, e.g. `small-coral-spider`. To get your ID, visit the [Wingbits Dashboard](https://wingbits.com/dashboard/antennas), make sure you are on the *Antennas* tab and look in the ID column.
- 2. Restart the *wingbits* service under *Services* by clicking the "cycle" icon next to the service name.
+1. Head back to the Balena dashboard and your device's page. Click on the *Device Variables*-button. Add a variable named `WINGBITS_DEVICE_ID` and paste the value of your existing Wingbits ID, e.g. `small-coral-spider`. To get your ID, visit the [Wingbits Dashboard](https://wingbits.com/dashboard/antennas), make sure you are on the *Antennas* tab and look in the ID column.
+2. Restart the *wingbits* service under *Services* by clicking the "cycle" icon next to the service name.
 
 ## Alternative B: Setup a new Wingbits receiver
 If you have not previously set up a Wingbits receiver that you want to reuse, do the following steps:
 
- 1. Register a new [Wingbits account](https://wingbits.com/register). Make sure to activate it using the email that's sent to you.
- 2. Login to your [Wingbits account](https://wingbits.com/login), navigate to the *Antennas* tab and then click on *Register Antenna*.
- 3. Enter your latitude and longitude in the boxes (or select your location on the map). Then scroll down and click *Register*. You will then be returned to the antennas page with a new entry in the list. Make sure to take note of the name in the ID column, for example `small-coral-spider`.
- 4. Head back to your device's page on the balena dashboard.
- 5. Click on the *Device Variables*-button in the left-hand menu. Add a variable named `WINGBITS_DEVICE_ID` and paste the value from step 4, e.g. `small-coral-spider`.
- 6. Restart the *wingbits* service under *Services* by clicking the "cycle" icon next to the service name.
- 7. Wait a few minutes and then head back to the [Wingbits antennas tab](https://wingbits.com/dashboard/antennas), refresh the page and in the *Status* column of the table you should see the text `Online` with a green background. If you hover over this with your mouse you should see a tooltip text pop-up that says the last time data was receive e.g. `Last message: 22/11/2023, 03:17:40`.
+1. Register a new [Wingbits account](https://wingbits.com/register). Make sure to activate it using the email that's sent to you.
+2. Login to your [Wingbits account](https://wingbits.com/login), navigate to the *Antennas* tab and then click on *Register Antenna*.
+3. Enter your latitude and longitude in the boxes (or select your location on the map). Then scroll down and click *Register*. You will then be returned to the antennas page with a new entry in the list. Make sure to take note of the name in the ID column, for example `small-coral-spider`.
+4. Head back to your device's page on the balena dashboard.
+5. Click on the *Device Variables*-button in the left-hand menu. Add a variable named `WINGBITS_DEVICE_ID` and paste the value from step 4, e.g. `small-coral-spider`.
+6. Restart the *wingbits* service under *Services* by clicking the "cycle" icon next to the service name.
+7. Wait a few minutes and then head back to the [Wingbits antennas tab](https://wingbits.com/dashboard/antennas), refresh the page and in the *Status* column of the table you should see the text `Online` with a green background. If you hover over this with your mouse you should see a tooltip text pop-up that says the last time data was received e.g. `Last message: 22/11/2023, 03:17:40`.
 
 ## Wingbits status commands
 You will notice that the [documentation for the new Wingbits client](https://docs.wingbits.com/get-started/byod-stations/installing-the-client#confirm-status-of-the-client-and-geosigner-if-installed) discusses how to check that your GeoSigner is working correctly using the `wingbits status` command. Unfortunately, as this command uses systemctl under the hood, it will not run correctly as balena containers do not use systemctl by default.
@@ -407,15 +407,15 @@ If you have not previously set up a plane.watch receiver that you want to reuse,
 6. Restart the *planewatch* service under *Services* by clicking the "cycle" icon next to the service name.
 7. Wait a few minutes and then head back to your feeder's page within [plane.watch ATC](https://atc.plane.watch), refresh the page and in the *ADS-B Connection Status* and *MLAT Connection Status* columns of the table you should see the text `Online` in green text, with your connection details.
 
-# Part 11 – Configure UAT (Optional and US only) 
+# Part 11 – Configure UAT (Optional and US only)
 ***Please note:** The following instructions involve making low-level changes to RTL-SDR USB sticks, such as changing the serial numbers. Proceed with caution, and only if you are comfortable with the steps involved. All changes made are at your own risk.*
 
 In the United States, aircraft can use either the ADS-B standard, which transmits at a frequency of 1090 MHz or the UAT protocol, which transmits at 978 MHz. If you live in the US and have an extra RTL-SDR dongle, you can track the UAT and ADS-B traffic. Please note that the blue FlightAware USB devices should only be used for ADS-B traffic, as they have an integrated filter optimized explicitly for the 1090 MHz frequencies. The orange FlightAware USB devices work well for tracking UAT traffic.
 
-1. Make sure you only have one RTL-SDR stick connected to your device before executing the following steps. The connected stick should be used for regular ADS-B 1090 MHz feeding. 
+1. Make sure you only have one RTL-SDR stick connected to your device before executing the following steps. The connected stick should be used for regular ADS-B 1090 MHz feeding.
 2. Head to your device's *Summary* page. Click on the *Device Variables*-button in the left-hand menu. Add a variable named `DUMP1090_IDLE` and populate it with the value `true`.
 3. From the *Summary* page, inside the *Terminal* section, click *Select a target*, then *dump1090-fa*, and finally *Start terminal session*. This will open a terminal that lets you interact directly with the dump1090-fa container.
-4. Once the terminal prompt appears, enter `/add-serial-1090.sh`, then press return. 
+4. Once the terminal prompt appears, enter `/add-serial-1090.sh`, then press return.
 5. Type `YES`, followed by return, to change your dongle's serial number. Verify that the process completes successfully.
 6. Click on the *Device Variables*-button in the left-hand menu. Add a new variable named `DUMP1090_DEVICE` and set its value to `00001090`.
 7. Shut down your device. When it's powered off, remove the first RTL-SDR stick from the Pi.
@@ -450,7 +450,7 @@ When you have local network access to your receiver, you can explore the data st
 
 Away from your local network but still eager to know what planes are cruising over your home? Here, balena's built-in *Public Device URL* comes in handy. Open your device page in the balena console, locate the `PUBLIC DEVICE URL` header, and flip the switch below to enable it. Finally, click on the arrow icon next to the button, add the desired URL postfix specified below and voila – you should see what's going on in your area.
 
- **Dump1090's Radar View**
+**Dump1090's Radar View**
 This view visualizes everything that your receiver sees, including multilaterated plane positions. When you are in your local network, head to `YOURIP:8080` to check it out. When remote, open balena's *Public Device URL* and add `/skyaware/` to the tail end of the URL, e.g. `https://6g31f15653bwt4y251b18c1daf4qw164.balena-devices.com/skyaware/`
 
 **Plane Finder's Radar View**
@@ -508,7 +508,7 @@ There are some other *Device Variables* you can use as well:
 
 ## RTL-SDR dongle with software enabled bias tee
 
-If you are using an [RTL-SDR blog dongle](https://www.rtl-sdr.com/tag/shop/) or any other dongle with software enabled bias tee capability you can enable the bias tee using a *Device Variable*. This is possible in both the `dump1090-fa` and `dump978-fa` containers and they can be controlled individually. 
+If you are using an [RTL-SDR blog dongle](https://www.rtl-sdr.com/tag/shop/) or any other dongle with software enabled bias tee capability you can enable the bias tee using a *Device Variable*. This is possible in both the `dump1090-fa` and `dump978-fa` containers and they can be controlled individually.
 
 - The `dump1090-fa` container handles the main ADS-B feed at 1090 MHz. To enable the bias tee in this container, create a *Device Variable* named `RTL1090_BIASTEE_ENABLE` and set its value to `true`.
 - If you are also using the `dump978-fa` container to feed [UAT 978 MHz data](#part-11--configure-uat-optional-and-us-only), you can enable the bias tee in this container by creating a *Device Variable* with name `RTL978_BIASTEE_ENABLE` and setting its value to `true`.
@@ -518,17 +518,17 @@ For both containers, the bias tee enable setting will respect the `DUMP1090_DEVI
 In order to turn the bias tee off, you should remove the corresponding *Device Variable* and then reboot your device from the *Actions* dropdown menu on the main device summary page.
 
 ## Adaptive gain configuration
-The dump1090-fa service can be configured to adapt the tuner gain to changing conditions automatically. You can [read more about how this works](https://github.com/flightaware/dump1090/blob/master/README.adaptive-gain.md#default-settings) at FlightAware's website. 
+The dump1090-fa service can be configured to adapt the tuner gain to changing conditions automatically. You can [read more about how this works](https://github.com/flightaware/dump1090/blob/master/README.adaptive-gain.md#default-settings) at FlightAware's website.
 
 ### Adaptive gain in dynamic range mode
 From FlightAware's documentation: *The dynamic range adaptive gain mode attempts to set the receiver gain to maintain a given dynamic range - that is, it tries to set the gain so that general noise is at or below a given level.*
 
-This mode is *enabled* by default. If you specify the antenna gain manually (see below), it will be deactivated. You can manually disable this mode by setting a *Device Variable* named `DUMP1090_ADAPTIVE_DYNAMIC_RANGE` with the value `false`.  
+This mode is *enabled* by default. If you specify the antenna gain manually (see below), it will be deactivated. You can manually disable this mode by setting a *Device Variable* named `DUMP1090_ADAPTIVE_DYNAMIC_RANGE` with the value `false`.
 
 ### Adaptive gain in "burst" signal mode
 From FlightAware's documentation: *The "burst" adaptive gain mode listens for loud bursts of signal that were _not_ successfully decoded as ADS-B messages, but which have approximately the right timing to be possible messages that were lost due to receiver overloading. When enough overly-loud signals are heard in a short period of time, dump1090 will _reduce_ the receiver gain to try to allow them to be received.*
 
-This mode is *disabled* by default. You can enable it by setting a *Device Variable* named `DUMP1090_ADAPTIVE_BURST` with the value `true`. 
+This mode is *disabled* by default. You can enable it by setting a *Device Variable* named `DUMP1090_ADAPTIVE_BURST` with the value `true`.
 
 For this mode to work optimally, you should adjust *loud* and *quiet* ranges. You do this by creating two *Device Variables* named `DUMP1090_ADAPTIVE_BURST_LOUD_RATE` and `DUMP1090_ADAPTIVE_BURST_QUIET_RATE`, with the desired loud- and quiet targets as their values.
 
@@ -538,7 +538,7 @@ From FlightAware's documentation: *If you know in advance approximately what the
 You can specify the target maximum and minimum gain by creating two *Device Variables* named `DUMP1090_ADAPTIVE_MIN_GAIN` and `DUMP1090_ADAPTIVE_MAX_GAIN`, with the desired maximum- and minimum gain as their values.
 
 ### Reducing the CPU cost of adaptive gain
-From FlightAware's documentation: *The measurements needed to adjust gain have a CPU cost, and on slower devices it may be useful to reduce the amount of work that adaptive gain does. This can be done by adjusting the adaptive gain duty cycle. This is a percentage that controls what fraction of incoming data adaptive gain inspects. 100% means that every sample is inspected. Lower values reduce CPU use, with a tradeoff that adaptive gain has a less accurate picture of the RF environment. The default duty cycle is 50% on "fast" CPUs and 10% on "slow" CPUs (where currently "slow" means "armv6 architecture", for example the Pi Zero or Pi 1).* 
+From FlightAware's documentation: *The measurements needed to adjust gain have a CPU cost, and on slower devices it may be useful to reduce the amount of work that adaptive gain does. This can be done by adjusting the adaptive gain duty cycle. This is a percentage that controls what fraction of incoming data adaptive gain inspects. 100% means that every sample is inspected. Lower values reduce CPU use, with a tradeoff that adaptive gain has a less accurate picture of the RF environment. The default duty cycle is 50% on "fast" CPUs and 10% on "slow" CPUs (where currently "slow" means "armv6 architecture", for example the Pi Zero or Pi 1).*
 
 You can reduce the duty cycle further by creating a *Device Variable* named `DUMP1090_SLOW_CPU`, with the desired duty cycle percentage as the value (1-100).
 
