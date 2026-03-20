@@ -99,7 +99,7 @@ Software packages downloaded, installed, and configured by the balena-ads-b scri
     * [Alternative A: Port an existing OpenSky Network receiver](#alternative-a-port-an-existing-opensky-network-receiver)
     * [Alternative B: Setup a new OpenSky Network receiver](#alternative-b-setup-a-new-opensky-network-receiver)
 - [Part 7 – Configure AirNav Radar](#part-7--configure-airnav-radar)
-    * [Alternative A: Port an existing AirNav Radar receiver](#alternative-a-port-an-existing-airnavn-radar-receiver)
+    * [Alternative A: Port an existing AirNav Radar receiver](#alternative-a-port-an-existing-airnav-radar-receiver)
     * [Alternative B: Setup a new AirNav Radar receiver](#alternative-b-setup-a-new-airnav-radar-receiver)
 - [Part 8 – Configure ADSB Exchange and clones](#part-8--configure-adsb-exchange-and-clones)
     * [Enable ADSB Exchange](#enable-adsb-exchange)
