@@ -277,7 +277,7 @@ If you have not previously set up a Plane Finder receiver that you want to reuse
 ## Alternative A: Port an existing OpenSky Network receiver
 If you have previously set up an OpenSky Network receiver and want to port it to balena, you only have to do the following steps:
 
-1. Head back to the balena dashboard and your device's page. Click on the *Device Variables*-button – *Vx*.
+1. Head back to the balena dashboard and your device's page. Click on the *Device Variables*-button.
 2. Add a variable named `OPENSKY_USERNAME` and paste your OpenSky Network username, e.g. `JohnDoe123`. You can find your username on your OpenSky Network *[Dashboard](https://opensky-network.org/my-opensky)* page.
 3. Add a variable named `OPENSKY_SERIAL` and paste the value of your existing OpenSky Network serial number, e.g. `1663421823`. You can find your serial on your OpenSky Network *[Dashboard](https://opensky-network.org/my-opensky)* page.
 4. On your device's page in the balena dashboard, restart the *opensky-network* service under *Services* by clicking the "cycle" icon next to the service name.
