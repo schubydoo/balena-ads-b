@@ -9,10 +9,10 @@ ENV RECEIVER_HOST=dump1090-fa
 ENV RECEIVER_PORT=30005
 
 # renovate: datasource=custom.wingbits-version depName=wingbits-version versioning=loose
-ENV WINGBITS_CONFIG_VERSION=0.2.0
+ENV WINGBITS_CONFIG_VERSION=0.2.1
 # renovate: datasource=custom.wingbits-json depName=wingbits-json versioning=loose
-ENV WINGBITS_COMMIT_ID=v1.10.16
-ENV WINGBITS_DATE=2026-03-27T14:59:51.313928375Z
+ENV WINGBITS_COMMIT_ID=v1.10.17
+ENV WINGBITS_DATE=2026-04-01T09:20:05.456313858Z
 
 ARG PERM_INSTALL="curl gettext-base tini ncurses-dev zlib1g jq python3-pip python3-venv wget"
 
