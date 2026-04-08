@@ -4,7 +4,8 @@ LABEL maintainer="https://github.com/ketilmo"
 
 # Fix "fatal library error, lookup self" crash loop on ARM64/balenaOS (issue #408).
 # The base image's stop_service() uses `ps` to find the parent s6-supervise service name,
-# but procps 4.0.4 in Debian Trixie crashes on ARM64 during dlopen of libnuma.
+# but `ps` crashes on ARM64 during dlopen of libnuma after the base image updated glibc
+# from 2.36-9+deb12u10 to 2.36-9+deb12u13 (debian:bookworm-20250721-slim → 20250908-slim).
 # Fix: patch stop_service() to derive the service name from basename "$0" instead of ps.
 COPY patch-stop-service.sh /tmp/patch-stop-service.sh
 RUN bash /tmp/patch-stop-service.sh && rm /tmp/patch-stop-service.sh

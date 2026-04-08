@@ -2,8 +2,11 @@
 set -e
 # Patch stop_service() in /scripts/common to avoid calling `ps` entirely.
 #
-# On ARM64/balenaOS, procps 4.0.4 (Debian Trixie) crashes with
-# "fatal library error, lookup self" when `ps` tries to dlopen libnuma.
+# On ARM64/balenaOS, `ps` crashes with "fatal library error, lookup self"
+# when it tries to dlopen libnuma. This started after the base image updated
+# glibc from 2.36-9+deb12u10 to 2.36-9+deb12u13 (bookworm-20250721-slim
+# to bookworm-20250908-slim, i.e. build-1315 → build-1316).
+#
 # The base image's stop_service() calls `ps` to walk the process tree and
 # find the parent s6-supervise service name, triggering an infinite crash loop.
 #
