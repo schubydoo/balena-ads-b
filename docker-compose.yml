@@ -295,7 +295,6 @@ services:
       - "8078:80"
     labels:
       - "io.balena.features.supervisor-api=1"
-      - "io.balena.features.procfs=1"
       - "traefik.enable=true"
       - "traefik.http.routers.tar1090.rule=PathPrefix(`/tar1090`)"
       - "traefik.http.routers.tar1090-a.rule=PathPrefix(`/graphs1090`)"
