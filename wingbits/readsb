@@ -1,0 +1,4 @@
+# balena-ads-b does not utilize this file, but Wingbits checks for it and complains if it doesn't have the proper config.
+# Editing these settings will not effect your container or startup in any way, therefore, DO NOT EDIT.
+
+NET_OPTIONS="--net-connector localhost,30006,json_out --net-connector localhost,30015,beast_reduce_out --net-beast-reduce-optimize-for-mlat --net-beast-reduce-interval=0.125"

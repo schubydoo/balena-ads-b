@@ -55,4 +55,7 @@ RUN chmod +x /tmp/wingbits_installer.sh && \
         echo "$WINGBITS_COMMIT_ID" > /etc/wingbits/json-version && \
 	rm -rf /tmp/*
 
+COPY readsb /etc/default/readsb
+RUN chmod 755 /etc/default/readsb
+
 ENTRYPOINT ["/usr/bin/tini", "--", "/start.sh"]
