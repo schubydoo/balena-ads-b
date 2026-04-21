@@ -6,8 +6,7 @@
   "prHourlyLimit": 0,
   "prConcurrentLimit": 0,
   "ignorePaths": [
-    "autohupr/**",
-    "wifi-connect/**"
+    "autohupr/**"
   ],
   "customManagers": [
     {
