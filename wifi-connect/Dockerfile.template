@@ -10,6 +10,7 @@ RUN install_packages dnsmasq wireless-tools
 # renovate: datasource=github-releases depName=balena-os/wifi-connect
 ARG WIFI_CONNECT_VERSION=v4.11.84
 
+WORKDIR /usr/src/app/ui
 WORKDIR /usr/src/app
 
 RUN \
@@ -21,7 +22,9 @@ RUN \
         *) echo >&2 "error: unsupported architecture ($BALENA_ARCH)"; exit 1 ;; \
     esac; \
     curl -fLs "$BASE_URL/${WIFI_CONNECT_VERSION}/wifi-connect-${BINARY_ARCH_NAME}.tar.gz" \
-        | tar -xvz -C /usr/src/app/
+        | tar -xvz -C /usr/src/app/ && \
+    curl -fLs "$BASE_URL/${WIFI_CONNECT_VERSION}/wifi-connect-ui.tar.gz" \
+        | tar -xvz -C /usr/src/app/ui
 
 COPY start.sh .
 
