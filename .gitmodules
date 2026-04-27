@@ -1,3 +1,0 @@
-[submodule "wifi-connect/upstream"]
-	path = wifi-connect/upstream
-	url = https://github.com/balena-os/wifi-connect.git
