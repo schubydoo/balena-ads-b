@@ -16,8 +16,6 @@ jobs:
     steps:
       - name: Checkout main branch
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          submodules: 'recursive'
 
       - name: Update balena.yml
         uses: balena-io-experimental/balena.yml-action@cffeb7987589f35ff623a75fa39a04822b5da5af # Feb 13, 2023
