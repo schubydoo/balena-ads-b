@@ -6,7 +6,6 @@ ARG BALENA_ARCH=%%BALENA_ARCH%%
 
 RUN install_packages dnsmasq wireless-tools
 
-# Keep in sync with the wifi-connect/upstream submodule tag.
 # renovate: datasource=github-releases depName=balena-os/wifi-connect
 ARG WIFI_CONNECT_VERSION=v4.11.84
 
