@@ -2,6 +2,11 @@
 ARG BROWSER_VERSION=2.12.0
 FROM bh.cr/balenalabs/browser-%%BALENA_ARCH%%/$BROWSER_VERSION AS base
 
+# Workaround: Debian Trixie's sqv rejects the SHA1-signed Raspberry Pi apt key (2026-02-01).
+# See https://github.com/balena-io-experimental/browser/issues/200
+RUN find /etc/apt/sources.list.d -name '*.list' -exec \
+    sed -i 's|^deb http://archive.raspberrypi.com|deb [trusted=yes] http://archive.raspberrypi.com|' {} +
+
 RUN apt-get update && apt-get install -y  --no-install-recommends \
     cec-utils \
     tini && \
