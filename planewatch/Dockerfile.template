@@ -32,18 +32,13 @@ RUN git clone --branch "$MLAT_CLIENT_VERSION" https://github.com/mutability/mlat
     /usr/local/share/mlat-client/venv/bin/python3 ./setup.py build && \
     /usr/local/share/mlat-client/venv/bin/python3 ./setup.py install
 
-# download let's encrypt CA certs
+# download let's encrypt CA certs (in parallel)
 WORKDIR /tmp/letsencrypt
-RUN curl -so lets-encrypt-e5.crt https://letsencrypt.org/certs/2024/e5.pem && \
-    curl -so lets-encrypt-e6.crt https://letsencrypt.org/certs/2024/e6.pem && \
-    curl -so lets-encrypt-e7.crt https://letsencrypt.org/certs/2024/e7.pem && \
-    curl -so lets-encrypt-e8.crt https://letsencrypt.org/certs/2024/e8.pem && \
-    curl -so lets-encrypt-e9.crt https://letsencrypt.org/certs/2024/e9.pem && \
-    curl -so lets-encrypt-r10.crt https://letsencrypt.org/certs/2024/r10.pem && \
-    curl -so lets-encrypt-r11.crt https://letsencrypt.org/certs/2024/r11.pem && \
-    curl -so lets-encrypt-r12.crt https://letsencrypt.org/certs/2024/r12.pem && \
-    curl -so lets-encrypt-r13.crt https://letsencrypt.org/certs/2024/r13.pem && \
-    curl -so lets-encrypt-r14.crt https://letsencrypt.org/certs/2024/r14.pem
+RUN set -e; \
+    for c in e5 e6 e7 e8 e9 r10 r11 r12 r13 r14; do \
+        curl -fsSL -o "lets-encrypt-${c}.crt" "https://letsencrypt.org/certs/2024/${c}.pem" & \
+    done; \
+    wait
 
 FROM debian:bookworm-slim AS release
 

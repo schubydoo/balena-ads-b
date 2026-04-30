@@ -17,7 +17,8 @@ RUN curl -fsSL "https://github.com/balena-io-experimental/autohupr-example/archi
           .dockerignore .gitignore && \
     rm -rf .github .versionbot
 
-RUN npm ci && npm run build && npm prune --omit=dev
+RUN npm ci && npm run build && npm prune --omit=dev && \
+    npm cache clean --force && rm -rf /tmp/*
 
 COPY start.sh ./
 
