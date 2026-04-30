@@ -2,6 +2,8 @@ FROM debian:bookworm-slim
 LABEL maintainer="https://github.com/ketilmo"
 ARG BALENA_ARCH=%%BALENA_ARCH%%
 
+COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends dnsmasq wireless-tools curl ca-certificates && \
     rm -rf /var/lib/apt/lists/*

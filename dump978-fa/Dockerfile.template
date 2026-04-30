@@ -9,6 +9,8 @@ ENV REBOOT_DEVICE_ON_SERVICE_EXIT=""
 
 ARG PERM_INSTALL="tini ca-certificates curl libboost-program-options-dev libusb-1.0-0 lighttpd swig gettext-base libboost-filesystem1.74.0 libboost-regex1.74.0 libboost-system1.74.0 libsoapysdr0.8"
 
+COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/
+
 RUN apt-get update && \
 	apt-get install -y --no-install-recommends $PERM_INSTALL && \
 	apt-get clean && apt-get autoremove -y && \

@@ -22,6 +22,8 @@ ENV AIRSPY_ADSB_STATS="false"
 
 ARG PERM_INSTALL="tini ca-certificates curl lighttpd gettext-base libusb-1.0-0 libbladerf2 libhackrf0 liblimesuite22.09-1 libsoapysdr0.8 libncurses6 libboost-system-dev libboost-program-options-dev libboost-regex-dev"
 
+COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/
+
 RUN apt-get update && \
 	apt-get install -y --no-install-recommends $PERM_INSTALL && \
 	apt-get clean && apt-get autoremove -y && \
