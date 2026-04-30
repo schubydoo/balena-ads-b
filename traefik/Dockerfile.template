@@ -5,6 +5,8 @@ EXPOSE 80 8080 443
 
 ARG PERM_INSTALL="gettext-base tini ca-certificates curl"
 
+COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/
+
 RUN apt-get update && \
 	apt-get install -y --no-install-recommends $PERM_INSTALL && \
 	apt-get clean && apt-get autoremove -y && \
