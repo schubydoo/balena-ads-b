@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -e
 
-# Import our key to apt-key
-apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1D043681
+# Import our key into a dedicated keyring (apt-key removed in Trixie)
+mkdir -p /etc/apt/keyrings
+gpg --no-default-keyring --keyring /etc/apt/keyrings/rb24.gpg \
+    --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1D043681
 
 # Create a new debian repository source file (overwrites if exists)
-echo 'deb https://apt.rb24.com/ trixie main' > /etc/apt/sources.list.d/rb24.list
+echo 'deb [signed-by=/etc/apt/keyrings/rb24.gpg] https://apt.rb24.com/ trixie main' > /etc/apt/sources.list.d/rb24.list
 
 arch="$(dpkg --print-architecture)"
 echo "System Architecture: $arch"
