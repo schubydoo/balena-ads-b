@@ -282,3 +282,7 @@ dist
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,jetbrains+all,visualstudiocode,node
+.claude
+.gitnexus
+AGENTS.md
+CLAUDE.md
