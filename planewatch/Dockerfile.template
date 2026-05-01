@@ -1,4 +1,4 @@
-FROM golang:1.25.4-bookworm AS buildstep
+FROM golang:1.25.4-trixie AS buildstep
 LABEL maintainer="https://github.com/ketilmo"
 
 # specify plane.watch pw-feeder version
@@ -45,7 +45,7 @@ RUN curl -so lets-encrypt-e5.crt https://letsencrypt.org/certs/2024/e5.pem && \
     curl -so lets-encrypt-r13.crt https://letsencrypt.org/certs/2024/r13.pem && \
     curl -so lets-encrypt-r14.crt https://letsencrypt.org/certs/2024/r14.pem
 
-FROM debian:bookworm-slim AS release
+FROM debian:trixie-slim AS release
 
 ENV LAT=
 ENV LON=

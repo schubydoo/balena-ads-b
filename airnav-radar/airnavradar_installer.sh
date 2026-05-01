@@ -5,7 +5,7 @@ set -e
 apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1D043681
 
 # Create a new debian repository source file (overwrites if exists)
-echo 'deb https://apt.rb24.com/ bookworm main' > /etc/apt/sources.list.d/rb24.list
+echo 'deb https://apt.rb24.com/ trixie main' > /etc/apt/sources.list.d/rb24.list
 
 arch="$(dpkg --print-architecture)"
 echo "System Architecture: $arch"
