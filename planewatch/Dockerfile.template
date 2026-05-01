@@ -29,6 +29,7 @@ WORKDIR /tmp
 RUN git clone --branch "$MLAT_CLIENT_VERSION" https://github.com/mutability/mlat-client.git /tmp/mlat-client && \
     cd /tmp/mlat-client && \
     python3 -m venv /usr/local/share/mlat-client/venv/ && \
+    /usr/local/share/mlat-client/venv/bin/pip install --no-cache-dir setuptools && \
     /usr/local/share/mlat-client/venv/bin/python3 ./setup.py build && \
     /usr/local/share/mlat-client/venv/bin/python3 ./setup.py install
 
