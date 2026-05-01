@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 set -e
 
-# Import our key to apt-key
-apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1D043681
-
-# Create a new debian repository source file (overwrites if exists)
-echo 'deb https://apt.rb24.com/ bookworm main' > /etc/apt/sources.list.d/rb24.list
+# The rb24 signing key is vendored at /etc/apt/keyrings/rb24.asc via COPY
+# in the Dockerfile. Avoids a build-time dependency on PGP keyservers,
+# which have been unreliable (keyserver.ubuntu.com 443 timeouts).
+echo 'deb [signed-by=/etc/apt/keyrings/rb24.asc] https://apt.rb24.com/ trixie main' > /etc/apt/sources.list.d/rb24.list
 
 arch="$(dpkg --print-architecture)"
 echo "System Architecture: $arch"
