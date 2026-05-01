@@ -10,7 +10,7 @@ ENV ALT=
 ENV RECEIVER_HOST=dump1090-fa
 ENV RECEIVER_PORT=30005
 
-ARG PERM_INSTALL="perl gettext-base tini expect ca-certificates curl"
+ARG PERM_INSTALL="perl gettext-base tini expect ca-certificates curl adduser"
 
 RUN apt-get update && \
 	apt-get install -y --no-install-recommends $PERM_INSTALL && \
