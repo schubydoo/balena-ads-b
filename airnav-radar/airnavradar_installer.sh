@@ -1,15 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-# Import our key into a dedicated keyring (apt-key removed in Trixie).
-# Fetch the ASCII-armored key over HTTPS rather than via gpg+dirmngr,
-# which fails to bootstrap in a fresh container (no /root/.gnupg, no
-# running dirmngr daemon).
-mkdir -p /etc/apt/keyrings
-curl -fsSL "https://keyserver.ubuntu.com/pks/lookup?op=get&options=mr&search=0x1D043681" \
-    -o /etc/apt/keyrings/rb24.asc
-
-# Create a new debian repository source file (overwrites if exists)
+# The rb24 signing key is vendored at /etc/apt/keyrings/rb24.asc via COPY
+# in the Dockerfile. Avoids a build-time dependency on PGP keyservers,
+# which have been unreliable (keyserver.ubuntu.com 443 timeouts).
 echo 'deb [signed-by=/etc/apt/keyrings/rb24.asc] https://apt.rb24.com/ trixie main' > /etc/apt/sources.list.d/rb24.list
 
 arch="$(dpkg --print-architecture)"
