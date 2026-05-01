@@ -1,4 +1,4 @@
-FROM debian:bookworm-slim AS base
+FROM debian:trixie-slim AS base
 LABEL maintainer="https://github.com/ketilmo"
 
 ENV LAT=
@@ -32,8 +32,9 @@ WORKDIR /tmp
 RUN git clone --single-branch https://github.com/wiedehopf/mlat-client && \
 	cd mlat-client && \
         git checkout ${MLAT_VERSION} && \
-    python3 -m venv /usr/local/share/mlat-client/venv/ && \	
-    /usr/local/share/mlat-client/venv/bin/python3 setup.py build && \	
+    python3 -m venv /usr/local/share/mlat-client/venv/ && \
+    /usr/local/share/mlat-client/venv/bin/pip install --no-cache-dir setuptools pyasyncore && \
+    /usr/local/share/mlat-client/venv/bin/python3 setup.py build && \
     /usr/local/share/mlat-client/venv/bin/python3 setup.py install
 
 FROM base AS release
