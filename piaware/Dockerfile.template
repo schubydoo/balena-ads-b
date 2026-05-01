@@ -11,7 +11,7 @@ ENV UAT_RECEIVER_PORT 30978
 ENV RECEIVER_MLAT_PORT 30104
 ENV DUMP978_ENABLED=false
 
-ARG PERM_INSTALL="tini ca-certificates curl net-tools tclx8.4 tcllib itcl3 libboost-filesystem1.83.0 libboost-program-options1.83.0 libboost-regex1.83.0 libboost-system1.83.0 libexpat1 libpython3.13 libreadline8 expect openssl rsyslog"
+ARG PERM_INSTALL="tini ca-certificates curl net-tools expect openssl rsyslog"
 
 RUN apt-get update && \
 	apt-get install -y --no-install-recommends $PERM_INSTALL && \
@@ -67,10 +67,17 @@ COPY getid.sh /
 
 WORKDIR /tmp
 
-RUN dpkg -i tcl-tls_*.deb && \
+# Install via apt (not dpkg -i) so runtime Depends are resolved automatically
+# from the .deb files. This handles Debian's 64-bit time_t transition: on
+# 32-bit archs (armhf), libraries like libreadline8 were renamed to
+# libreadline8t64, while 64-bit archs kept the original names. The .debs
+# we built declare the correct names per arch; apt picks the right ones.
+RUN apt-get update && \
+	apt-get install -y --no-install-recommends ./tcl-tls_*.deb && \
 	apt-mark hold tcl-tls && \
-	dpkg -i piaware_*.deb && \
-	rm -rf /tmp/* && \
+	apt-get install -y --no-install-recommends ./piaware_*.deb && \
+	apt-get clean && apt-get autoremove -y && \
+	rm -rf /var/lib/apt/lists/* /tmp/* && \
 	mkdir -p /run/piaware && \
 	chmod +x /start.sh && \
 	chmod +x /getid.sh
