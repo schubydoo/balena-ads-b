@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 set -e
 
-# Import our key into a dedicated keyring (apt-key removed in Trixie)
+# Import our key into a dedicated keyring (apt-key removed in Trixie).
+# Fetch the ASCII-armored key over HTTPS rather than via gpg+dirmngr,
+# which fails to bootstrap in a fresh container (no /root/.gnupg, no
+# running dirmngr daemon).
 mkdir -p /etc/apt/keyrings
-gpg --no-default-keyring --keyring /etc/apt/keyrings/rb24.gpg \
-    --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1D043681
+curl -fsSL "https://keyserver.ubuntu.com/pks/lookup?op=get&options=mr&search=0x1D043681" \
+    -o /etc/apt/keyrings/rb24.asc
 
 # Create a new debian repository source file (overwrites if exists)
-echo 'deb [signed-by=/etc/apt/keyrings/rb24.gpg] https://apt.rb24.com/ trixie main' > /etc/apt/sources.list.d/rb24.list
+echo 'deb [signed-by=/etc/apt/keyrings/rb24.asc] https://apt.rb24.com/ trixie main' > /etc/apt/sources.list.d/rb24.list
 
 arch="$(dpkg --print-architecture)"
 echo "System Architecture: $arch"
