@@ -1,11 +1,19 @@
 #!/usr/bin/env bash
 set -e
 
-# Import our key to apt-key
-apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1D043681
-
-# Create a new debian repository source file (overwrites if exists)
-echo 'deb https://apt.rb24.com/ bookworm main' > /etc/apt/sources.list.d/rb24.list
+# Fetch rb24 apt signing key. Retried because keyserver.ubuntu.com has been
+# intermittently slow.
+KEY_FPR=78F6D790E30AE7F360B716FED4F914061D043681
+mkdir -p /etc/apt/keyrings
+i=0
+for server in keyserver.ubuntu.com keyserver.syseleven.de keyserver.ubuntu.com; do
+    i=$((i + 1))
+    gpg --keyserver "hkps://$server" --recv-keys "$KEY_FPR" && break
+    [ "$i" = 3 ] && { echo "rb24 key fetch failed (last server: $server)" >&2; exit 1; }
+    sleep $((i * 5))
+done
+gpg --export "$KEY_FPR" > /etc/apt/keyrings/rb24.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/rb24.gpg] https://apt.rb24.com/ trixie main' > /etc/apt/sources.list.d/rb24.list
 
 arch="$(dpkg --print-architecture)"
 echo "System Architecture: $arch"
@@ -54,5 +62,5 @@ if dpkg-divert --list | grep -q "/usr/bin/systemctl"; then
 fi
 
 # Cleanup
-apt clean && apt autoclean && apt autoremove && \
- rm -rf /var/lib/apt/lists/*
+apt-get clean && apt-get autoremove -y && \
+ rm -rf /var/lib/apt/lists/* /root/.gnupg
