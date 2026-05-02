@@ -44,7 +44,6 @@ COPY start.sh /
 COPY airnavradar_installer.sh /tmp
 COPY rbfeeder.ini.tpl /etc
 COPY showkey.sh /
-COPY rb24.asc /etc/apt/keyrings/rb24.asc
 
 WORKDIR /tmp
 
