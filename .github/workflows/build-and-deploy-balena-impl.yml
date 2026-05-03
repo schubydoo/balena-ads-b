@@ -173,6 +173,12 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Stage Dockerfile.template as Dockerfile for buildx bake
+        run: |
+          for f in */Dockerfile.template; do
+            cp "$f" "${f%.template}"
+          done
+
       - name: Build and push with bake
         env:
           IMAGE_TAG: ${{ needs.prepare.outputs.image_tag }}
