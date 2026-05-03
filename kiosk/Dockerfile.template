@@ -1,6 +1,12 @@
 # renovate: datasource=github-tags depName=balena-io-experimental/browser versioning=loose
 ARG BROWSER_VERSION=2.12.0
-FROM bh.cr/balenalabs/browser-%%BALENA_ARCH%%/$BROWSER_VERSION AS base
+
+FROM bh.cr/balenalabs/browser-amd64:${BROWSER_VERSION} AS base-amd64
+FROM bh.cr/balenalabs/browser-aarch64:${BROWSER_VERSION} AS base-arm64
+FROM bh.cr/balenalabs/browser-armv7hf:${BROWSER_VERSION} AS base-arm
+
+ARG TARGETARCH
+FROM base-${TARGETARCH} AS base
 
 RUN apt-get update && apt-get install -y  --no-install-recommends \
     cec-utils \

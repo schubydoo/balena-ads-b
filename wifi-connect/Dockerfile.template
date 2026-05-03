@@ -1,6 +1,7 @@
 FROM debian:trixie-slim
 LABEL maintainer="https://github.com/ketilmo"
-ARG BALENA_ARCH=%%BALENA_ARCH%%
+ARG TARGETARCH
+ARG TARGETVARIANT
 
 COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/
 
@@ -16,11 +17,11 @@ WORKDIR /usr/src/app
 
 RUN \
     export BASE_URL="https://github.com/balena-os/wifi-connect/releases/download" && \
-    case "$BALENA_ARCH" in \
-        "aarch64") BINARY_ARCH_NAME="aarch64-unknown-linux-gnu" ;; \
-        "amd64")   BINARY_ARCH_NAME="x86_64-unknown-linux-gnu" ;; \
-        "armv7hf") BINARY_ARCH_NAME="armv7-unknown-linux-gnueabihf" ;; \
-        *) echo >&2 "error: unsupported architecture ($BALENA_ARCH)"; exit 1 ;; \
+    case "${TARGETARCH}${TARGETVARIANT}" in \
+        "arm64")  BINARY_ARCH_NAME="aarch64-unknown-linux-gnu" ;; \
+        "amd64")  BINARY_ARCH_NAME="x86_64-unknown-linux-gnu" ;; \
+        "armv7")  BINARY_ARCH_NAME="armv7-unknown-linux-gnueabihf" ;; \
+        *) echo >&2 "error: unsupported architecture (${TARGETARCH}${TARGETVARIANT})"; exit 1 ;; \
     esac; \
     curl -fLs "$BASE_URL/${WIFI_CONNECT_VERSION}/wifi-connect-${BINARY_ARCH_NAME}.tar.gz" \
         | tar -xvz -C /usr/src/app/ && \

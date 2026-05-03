@@ -1,0 +1,40 @@
+name: "Build and Deploy (experimental)"
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+jobs:
+  pr-test:
+    if: github.event_name == 'pull_request'
+    uses: balena-io-experimental/build-and-deploy-to-balena/.github/workflows/build-and-deploy.yml@21234d4f5b82b9ddb3a8e0d290ab1a20ce909ac3
+    with:
+      balena_environment: balena-cloud.com
+      platforms: linux/amd64,linux/arm64,linux/arm/v7
+      fleet_mapping: |
+        linux/amd64: ${{ vars.BALENA_TEST_FLEET_AMD64 }}
+        linux/arm64: ${{ vars.BALENA_TEST_FLEET_ARM64 }}
+        linux/arm/v7: ${{ vars.BALENA_TEST_FLEET_ARMV7 }}
+    secrets:
+      BALENA_DEPLOY_API_KEY: ${{ secrets.BALENA_DEPLOY_API_KEY }}
+
+  master-deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    uses: balena-io-experimental/build-and-deploy-to-balena/.github/workflows/build-and-deploy.yml@21234d4f5b82b9ddb3a8e0d290ab1a20ce909ac3
+    with:
+      balena_environment: balena-cloud.com
+      platforms: linux/amd64,linux/arm64,linux/arm/v7
+      fleet_mapping: |
+        linux/amd64: ${{ vars.BALENA_PROD_FLEET_AMD64 }}
+        linux/arm64: ${{ vars.BALENA_PROD_FLEET_ARM64 }}
+        linux/arm/v7: ${{ vars.BALENA_PROD_FLEET_ARMV7 }}
+    secrets:
+      BALENA_DEPLOY_API_KEY: ${{ secrets.BALENA_DEPLOY_API_KEY }}
