@@ -15,7 +15,7 @@ permissions:
 jobs:
   pr-test:
     if: github.event_name == 'pull_request'
-    uses: balena-io-experimental/build-and-deploy-to-balena/.github/workflows/build-and-deploy.yml@21234d4f5b82b9ddb3a8e0d290ab1a20ce909ac3
+    uses: ./.github/workflows/build-and-deploy-balena-impl.yml
     with:
       balena_environment: balena-cloud.com
       platforms: linux/amd64,linux/arm64,linux/arm/v7
@@ -28,7 +28,7 @@ jobs:
 
   master-deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    uses: balena-io-experimental/build-and-deploy-to-balena/.github/workflows/build-and-deploy.yml@21234d4f5b82b9ddb3a8e0d290ab1a20ce909ac3
+    uses: ./.github/workflows/build-and-deploy-balena-impl.yml
     with:
       balena_environment: balena-cloud.com
       platforms: linux/amd64,linux/arm64,linux/arm/v7

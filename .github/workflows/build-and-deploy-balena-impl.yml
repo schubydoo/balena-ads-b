@@ -1,0 +1,307 @@
+name: Build and Deploy to Balena
+
+on:
+  workflow_call:
+    inputs:
+      balena_environment:
+        description: 'Balena environment'
+        required: true
+        default: 'balena-cloud.com'
+        type: string
+      platforms:
+        description: 'Comma-separated list of platforms to build (e.g., linux/amd64,linux/arm64,linux/arm/v7)'
+        required: true
+        default: 'linux/amd64,linux/arm64'
+        type: string
+      fleet_mapping:
+        description: |
+          YAML mapping of platform to fleet name. Example:
+          linux/amd64: myorg/fleet-amd64
+          linux/arm64: myorg/fleet-aarch64
+        required: true
+        type: string
+    secrets:
+      BALENA_DEPLOY_API_KEY:
+        required: true
+
+concurrency:
+  # This concurrency group ensures that only one job in the group runs at a time.
+  # If a new job is triggered, the previous one will be canceled.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      services: ${{ steps.services.outputs.services }}
+      service_images: ${{ steps.services.outputs.service_images }}
+      deploy_matrix: ${{ steps.deploy-matrix.outputs.matrix }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5.0.0
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Extract services and image names
+        id: services
+        run: |
+          if [ -f "docker-compose.yml" ]; then
+            SERVICES=$(yq eval '.services | keys | .[]' docker-compose.yml)
+
+            # Build JSON map of service -> image name
+            SERVICE_IMAGE_MAP="{"
+            FIRST=true
+            for SERVICE in $SERVICES; do
+              IMAGE_NAME=$(yq eval ".services.$SERVICE.image" docker-compose.yml)
+              [ "$FIRST" = false ] && SERVICE_IMAGE_MAP="${SERVICE_IMAGE_MAP},"
+              SERVICE_IMAGE_MAP="${SERVICE_IMAGE_MAP}\"$SERVICE\":\"$IMAGE_NAME\""
+              FIRST=false
+            done
+            SERVICE_IMAGE_MAP="${SERVICE_IMAGE_MAP}}"
+          else
+            SERVICES="main"
+            SERVICE_IMAGE_MAP='{"main":"main"}'
+          fi
+
+          # Convert services to JSON array
+          SERVICES_JSON=$(echo "$SERVICES" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+
+          echo "services=$SERVICES_JSON" >> $GITHUB_OUTPUT
+          echo "service_images=$SERVICE_IMAGE_MAP" >> $GITHUB_OUTPUT
+          echo "Detected services: $SERVICES"
+          echo "Service image mapping: $SERVICE_IMAGE_MAP"
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5.8.0
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=sha,prefix={{branch}}-
+
+      - name: Create build matrix
+        id: matrix
+        run: |
+          PLATFORMS="${{ inputs.platforms }}"
+          ARM_PLATFORMS=""
+          AMD_PLATFORMS=""
+
+          IFS=',' read -ra PLATFORM_ARRAY <<< "$PLATFORMS"
+          for PLATFORM in "${PLATFORM_ARRAY[@]}"; do
+            PLATFORM=$(echo $PLATFORM | xargs)
+            # Check if platform is ARM-based (arm64, arm/v7, arm/v6)
+            if [[ "$PLATFORM" =~ linux/arm ]]; then
+              ARM_PLATFORMS="${ARM_PLATFORMS:+$ARM_PLATFORMS,}$PLATFORM"
+            else
+              AMD_PLATFORMS="${AMD_PLATFORMS:+$AMD_PLATFORMS,}$PLATFORM"
+            fi
+          done
+
+          # Build matrix JSON
+          MATRIX_JSON="["
+          FIRST=true
+
+          if [ -n "$ARM_PLATFORMS" ]; then
+            MATRIX_JSON="${MATRIX_JSON}{\"runner\":\"ubuntu-24.04-arm\",\"platforms\":\"$ARM_PLATFORMS\"}"
+            FIRST=false
+          fi
+
+          if [ -n "$AMD_PLATFORMS" ]; then
+            [ "$FIRST" = false ] && MATRIX_JSON="${MATRIX_JSON},"
+            MATRIX_JSON="${MATRIX_JSON}{\"runner\":\"ubuntu-24.04\",\"platforms\":\"$AMD_PLATFORMS\"}"
+          fi
+
+          MATRIX_JSON="${MATRIX_JSON}]"
+
+          echo "matrix={\"include\":$MATRIX_JSON}" >> $GITHUB_OUTPUT
+          echo "Generated matrix: {\"include\":$MATRIX_JSON}"
+
+      - name: Create deploy matrix
+        id: deploy-matrix
+        run: |
+          PLATFORMS="${{ inputs.platforms }}"
+          FLEET_MAPPING='${{ inputs.fleet_mapping }}'
+
+          # Build JSON array of platform/fleet pairs
+          DEPLOY_MATRIX="["
+          FIRST=true
+
+          IFS=',' read -ra PLATFORM_ARRAY <<< "$PLATFORMS"
+          for PLATFORM in "${PLATFORM_ARRAY[@]}"; do
+            PLATFORM=$(echo $PLATFORM | xargs)
+            FLEET=$(echo "$FLEET_MAPPING" | yq eval ".\"$PLATFORM\"" -)
+
+            if [ "$FLEET" == "null" ] || [ -z "$FLEET" ]; then
+              echo "Error: No fleet mapping found for platform: $PLATFORM"
+              exit 1
+            fi
+
+            [ "$FIRST" = false ] && DEPLOY_MATRIX="${DEPLOY_MATRIX},"
+            DEPLOY_MATRIX="${DEPLOY_MATRIX}{\"platform\":\"$PLATFORM\",\"fleet\":\"$FLEET\"}"
+            FIRST=false
+          done
+
+          DEPLOY_MATRIX="${DEPLOY_MATRIX}]"
+
+          echo "matrix={\"include\":$DEPLOY_MATRIX}" >> $GITHUB_OUTPUT
+          echo "Generated deploy matrix: {\"include\":$DEPLOY_MATRIX}"
+
+  build-and-push:
+    runs-on: ${{ matrix.runner }}
+    needs: prepare
+    strategy:
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5.0.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3.11.1
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push with bake
+        env:
+          IMAGE_TAG: ${{ needs.prepare.outputs.image_tag }}
+          REGISTRY: ghcr.io/${{ github.repository }}
+          PLATFORMS: ${{ matrix.platforms }}
+        run: |
+          # Determine platform suffix for tagging
+          if [[ "${{ matrix.runner }}" == "ubuntu-24.04-arm" ]]; then
+            PLATFORM_SUFFIX="arm"
+          else
+            PLATFORM_SUFFIX="amd"
+          fi
+
+          # Get services from prepare job output
+          SERVICES=$(echo '${{ needs.prepare.outputs.services }}' | jq -r '.[]')
+
+          # Build set commands for each service with platform-specific tags
+          SET_ARGS=""
+          for SERVICE in $SERVICES; do
+            SET_ARGS="$SET_ARGS --set ${SERVICE}.platform=${PLATFORMS}"
+            SET_ARGS="$SET_ARGS --set ${SERVICE}.tags=${REGISTRY}/${SERVICE}:${IMAGE_TAG}-${PLATFORM_SUFFIX}"
+            SET_ARGS="$SET_ARGS --set ${SERVICE}.cache-from=type=gha,scope=${SERVICE}"
+            SET_ARGS="$SET_ARGS --set ${SERVICE}.cache-to=type=gha,mode=max,scope=${SERVICE}"
+            SET_ARGS="$SET_ARGS --set ${SERVICE}.output=type=registry,push=true"
+          done
+
+          echo "Building services: $SERVICES"
+          echo "Platform suffix: $PLATFORM_SUFFIX"
+          echo "Set arguments: $SET_ARGS"
+
+          docker buildx bake \
+            --file docker-compose.yml \
+            $SET_ARGS
+
+  create-manifest:
+    runs-on: ubuntu-24.04
+    needs: [prepare, build-and-push]
+
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create multi-arch manifest
+        env:
+          IMAGE_TAG: ${{ needs.prepare.outputs.image_tag }}
+          REGISTRY: ghcr.io/${{ github.repository }}
+        run: |
+          # Get services from prepare job output
+          SERVICES=$(echo '${{ needs.prepare.outputs.services }}' | jq -r '.[]')
+
+          # Create manifest list for each service
+          for SERVICE in $SERVICES; do
+            echo "Creating manifest list for service: $SERVICE"
+
+            docker buildx imagetools create \
+              --tag ${REGISTRY}/${SERVICE}:${IMAGE_TAG} \
+              ${REGISTRY}/${SERVICE}:${IMAGE_TAG}-arm \
+              ${REGISTRY}/${SERVICE}:${IMAGE_TAG}-amd
+
+            echo "✓ Created manifest ${REGISTRY}/${SERVICE}:${IMAGE_TAG}"
+          done
+
+  deploy-to-balena:
+    runs-on: ubuntu-24.04
+    needs: [prepare, create-manifest]
+    strategy:
+      matrix: ${{ fromJson(needs.prepare.outputs.deploy_matrix) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5.0.0
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6.0.0
+        with:
+          node-version: '20'
+
+      - name: Install balena CLI
+        run: npm install -g balena-cli
+
+      - name: Deploy to fleet
+        env:
+          BALENARC_BALENA_URL: ${{ inputs.balena_environment }}
+          BALENA_DEPLOY_API_KEY: ${{ secrets.BALENA_DEPLOY_API_KEY }}
+        run: |
+          balena login --token ${{ secrets.BALENA_DEPLOY_API_KEY }}
+
+          # Get data from prepare job
+          IMAGE_TAG="${{ needs.prepare.outputs.image_tag }}"
+          SERVICES=$(echo '${{ needs.prepare.outputs.services }}' | jq -r '.[]')
+          SERVICE_IMAGES='${{ needs.prepare.outputs.service_images }}'
+
+          PLATFORM="${{ matrix.platform }}"
+          FLEET="${{ matrix.fleet }}"
+
+          echo "==============================================="
+          echo "Deploying platform: $PLATFORM to fleet: $FLEET"
+          echo "Services: $SERVICES"
+          echo "==============================================="
+
+          # Pull and tag each service image to match docker-compose.yml
+          for SERVICE in $SERVICES; do
+            GHCR_IMAGE="ghcr.io/${{ github.repository }}/${SERVICE}:${IMAGE_TAG}"
+            IMAGE_NAME=$(echo "$SERVICE_IMAGES" | jq -r --arg svc "$SERVICE" '.[$svc]')
+
+            echo "Pulling $GHCR_IMAGE for platform $PLATFORM"
+            docker pull --platform $PLATFORM $GHCR_IMAGE
+
+            echo "Tagging as ${IMAGE_NAME}:latest"
+            docker tag $GHCR_IMAGE ${IMAGE_NAME}:latest
+          done
+
+          echo "Deploying to fleet: $FLEET"
+          balena deploy $FLEET
+
+          if [ $? -eq 0 ]; then
+            echo "✓ Successfully deployed to $FLEET for $PLATFORM"
+          else
+            echo "✗ Failed to deploy to $FLEET for $PLATFORM"
+            exit 1
+          fi

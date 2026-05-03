@@ -7,6 +7,7 @@ services:
   kiosk:
     restart: unless-stopped
     build: ./kiosk
+    image: kiosk
     privileged: true
     ports:
       - 8081:8080
@@ -16,6 +17,7 @@ services:
       io.balena.features.supervisor-api: '1'
   wifi-connect:
     build: ./wifi-connect
+    image: wifi-connect
     restart: unless-stopped
     network_mode: host
     environment:
@@ -267,6 +269,7 @@ services:
       io.balena.features.supervisor-api: '1'
   autohupr:
     build: ./autohupr
+    image: autohupr
     tmpfs:
       - /tmp/work
     labels:
