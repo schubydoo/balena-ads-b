@@ -84,7 +84,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=sha,prefix={{branch}}-
+            type=sha,prefix=${{ github.head_ref || github.ref_name }}-
 
       - name: Create build matrix
         id: matrix
