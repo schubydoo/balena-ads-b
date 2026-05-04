@@ -468,6 +468,9 @@ If you live in the US and have configuered UAT feeding, you can explore the data
 **Graphs1090 Stats Graphs**
 [Graphs1090](https://github.com/wiedehopf/graphs1090) is a graphical output that plots performance graphs of the interesting data from both your SDR data and your system data. You can see things like your ADS-B range, message rates, number of planes and signal levels as well as system data such as CPU and memory usage, temperature and bandwidth. When you are in your local network, head to `YOURIP/graphs1090` to check it out. When remote, open balena's *Public Device URL* and add `/graphs1090/` to the tail end of the URL, e.g. `https://6g31f15653bwt4y251b18c1daf4qw164.balena-devices.com/graphs1090/`
 
+**Ident Operator Console (Optional)**
+[Ident](https://github.com/Ident-1090/Ident) is a modern operator console with a live map, filters, and aircraft details, fed directly from the `aircraft.json` produced by your local dump1090 receiver. Ident is an opt-in service – see *Part 15 – Advanced configuration* below for how to enable it. Once enabled, head to `YOURIP/ident/` (or `YOURIP:8090`) when you are on your local network. When remote, open balena's *Public Device URL* and add `/ident/` to the tail end of the URL, e.g. `https://6g31f15653bwt4y251b18c1daf4qw164.balena-devices.com/ident/`
+
 # Part 15 – Advanced configuration
 ## Disabling specific services
 You can disable any of the balena-ads-b services by creating a *Device Variable* named `DISABLED_SERVICES` with the services you want to disable as comma-separated values. For example, if you want to disable the dump1090fa service, you set the `DISABLED_SERVICES` variable to `dump1090fa`. If you want to disable the dump1090fa and piaware services, you set the `DISABLED_SERVICES` variable to `dump1090fa, piaware`.
@@ -548,6 +551,7 @@ By default, dump1090 will run with adaptive gain in dynamic range mode. You can 
 ## Device reboot on service exit
 dump978 and dump1090 can restart the device if it hits an error. You can enable this feature by setting a *Device Variable* named `REBOOT_DEVICE_ON_SERVICE_EXIT` with the value of `true`.
 
+
 ## Automatic balenaOS host and Supervisor updates
 
 Automatically keep your balenaOS host release and/or the balena Supervisor up-to-date. To enable this service, create a *Device Variable* named `ENABLED_SERVICES` with the value of `autohupr`. The two updaters are independent: set the target-version variable for whichever you want to keep up-to-date and leave the other unset.
@@ -561,6 +565,12 @@ Automatically keep your balenaOS host release and/or the balena Supervisor up-to
 
 - `SUPERVISOR_CHECK_INTERVAL`: Interval between checking for available Supervisor updates. Default is `1d`. Must include a unit (`s`/`m`/`h`/`d`); minimum `1s`, maximum `24d`.
 - `SUPERVISOR_TARGET_VERSION`: The Supervisor version you want the device pinned to. This variable must be set for a Supervisor update to be performed. Set it to `latest`/`recommended` to always pull the newest available Supervisor for the device's CPU architecture, to a full version like `16.8.2` for an exact pin, or to a partial version like `16.8` to track the newest release in that line. Matching is segment-aware, so `16.8` matches `16.8.x` but not `16.80.x`. Do **not** include a leading `v`. Once a new target is set the on-device Supervisor updater applies it on its next poll — 15 minutes after boot, then every 24 hours thereafter — so the actual upgrade may take up to a day to land unless the device is rebooted.
+
+## Ident operator console
+
+[Ident](https://github.com/Ident-1090/Ident) is an opt-in operator console that watches `aircraft.json` from your dump1090 receiver and presents it in a modern web UI. To enable it, create a *Device Variable* named `ENABLED_SERVICES` with the value of `ident` (or append `,ident` to an existing comma-separated list, for example `autohupr,ident`). The console is then reachable at `YOURIP/ident/` via traefik or directly on `YOURIP:8090`.
+
+Note: Future updates may enable this automatically after sufficient testing, thus why this is opt-in for now.
 
 ## Custom MLAT client
 
