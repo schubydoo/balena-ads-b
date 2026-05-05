@@ -5,7 +5,7 @@ FROM ghcr.io/ident-1090/ident:${IDENT_VERSION}
 LABEL maintainer="https://github.com/schubydoo"
 
 USER root
-RUN apk add --no-cache bash curl ca-certificates tini
+RUN apk add --no-cache bash curl ca-certificates tini jq inotify-tools
 
 COPY start.sh /start.sh
 RUN chmod +x /start.sh

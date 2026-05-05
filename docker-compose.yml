@@ -309,7 +309,8 @@ services:
     restart: unless-stopped
     environment:
       - IDENT_ADDR=:8080
-      - IDENT_DATA_DIR=/run/dump1090-fa
+      - IDENT_SOURCE_DIR=/run/dump1090-fa
+      - IDENT_DATA_DIR=/run/ident-data
       - IDENT_BASE_PATH=/ident
     expose:
       - "8080"
