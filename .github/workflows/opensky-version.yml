@@ -16,7 +16,21 @@ jobs:
           ref: 'master'
 
       - name: Download Package File
-        run: aria2c -x 2 -o opensky-network/.Packages https://s3.opensky-network.org/website-public-repos/debian/dists/opensky/custom/binary-arm64/Packages
+        uses: nick-fields/retry@ad984534de44a9489a53aefd81eb77f87c70dc60 # v4
+        with:
+          timeout_minutes: 2
+          max_attempts: 5
+          retry_wait_seconds: 30
+          command: |
+            aria2c \
+              --connect-timeout=20 \
+              --timeout=30 \
+              --max-tries=3 \
+              --retry-wait=10 \
+              --lowest-speed-limit=1K \
+              -x 2 \
+              -o opensky-network/.Packages \
+              https://s3.opensky-network.org/website-public-repos/debian/dists/opensky/custom/binary-arm64/Packages
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
