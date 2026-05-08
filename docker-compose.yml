@@ -3,6 +3,7 @@ volumes:
   settings:
   airnav-radar:
   tar1090:
+  aircraft-data:
 services:
   kiosk:
     restart: unless-stopped
@@ -72,6 +73,8 @@ services:
       - "30105:30105"
       - "30106:30106"
       - "8080:8080"
+    volumes:
+      - 'aircraft-data:/run/dump1090-fa'
     labels:
       - "io.balena.features.supervisor-api=1"
       - "traefik.enable=true"
@@ -298,6 +301,31 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.tar1090.rule=PathPrefix(`/tar1090`)"
       - "traefik.http.routers.tar1090-a.rule=PathPrefix(`/graphs1090`)"
+  ident:
+    depends_on:
+      - dump1090-fa
+    build: ./ident
+    image: ident
+    restart: unless-stopped
+    environment:
+      - IDENT_ADDR=:8080
+      - IDENT_SOURCE_DIR=/run/dump1090-fa
+      - IDENT_DATA_DIR=/run/ident-data
+      - IDENT_BASE_PATH=/ident
+    expose:
+      - "8080"
+    ports:
+      - "8090:8080"
+    volumes:
+      - 'aircraft-data:/run/dump1090-fa:ro'
+    labels:
+      - "io.balena.features.supervisor-api=1"
+      - "traefik.enable=true"
+      - "traefik.http.routers.ident.rule=PathPrefix(`/ident`)"
+      - "traefik.http.routers.ident.middlewares=ident-redirect"
+      - "traefik.http.middlewares.ident-redirect.redirectregex.regex=^.*/ident$$"
+      - "traefik.http.middlewares.ident-redirect.redirectregex.replacement=/ident/"
+      - "traefik.http.middlewares.ident-redirect.redirectregex.permanent=true"
 # Optional: Uncomment to enable custom mlat server.
 #  mlat-client:
 #    depends_on:
