@@ -1,4 +1,4 @@
-FROM golang:1.26.2-trixie AS buildstep
+FROM golang:1.26.3-trixie AS buildstep
 LABEL maintainer="https://github.com/ketilmo"
 
 # specify plane.watch pw-feeder version
