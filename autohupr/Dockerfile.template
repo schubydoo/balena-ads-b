@@ -2,9 +2,6 @@ ARG ALPINE_VERSION=3.23
 FROM alpine:${ALPINE_VERSION}
 LABEL maintainer="https://github.com/ketilmo"
 
-# Re-declare inside the build stage so it's visible to RUN.
-ARG ALPINE_VERSION
-
 # renovate: alpine-package=nodejs
 ARG NODEJS_VERSION=24
 
