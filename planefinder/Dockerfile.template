@@ -30,16 +30,29 @@ RUN printf '%s\n' \
 FROM base AS buildstep
 
 ARG PLANEFINDER_VERSION=5.3.29
+ARG TEMP_INSTALL="wget"
+
+RUN apt-get update && \
+	apt-get install -y --no-install-recommends $TEMP_INSTALL
+
+WORKDIR /tmp
 
 COPY planefinder_installer.sh /tmp
+RUN chmod +x /tmp/planefinder_installer.sh && \
+	./planefinder_installer.sh
+
+FROM base AS release
+
+COPY --from=buildstep /tmp/PlaneFinder.deb /tmp/
 COPY start.sh /
 COPY pfclient-config.json.tpl /etc
 
 WORKDIR /tmp
 
-RUN chmod +x /tmp/planefinder_installer.sh && \
-	./planefinder_installer.sh && \
+RUN apt-get update && \
+	apt-get install -y --no-install-recommends ./PlaneFinder.deb && \
 	chmod +x /start.sh && \
-	rm -rf /tmp/*
+	apt-get clean && apt-get autoremove -y && \
+	rm -rf /var/lib/apt/lists/* /tmp/*
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/start.sh"]

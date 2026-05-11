@@ -21,8 +21,6 @@ case "$arch" in
 		;;
 esac
 
-apt-get update && apt-get install -y --no-install-recommends wget
-
 planefinder_packet="pfclient_${planefinder_version}_${planefinder_arch}.deb"
 
 cd /tmp/
@@ -32,9 +30,3 @@ cd /tmp/
 # timeouts and retries to fail fast on transient network issues.
 wget --tries=3 --timeout=60 --retry-connrefused \
 	-O PlaneFinder.deb "https://client.planefinder.net/$planefinder_packet"
-apt-get install -y --no-install-recommends ./PlaneFinder.deb
-rm -rf PlaneFinder.deb
-
-apt-get purge -y wget && \
-	apt-get clean && apt-get autoremove -y && \
-	rm -rf /var/lib/apt/lists/*
