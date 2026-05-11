@@ -4,12 +4,15 @@ ARG TAR1090_VERSION=latest-build-1436
 FROM ghcr.io/sdr-enthusiasts/docker-tar1090:${TAR1090_VERSION} AS base
 LABEL maintainer="https://github.com/ketilmo"
 
+# renovate: datasource=git-refs depName=https://github.com/wiedehopf/tar1090
+ARG TAR1090_NGINX_REF=6565eadb23b987e78ef2729ca8e254e4c9e68734
+
 # Copy our start script into correct place to be at the beginning of s6 startup
 COPY 00-startup-checks /etc/s6-overlay/startup.d
 
 # Edit configuration files so that tar1090 appeats at /tar1090 url instead of at root
 RUN rm -f /etc/nginx/nginx-tar1090-webroot.conf && \
-    wget -O /etc/nginx/nginx-tar1090.conf https://raw.githubusercontent.com/wiedehopf/tar1090/refs/heads/master/nginx.conf && \
+    wget -O /etc/nginx/nginx-tar1090.conf "https://raw.githubusercontent.com/wiedehopf/tar1090/${TAR1090_NGINX_REF}/nginx.conf" && \
     mv /usr/local/share/tar1090/html-webroot /usr/local/share/tar1090/html && \
     html_path=/usr/local/share/tar1090/html && \
     srcdir=/run/readsb && \

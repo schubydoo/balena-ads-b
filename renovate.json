@@ -103,6 +103,18 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
+        "/(^|/)Dockerfile\\.[^/]*$/"
+      ],
+      "matchStrings": [
+        "TAR1090_NGINX_REF=(?<currentDigest>.*?)\\n"
+      ],
+      "currentValueTemplate": "master",
+      "packageNameTemplate": "https://github.com/wiedehopf/tar1090",
+      "datasourceTemplate": "git-refs"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
         "/(^|/)autohupr/Dockerfile\\.template$/"
       ],
       "matchStringsStrategy": "combination",
