@@ -61,7 +61,7 @@ WORKDIR /tmp
 RUN dpkg --unpack OpenSky.deb && \
 	rm /var/lib/dpkg/info/opensky-feeder.postinst -f && \
 	dpkg --configure opensky-feeder && \
-	apt-get install -fy && \
+	apt-get install -fy --no-install-recommends && \
 	chmod +x /start.sh && \
 	chmod +x /getserial.sh && \
 	rm -rf /tmp/*
