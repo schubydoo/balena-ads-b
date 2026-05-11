@@ -44,7 +44,6 @@ services:
     build: ./dump1090-fa
     image: dump1090-fa
     restart: unless-stopped
-    privileged: true
     environment:
       - LAT=
       - LON=
@@ -241,7 +240,6 @@ services:
     build: ./wingbits
     image: wingbits
     restart: unless-stopped
-    privileged: true
     environment:
       - WINGBITS_DEVICE_ID=
       - LAT=
