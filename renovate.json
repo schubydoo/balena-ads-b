@@ -151,7 +151,7 @@
       ]
     },
     "opensky": {
-      "defaultRegistryUrlTemplate": "https://raw.githubusercontent.com/ketilmo/balena-ads-b/refs/heads/master/opensky-network/.Packages",
+      "defaultRegistryUrlTemplate": "https://raw.githubusercontent.com/ketilmo/balena-ads-b/refs/heads/master/opensky-network/.Packages.arm64",
       "transformTemplates": [
         "{ \"releases\": [{ \"version\": $trim($[0].releases.version.$match(/Version: ([^\\s]+)/).groups[0]) }] }"
       ],

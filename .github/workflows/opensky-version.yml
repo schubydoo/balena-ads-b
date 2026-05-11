@@ -15,32 +15,38 @@ jobs:
         with:
           ref: 'master'
 
-      - name: Download Package File
+      - name: Download Package Files
         timeout-minutes: 360
         shell: bash
         run: |
-          aria2c \
-            --connect-timeout=30 \
-            --timeout=120 \
-            --max-tries=72 \
-            --retry-wait=180 \
-            --lowest-speed-limit=1K \
-            -x 2 \
-            -o opensky-network/.Packages \
-            https://s3.opensky-network.org/website-public-repos/debian/dists/opensky/custom/binary-arm64/Packages
+          for arch in arm64 amd64 armhf; do
+            aria2c \
+              --connect-timeout=30 \
+              --timeout=120 \
+              --max-tries=24 \
+              --retry-wait=180 \
+              --lowest-speed-limit=1K \
+              -x 2 \
+              --allow-overwrite=true \
+              -o "opensky-network/.Packages.${arch}" \
+              "https://s3.opensky-network.org/website-public-repos/debian/dists/opensky/custom/binary-${arch}/Packages"
+          done
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
-          commit-message: Update OpenSky Package file
+          commit-message: Update OpenSky Package files
           committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           base: master
           branch: bot/update-opensky-package-file
           delete-branch: true
-          title: Update OpenSky Package file
-          body: Update OpenSky Package file to the latest version.
-          add-paths: opensky-network/.Packages
+          title: Update OpenSky Package files
+          body: Update OpenSky Package files for all supported architectures to the latest version.
+          add-paths: |
+            opensky-network/.Packages.arm64
+            opensky-network/.Packages.amd64
+            opensky-network/.Packages.armhf
 
   keepalive-update:
     runs-on: ubuntu-latest

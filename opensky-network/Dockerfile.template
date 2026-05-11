@@ -39,6 +39,7 @@ RUN apt-get update && \
 WORKDIR /tmp
 
 COPY opensky_installer.sh /tmp
+COPY .Packages.arm64 .Packages.amd64 .Packages.armhf /tmp/
 RUN chmod +x /tmp/opensky_installer.sh && \
 	./opensky_installer.sh
 
