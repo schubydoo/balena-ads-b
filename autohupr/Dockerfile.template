@@ -1,7 +1,16 @@
-FROM node:22-alpine3.23
+ARG ALPINE_VERSION=3.23
+FROM alpine:${ALPINE_VERSION}
 LABEL maintainer="https://github.com/ketilmo"
 
+# renovate: alpine-package=nodejs
+ARG NODEJS_VERSION=24
+
+# renovate: alpine-package=npm
+ARG NPM_VERSION=11
+
 RUN apk add --no-cache \
+    "nodejs=~${NODEJS_VERSION}" \
+    "npm=~${NPM_VERSION}" \
     bash \
     tini \
     curl

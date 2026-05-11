@@ -99,6 +99,36 @@
       "currentValueTemplate": "dev",
       "packageNameTemplate": "https://github.com/flightaware/piaware_builder",
       "datasourceTemplate": "git-refs"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)autohupr/Dockerfile\\.template$/"
+      ],
+      "matchStringsStrategy": "combination",
+      "matchStrings": [
+        "ARG ALPINE_VERSION=(?<alpineVer>\\S+)",
+        "# renovate: alpine-package=nodejs\\s+ARG NODEJS_VERSION=(?<currentValue>\\d+)"
+      ],
+      "depNameTemplate": "alpine_{{replace \"\\.\" \"_\" alpineVer}}/nodejs",
+      "datasourceTemplate": "repology",
+      "versioningTemplate": "loose",
+      "extractVersionTemplate": "^(?<version>\\d+)"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)autohupr/Dockerfile\\.template$/"
+      ],
+      "matchStringsStrategy": "combination",
+      "matchStrings": [
+        "ARG ALPINE_VERSION=(?<alpineVer>\\S+)",
+        "# renovate: alpine-package=npm\\s+ARG NPM_VERSION=(?<currentValue>\\d+)"
+      ],
+      "depNameTemplate": "alpine_{{replace \"\\.\" \"_\" alpineVer}}/npm",
+      "datasourceTemplate": "repology",
+      "versioningTemplate": "loose",
+      "extractVersionTemplate": "^(?<version>\\d+)"
     }
   ],
   "customDatasources": {
