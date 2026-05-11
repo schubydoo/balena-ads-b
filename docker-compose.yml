@@ -210,8 +210,11 @@ services:
       - LON=
       - ALT=
     volumes:
-      #Slight hack to make AirNav Radar run on i386 and amd64 architectures.
-      - 'airnav-radar:/sys/class/thermal:ro'
+      # Slight hack to make AirNav Radar run on i386 and amd64 architectures
+      # which lack a kernel-provided /sys/class/thermal: the same named
+      # volume is exposed at both paths so writes via /var/radarbox/thermal
+      # are visible to the app at /sys/class/thermal.
+      - 'airnav-radar:/sys/class/thermal'
       - 'airnav-radar:/var/radarbox/thermal'
     labels:
       io.balena.features.supervisor-api: '1'
