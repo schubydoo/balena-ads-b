@@ -23,12 +23,49 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
 
-      - name: Build on Balena with ${{ matrix.architecture }} architecture
-        uses: Wandalen/wretry.action@e68c23e6309f2871ca8ae4763e7629b9c258e1ea # v3.8.0
+      - name: Build on Balena with ${{ matrix.architecture }} architecture (attempt 1)
+        id: build1
+        continue-on-error: true
+        uses: balena-io/deploy-to-balena-action@638e3085dfe40b8c3cef2a34fe9d0874e572de4e # v2.2.0
         with:
-          action: balena-io/deploy-to-balena-action@638e3085dfe40b8c3cef2a34fe9d0874e572de4e # v2.2.0
-          with: |
-            balena_token: ${{ secrets.BALENA_DRAFT_API_KEY }}
-            fleet: ${{ vars.BALENA_DRAFT_FLEET }}-${{ matrix.architecture }}
-            multi_dockerignore: true
-          attempt_limit: 5
+          balena_token: ${{ secrets.BALENA_DRAFT_API_KEY }}
+          fleet: ${{ vars.BALENA_DRAFT_FLEET }}-${{ matrix.architecture }}
+          multi_dockerignore: true
+
+      - name: Build on Balena with ${{ matrix.architecture }} architecture (attempt 2)
+        id: build2
+        if: steps.build1.outcome == 'failure'
+        continue-on-error: true
+        uses: balena-io/deploy-to-balena-action@638e3085dfe40b8c3cef2a34fe9d0874e572de4e # v2.2.0
+        with:
+          balena_token: ${{ secrets.BALENA_DRAFT_API_KEY }}
+          fleet: ${{ vars.BALENA_DRAFT_FLEET }}-${{ matrix.architecture }}
+          multi_dockerignore: true
+
+      - name: Build on Balena with ${{ matrix.architecture }} architecture (attempt 3)
+        id: build3
+        if: steps.build1.outcome == 'failure' && steps.build2.outcome == 'failure'
+        continue-on-error: true
+        uses: balena-io/deploy-to-balena-action@638e3085dfe40b8c3cef2a34fe9d0874e572de4e # v2.2.0
+        with:
+          balena_token: ${{ secrets.BALENA_DRAFT_API_KEY }}
+          fleet: ${{ vars.BALENA_DRAFT_FLEET }}-${{ matrix.architecture }}
+          multi_dockerignore: true
+
+      - name: Build on Balena with ${{ matrix.architecture }} architecture (attempt 4)
+        id: build4
+        if: steps.build1.outcome == 'failure' && steps.build2.outcome == 'failure' && steps.build3.outcome == 'failure'
+        continue-on-error: true
+        uses: balena-io/deploy-to-balena-action@638e3085dfe40b8c3cef2a34fe9d0874e572de4e # v2.2.0
+        with:
+          balena_token: ${{ secrets.BALENA_DRAFT_API_KEY }}
+          fleet: ${{ vars.BALENA_DRAFT_FLEET }}-${{ matrix.architecture }}
+          multi_dockerignore: true
+
+      - name: Build on Balena with ${{ matrix.architecture }} architecture (attempt 5)
+        if: steps.build1.outcome == 'failure' && steps.build2.outcome == 'failure' && steps.build3.outcome == 'failure' && steps.build4.outcome == 'failure'
+        uses: balena-io/deploy-to-balena-action@638e3085dfe40b8c3cef2a34fe9d0874e572de4e # v2.2.0
+        with:
+          balena_token: ${{ secrets.BALENA_DRAFT_API_KEY }}
+          fleet: ${{ vars.BALENA_DRAFT_FLEET }}-${{ matrix.architecture }}
+          multi_dockerignore: true
