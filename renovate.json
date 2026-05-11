@@ -6,6 +6,9 @@
   "prHourlyLimit": 0,
   "prConcurrentLimit": 0,
   "ignorePaths": [],
+  "github-actions": {
+    "pinDigests": true
+  },
   "customManagers": [
     {
       "customType": "regex",
