@@ -31,3 +31,6 @@ RUN rm -f /etc/nginx/nginx-tar1090-webroot.conf && \
 
 # Disable healthcheck in base image (as it was causing the services to lock for 10 minutes at startup, likely due to quirk of balena)
 HEALTHCHECK NONE
+
+# No ENTRYPOINT/CMD: inherited from ghcr.io/sdr-enthusiasts/docker-tar1090,
+# which uses s6-overlay as PID 1 (no tini wrapper here — would conflict).
