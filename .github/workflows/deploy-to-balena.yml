@@ -9,6 +9,9 @@ on:
 env:
   BALENA_APP: ketil/balena-ads-b
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: "Deploy-to-Balena"

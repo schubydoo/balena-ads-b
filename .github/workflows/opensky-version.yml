@@ -5,9 +5,15 @@ on:
   schedule:
     - cron: '0 0 * * *'
 
+permissions:
+  contents: read
+
 jobs:
   update-check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository
@@ -78,6 +84,8 @@ jobs:
 
   keepalive-update:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
