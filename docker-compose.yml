@@ -253,6 +253,13 @@ services:
       - WINGBITS_DEVICE_ID=
       - LAT=
       - LON=
+    # USB is not used during normal feeder operation (start.sh runs the
+    # readsb fork with --net-only). The device mapping is here so that
+    # WINGBITS_IDLE=true + `docker exec` can be used to manually flash
+    # the GeoSigner dongle without a compose edit. If a future flasher
+    # needs USBDEVFS_RESET, add `cap_add: [SYS_RAWIO]` alongside.
+    devices:
+      - "/dev/bus/usb"
     expose:
       - '30154'
     labels:
