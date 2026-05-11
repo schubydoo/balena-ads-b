@@ -70,4 +70,4 @@ RUN	mkdir -p /var/radarbox/thermal/thermal_zone0/ && \
 
 RUN mkdir -p /run/shm//
 
-ENTRYPOINT ["/start.sh"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/start.sh"]
