@@ -47,17 +47,6 @@
         "/(^|/)Dockerfile\\.[^/]*$/"
       ],
       "matchStrings": [
-        "OPENSKY_VERSION=(?<currentValue>.*?)\\n"
-      ],
-      "depNameTemplate": "opensky",
-      "datasourceTemplate": "custom.opensky"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/(^|/)Dockerfile\\.[^/]*$/"
-      ],
-      "matchStrings": [
         "MLAT_VERSION=(?<currentDigest>.*?)\\n"
       ],
       "currentValueTemplate": "master",
@@ -149,13 +138,6 @@
       "transformTemplates": [
         "{\"releases\":[{\"version\": $.platform.linux_arm64_tgz.version}]}"
       ]
-    },
-    "opensky": {
-      "defaultRegistryUrlTemplate": "https://raw.githubusercontent.com/ketilmo/balena-ads-b/refs/heads/master/opensky-network/.Packages.arm64",
-      "transformTemplates": [
-        "{ \"releases\": [{ \"version\": $trim($[0].releases.version.$match(/Version: ([^\\s]+)/).groups[0]) }] }"
-      ],
-      "format": "plain"
     },
     "wingbits-version": {
       "defaultRegistryUrlTemplate": "https://gitlab.com/wingbits/config/-/raw/master/download.sh",

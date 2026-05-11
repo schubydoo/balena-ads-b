@@ -32,21 +32,49 @@ jobs:
               "https://s3.opensky-network.org/website-public-repos/debian/dists/opensky/custom/binary-${arch}/Packages"
           done
 
+      - name: Sync OPENSKY_VERSION in Dockerfile
+        shell: bash
+        run: |
+          versions=()
+          for arch in arm64 amd64 armhf; do
+            v=$(awk '
+              /^Package: opensky-feeder$/ { p=1; next }
+              /^Package: / { p=0 }
+              p && /^Version: / { print $2; exit }
+            ' "opensky-network/.Packages.${arch}")
+            if [ -z "$v" ]; then
+              echo "Could not parse opensky-feeder version from .Packages.${arch}" >&2
+              exit 1
+            fi
+            versions+=("$v")
+          done
+
+          unique=$(printf '%s\n' "${versions[@]}" | sort -u)
+          if [ "$(echo "$unique" | wc -l)" -ne 1 ]; then
+            echo "opensky-feeder version disagrees across architectures: ${versions[*]}" >&2
+            exit 1
+          fi
+
+          new_version="${versions[0]}"
+          sed -i "s|^ARG OPENSKY_VERSION=.*|ARG OPENSKY_VERSION=${new_version}|" \
+            opensky-network/Dockerfile.template
+
       - name: Create pull request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
-          commit-message: Update OpenSky Package files
+          commit-message: Update OpenSky package files and version
           committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           base: master
           branch: bot/update-opensky-package-file
           delete-branch: true
-          title: Update OpenSky Package files
-          body: Update OpenSky Package files for all supported architectures to the latest version.
+          title: Update OpenSky package files and version
+          body: Update OpenSky `Packages` indices for all supported architectures and bump `OPENSKY_VERSION` in `opensky-network/Dockerfile.template` so version and SHA256 land atomically.
           add-paths: |
             opensky-network/.Packages.arm64
             opensky-network/.Packages.amd64
             opensky-network/.Packages.armhf
+            opensky-network/Dockerfile.template
 
   keepalive-update:
     runs-on: ubuntu-latest

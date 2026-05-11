@@ -29,7 +29,9 @@ RUN printf '%s\n' \
 
 FROM base AS buildstep
 
-# renovate: datasource=custom.opensky depName=opensky versioning=loose
+# OPENSKY_VERSION is updated by .github/workflows/opensky-version.yml in
+# the same PR as opensky-network/.Packages.${arch}, so version and
+# SHA256 always land atomically.
 ARG OPENSKY_VERSION=2.1.7-1
 ARG TEMP_INSTALL="wget" 
 
