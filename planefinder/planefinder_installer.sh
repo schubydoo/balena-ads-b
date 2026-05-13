@@ -9,12 +9,6 @@ case "$arch" in
 		planefinder_version="$PLANEFINDER_VERSION"
 		planefinder_arch="$arch"
 		;;
-	i386)
-		# PlaneFinder dropped i386 builds after 5.0.161; pin to the
-		# last release that ships an i386 .deb.
-		planefinder_version="5.0.161"
-		planefinder_arch="i386"
-		;;
 	*)
 		echo "Unsupported architecture for PlaneFinder: $arch" >&2
 		exit 1

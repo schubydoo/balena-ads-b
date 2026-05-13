@@ -58,7 +58,7 @@ WORKDIR /tmp
 RUN mkdir -p /usr/local/share/mlat-client/venv/
 COPY --from=buildstep /usr/local/share/mlat-client/venv/ /usr/local/share/mlat-client/venv/
 
-# Slight hack to make AirNav Radar work on i386 and amd64 architectures.
+# Slight hack to make AirNav Radar work on the amd64 architecture.
 RUN	mkdir -p /var/radarbox/thermal/thermal_zone0/ && \
 	rm -f /var/radarbox/thermal/thermal_zone0/temp &&  \
 	echo 24000 > /var/radarbox/thermal/thermal_zone0/temp && \

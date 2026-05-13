@@ -8,9 +8,6 @@ function setup_wingbits_client() {
 		x86_64)
 			GOARCH="amd64"
 			;;
-		i386|i686)
-			GOARCH="386"
-			;;
 		armv7l)
 			GOARCH="arm"
 			;;

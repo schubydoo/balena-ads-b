@@ -213,8 +213,8 @@ services:
       - LON=
       - ALT=
     volumes:
-      # Slight hack to make AirNav Radar run on i386 and amd64 architectures
-      # which lack a kernel-provided /sys/class/thermal. The Dockerfile
+      # Slight hack to make AirNav Radar run on the amd64 architecture
+      # which lacks a kernel-provided /sys/class/thermal. The Dockerfile
       # bakes /var/radarbox/thermal/thermal_zone0/temp = 24000 into the
       # image; on first container start, Docker copies that path's content
       # into the (empty) named volume, so the same fake temp is also

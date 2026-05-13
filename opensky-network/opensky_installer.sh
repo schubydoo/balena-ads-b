@@ -4,13 +4,11 @@ set -e
 arch="$(dpkg --print-architecture)"
 echo System Architecture: $arch
 
-if [ "$arch" = "arm64" ]; then 
+if [ "$arch" = "arm64" ]; then
 	opensky_arch="arm64"
-elif [ "$arch" = "amd64" ]; then 
+elif [ "$arch" = "amd64" ]; then
 	opensky_arch="amd64"
-elif [ "$arch" = "i386" ]; then 
-	opensky_arch="i386"
-else 
+else
 	opensky_arch="armhf"
 fi
 

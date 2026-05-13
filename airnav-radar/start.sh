@@ -87,10 +87,10 @@ if [[ "$UAT_ENABLED" = "true" ]]; then
 	socat TCP-LISTEN:30979,fork TCP:dump978-fa:30979 &
 fi
 
-# If host architecture is i386 or amd64, run AirNav Radar through armhf software emulation.
-if [ "$arch" = "i386" ] || [ "$arch" = "amd64" ]; then 
+# If host architecture is amd64, run AirNav Radar through armhf software emulation.
+if [ "$arch" = "amd64" ]; then
 	/usr/bin/qemu-arm-static /usr/bin/rbfeeder &
-else 
+else
 	/usr/bin/rbfeeder &
 fi
 
