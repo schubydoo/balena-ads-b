@@ -85,10 +85,17 @@ services:
       - "traefik.http.middlewares.skyaware-redirect.redirectregex.permanent=true"
       # Temporary redirect for legacy purposes (from 13 March 2021)
       - "traefik.http.routers.dump1090-fa.rule=PathPrefix(`/dump1090-fa`)"
-      - "traefik.http.routers.dump1090-fa.middlewares=dump1090-fa-redirect" 
+      - "traefik.http.routers.dump1090-fa.middlewares=dump1090-fa-redirect"
       - "traefik.http.middlewares.dump1090-fa-redirect.redirectregex.regex=^.*/dump1090-fa.*$$"
       - "traefik.http.middlewares.dump1090-fa-redirect.redirectregex.replacement=/skyaware/"
       - "traefik.http.middlewares.dump1090-fa-redirect.redirectregex.permanent=true"
+      # Airspy stats page, served by the in-container lighttpd when
+      # AIRSPY_ADSB_STATS=true (87-airspy.conf adds /airspy_adsb/ -> /run/airspy_adsb/).
+      - "traefik.http.routers.airspy-adsb.rule=PathPrefix(`/airspy_adsb`)"
+      - "traefik.http.routers.airspy-adsb.middlewares=airspy-adsb-redirect"
+      - "traefik.http.middlewares.airspy-adsb-redirect.redirectregex.regex=^.*/airspy_adsb$$"
+      - "traefik.http.middlewares.airspy-adsb-redirect.redirectregex.replacement=/airspy_adsb/"
+      - "traefik.http.middlewares.airspy-adsb-redirect.redirectregex.permanent=true"
   dump978-fa:
     build: ./dump978-fa
     image: dump978-fa
