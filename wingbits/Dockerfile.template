@@ -10,9 +10,19 @@ ENV RECEIVER_PORT=30005
 
 # renovate: datasource=custom.wingbits-version depName=wingbits-version versioning=loose
 ENV WINGBITS_CONFIG_VERSION=0.2.1
-# renovate: datasource=custom.wingbits-json depName=wingbits-json versioning=loose
+# WINGBITS_COMMIT_ID, WINGBITS_DATE and the per-arch SHA256 hashes
+# below are managed by Renovate. Each line is paired with
+# WINGBITS_COMMIT_ID via a combination-strategy regex manager keyed
+# off custom.wingbits-meta / custom.wingbits-binary, so the binary
+# URL and the verified checksum always refer to the same upstream
+# release. The SHA256 values are the base64 Sha256 strings from
+# install.wingbits.com/linux-<arch>.json — Renovate returns them
+# verbatim and the installer decodes them at build time.
 ENV WINGBITS_COMMIT_ID=v1.12.0
 ENV WINGBITS_DATE=2026-05-12T13:27:03.248603202Z
+ENV WINGBITS_SHA256_AMD64=IJxqhEFAgnlMmnHv+kA3muQW9f98RVHTZrjvuAV8L3g=
+ENV WINGBITS_SHA256_ARM64=/rE+0E4nJMVvATDjccj5HxwGU1dmyW7d9wh/VerTFDI=
+ENV WINGBITS_SHA256_ARM=3Jv/zlPKVR8jShmR1RO1Rs9rgU5VqPArnztMQZ0cFwo=
 
 ARG PERM_INSTALL="curl ca-certificates gettext-base tini ncurses-dev zlib1g jq python3-pip python3-venv wget"
 

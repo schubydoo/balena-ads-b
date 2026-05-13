@@ -24,14 +24,57 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/(^|/)Dockerfile\\.[^/]*$/"
+        "/(^|/)wingbits/Dockerfile\\.template$/"
       ],
+      "matchStringsStrategy": "combination",
       "matchStrings": [
-        "WINGBITS_COMMIT_ID=(?<currentDigest>.*?)\\nENV WINGBITS_DATE=(?<currentValue>.*?)\\n"
+        "ENV WINGBITS_COMMIT_ID=(?<currentValue>.*?)\\n",
+        "ENV WINGBITS_DATE=(?<currentDigest>.*?)\\n"
       ],
-      "versioningTemplate": "regex:^(?<major>20\\d\\d)-(?<minor>\\d\\d)-(?<patch>\\d\\d)T(?<build>\\d\\d)",
-      "depNameTemplate": "wingbits-json",
-      "datasourceTemplate": "custom.wingbits-json"
+      "depNameTemplate": "wingbits-meta",
+      "datasourceTemplate": "custom.wingbits-meta"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)wingbits/Dockerfile\\.template$/"
+      ],
+      "matchStringsStrategy": "combination",
+      "matchStrings": [
+        "ENV WINGBITS_COMMIT_ID=(?<currentValue>.*?)\\n",
+        "ENV WINGBITS_SHA256_AMD64=(?<currentDigest>.*?)\\n"
+      ],
+      "depNameTemplate": "wingbits-binary-amd64",
+      "packageNameTemplate": "amd64",
+      "datasourceTemplate": "custom.wingbits-binary"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)wingbits/Dockerfile\\.template$/"
+      ],
+      "matchStringsStrategy": "combination",
+      "matchStrings": [
+        "ENV WINGBITS_COMMIT_ID=(?<currentValue>.*?)\\n",
+        "ENV WINGBITS_SHA256_ARM64=(?<currentDigest>.*?)\\n"
+      ],
+      "depNameTemplate": "wingbits-binary-arm64",
+      "packageNameTemplate": "arm64",
+      "datasourceTemplate": "custom.wingbits-binary"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)wingbits/Dockerfile\\.template$/"
+      ],
+      "matchStringsStrategy": "combination",
+      "matchStrings": [
+        "ENV WINGBITS_COMMIT_ID=(?<currentValue>.*?)\\n",
+        "ENV WINGBITS_SHA256_ARM=(?<currentDigest>.*?)\\n"
+      ],
+      "depNameTemplate": "wingbits-binary-arm",
+      "packageNameTemplate": "arm",
+      "datasourceTemplate": "custom.wingbits-binary"
     },
     {
       "customType": "regex",
@@ -149,10 +192,16 @@
       ],
       "format": "plain"
     },
-    "wingbits-json": {
+    "wingbits-meta": {
       "defaultRegistryUrlTemplate": "https://install.wingbits.com/linux-arm64.json",
       "transformTemplates": [
-        "{\"releases\":[{\"version\": $.Date, \"releaseTimestamp\": $.Date, \"digest\": $.Version}]}"
+        "{\"releases\":[{\"version\": $.Version, \"digest\": $.Date}]}"
+      ]
+    },
+    "wingbits-binary": {
+      "defaultRegistryUrlTemplate": "https://install.wingbits.com/linux-{{packageName}}.json",
+      "transformTemplates": [
+        "{\"releases\":[{\"version\": $.Version, \"digest\": $.Sha256}]}"
       ]
     }
   },
@@ -163,9 +212,14 @@
       ],
       "matchDatasources": [
         "custom.wingbits-version",
-        "custom.wingbits-json"
+        "custom.wingbits-meta",
+        "custom.wingbits-binary"
       ],
-      "groupName": "wingbits version to latest"
+      "groupName": "wingbits version to latest",
+      "groupSlug": "wingbits-version-to-latest",
+      "separateMajorMinor": false,
+      "separateMinorPatch": false,
+      "separateMultipleMajor": false
     }
   ],
   "logLevelRemap": [

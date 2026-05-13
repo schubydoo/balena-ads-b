@@ -25,10 +25,19 @@ function setup_wingbits_client() {
 	mkdir -p $WINGBITS_PATH
         mkdir -p $WINGBITS_VERSION_PATH
 
-	# Fetch arch-specific manifest to obtain the expected SHA256 of the
-	# extracted binary. Manifest Sha256 is base64-encoded.
-	curl -fsSL -o /tmp/wingbits-manifest.json "https://install.wingbits.com/$GOOS-$GOARCH.json"
-	expected_sha256_b64=$(jq -r '.Sha256' /tmp/wingbits-manifest.json)
+	# Pick the expected SHA256 (base64, as published by install.wingbits.com)
+	# from the per-arch ENV var baked into the Dockerfile alongside
+	# WINGBITS_COMMIT_ID. The two are updated in lockstep by Renovate's
+	# custom.wingbits-binary manager, so the binary URL and the verified
+	# checksum always refer to the same upstream release — unlike the
+	# unversioned manifest URL, which would race against new upstream
+	# builds on a rebuild of an older base.
+	sha_var="WINGBITS_SHA256_${GOARCH^^}"
+	expected_sha256_b64="${!sha_var}"
+	if [ -z "$expected_sha256_b64" ]; then
+		echo "Missing expected SHA256: $sha_var is not set" >&2
+		exit 1
+	fi
 	expected_sha256_hex=$(printf '%s' "$expected_sha256_b64" | base64 -d | od -An -tx1 | tr -d ' \n')
 
 	curl -fsSL -o $WINGBITS_PATH/wingbits.gz "https://install.wingbits.com/$WINGBITS_COMMIT_ID/$GOOS-$GOARCH.gz"
@@ -36,7 +45,6 @@ function setup_wingbits_client() {
 
 	echo "$expected_sha256_hex  $WINGBITS_PATH/wingbits" | sha256sum -c -
 
-	rm /tmp/wingbits-manifest.json
 	chmod +x $WINGBITS_PATH/wingbits
 	PATH=$WINGBITS_PATH:$PATH
 }
