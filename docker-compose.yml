@@ -254,10 +254,14 @@ services:
       - LAT=
       - LON=
     # USB is not used during normal feeder operation (start.sh runs the
-    # readsb fork with --net-only). The device mapping is here so that
-    # WINGBITS_IDLE=true + `docker exec` can be used to manually flash
-    # the GeoSigner dongle without a compose edit. If a future flasher
-    # needs USBDEVFS_RESET, add `cap_add: [SYS_RAWIO]` alongside.
+    # readsb fork with --net-only). The device mapping plus SYS_RAWIO
+    # is here so that WINGBITS_IDLE=true + `docker exec` can be used
+    # to manually flash the GeoSigner dongle without a compose edit:
+    # bind-mounting /dev/bus/usb alone exposes the device nodes but
+    # USBDEVFS_RESET / control-transfer ioctls fail with EPERM unless
+    # the container is privileged or has SYS_RAWIO.
+    cap_add:
+      - SYS_RAWIO
     devices:
       - "/dev/bus/usb"
     expose:
