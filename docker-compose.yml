@@ -2,7 +2,7 @@ version: '2.4'
 volumes:
   settings:
   airnav-radar:
-  tar1090-globe-history:
+  tar1090:
   tar1090-timelapse:
   tar1090-collectd:
   tar1090-log:
@@ -301,7 +301,7 @@ services:
       - LAT=
       - LON=
     volumes:
-      - tar1090-globe-history:/var/globe_history
+      - tar1090:/var/globe_history
       - tar1090-timelapse:/var/timelapse1090
       - tar1090-collectd:/var/lib/collectd
       - tar1090-log:/var/log
