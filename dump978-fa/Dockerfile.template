@@ -7,7 +7,7 @@ ENV DUMP978_DEVICE=00000978
 ENV DUMP978_ENABLED=false
 ENV REBOOT_DEVICE_ON_SERVICE_EXIT=""
 
-ARG PERM_INSTALL="tini ca-certificates curl libboost-program-options1.83.0 libusb-1.0-0 lighttpd swig gettext-base libboost-filesystem1.83.0 libboost-regex1.83.0 libboost-system1.83.0 libsoapysdr0.8 adduser"
+ARG PERM_INSTALL="tini ca-certificates curl libusb-1.0-0 lighttpd swig gettext-base libsoapysdr0.8 adduser"
 
 RUN printf '%s\n' \
 		'path-exclude /usr/share/doc/*' \
