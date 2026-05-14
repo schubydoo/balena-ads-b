@@ -180,7 +180,7 @@
         "/(^|/)planefinder/Dockerfile\\.template$/"
       ],
       "matchStrings": [
-        "PLANEFINDER_VERSION_AMD64=(?<currentValue>.*?)\\n"
+        "ARG PLANEFINDER_VERSION_AMD64=(?<currentValue>.*?)\\n"
       ],
       "depNameTemplate": "planefinder-binary-amd64",
       "datasourceTemplate": "custom.planefinder-binary-amd64"
@@ -191,7 +191,7 @@
         "/(^|/)planefinder/Dockerfile\\.template$/"
       ],
       "matchStrings": [
-        "PLANEFINDER_VERSION_ARM64=(?<currentValue>.*?)\\n"
+        "ARG PLANEFINDER_VERSION_ARM64=(?<currentValue>.*?)\\n"
       ],
       "depNameTemplate": "planefinder-binary-arm64",
       "datasourceTemplate": "custom.planefinder-binary-arm64"
@@ -202,7 +202,7 @@
         "/(^|/)planefinder/Dockerfile\\.template$/"
       ],
       "matchStrings": [
-        "PLANEFINDER_VERSION_ARMHF=(?<currentValue>.*?)\\n"
+        "ARG PLANEFINDER_VERSION_ARMHF=(?<currentValue>.*?)\\n"
       ],
       "depNameTemplate": "planefinder-binary-armhf",
       "datasourceTemplate": "custom.planefinder-binary-armhf"
