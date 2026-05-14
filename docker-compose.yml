@@ -47,6 +47,13 @@ services:
     build: ./dump1090-fa
     image: dump1090-fa
     restart: unless-stopped
+    # privileged is required so start.sh can write
+    # /sys/module/usbcore/parameters/usbfs_memory_mb=0 (lifts the 16 MB
+    # usbfs buffer cap for high-rate SDR captures such as Airspy at 12 Msps).
+    # Unprivileged containers get /sys mounted read-only regardless of
+    # capabilities, so the write fails with EROFS and trips the start.sh
+    # set -e crash loop.
+    privileged: true
     environment:
       - LAT=
       - LON=
@@ -263,17 +270,33 @@ services:
       - WINGBITS_DEVICE_ID=
       - LAT=
       - LON=
-    # USB is not used during normal feeder operation (start.sh runs the
-    # readsb fork with --net-only). The device mapping plus SYS_RAWIO
-    # is here so that WINGBITS_IDLE=true + `docker exec` can be used
-    # to manually flash the GeoSigner dongle without a compose edit:
-    # bind-mounting /dev/bus/usb alone exposes the device nodes but
-    # USBDEVFS_RESET / control-transfer ioctls fail with EPERM unless
-    # the container is privileged or has SYS_RAWIO.
+    # SYS_RAWIO: the wingbits binary embeds GeoSigner support which talks
+    # to the dongle over USB; WINGBITS_IDLE=true + `docker exec` is used
+    # to manually flash the dongle without a compose edit. Bind-mounting
+    # /dev/bus/usb alone exposes the device nodes but USBDEVFS_RESET and
+    # control-transfer ioctls fail with EPERM unless the container is
+    # privileged or has SYS_RAWIO. USB is not used during normal feeder
+    # operation (start.sh runs the readsb fork with --net-only).
+    #
+    # NET_ADMIN: the wingbits binary also embeds Tailscale (tsnet) which
+    # wants SO_MARK / fwmark / netlink writes / raw disco listener — all
+    # gated on CAP_NET_ADMIN. Without it Tailscale logs "raw disco
+    # listening disabled, SO_MARK unavailable" and falls back to a
+    # degraded mode; in some setups this also delays/blocks the Beast
+    # listener (port 30015) coming up, which is what readsb-wingbits
+    # connects to.
     cap_add:
       - SYS_RAWIO
+      - NET_ADMIN
     devices:
       - "/dev/bus/usb"
+    # USB character devices (major 189) — current AND hotplugged. Without
+    # this rule, the devices cgroup allow-list is fixed at container start
+    # to the /dev/bus/usb/<bus>/<dev> nodes present at that moment, so a
+    # GeoSigner replug or USB-bus renumber silently EPERMs on ioctl even
+    # though the new device node appears in the bind-mounted /dev/bus/usb.
+    device_cgroup_rules:
+      - "c 189:* rwm"
     expose:
       - '30154'
     labels:
