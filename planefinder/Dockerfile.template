@@ -29,12 +29,14 @@ RUN printf '%s\n' \
 
 FROM base AS buildstep
 
-# PlaneFinder is closed-source and publishes no version manifest;
-# https://planefinder.net/* is Cloudflare-blocked for non-browser
-# user agents and the pfclient binary has no embedded update check,
-# so there is no stable source for Renovate to track. Bump this pin
-# manually when a new pfclient release is announced upstream.
-ARG PLANEFINDER_VERSION=5.3.29
+# Renovate tracks each ARG below via the planefinder-binary-<arch>
+# custom datasources defined in renovate.json, which scrape the
+# per-arch version matrix sdr-enthusiasts/docker-planefinder
+# maintains by hand against the same upstream:
+# https://github.com/sdr-enthusiasts/docker-planefinder/blob/main/Dockerfile
+ARG PLANEFINDER_VERSION_AMD64=5.3.29
+ARG PLANEFINDER_VERSION_ARM64=5.3.29
+ARG PLANEFINDER_VERSION_ARMHF=5.3.29
 ARG TEMP_INSTALL="wget"
 
 RUN apt-get update && \
@@ -44,6 +46,9 @@ WORKDIR /tmp
 
 COPY planefinder_installer.sh /tmp
 RUN chmod +x /tmp/planefinder_installer.sh && \
+	PLANEFINDER_VERSION_AMD64="${PLANEFINDER_VERSION_AMD64}" \
+	PLANEFINDER_VERSION_ARM64="${PLANEFINDER_VERSION_ARM64}" \
+	PLANEFINDER_VERSION_ARMHF="${PLANEFINDER_VERSION_ARMHF}" \
 	./planefinder_installer.sh
 
 FROM base AS release
@@ -56,6 +61,7 @@ WORKDIR /tmp
 
 RUN apt-get update && \
 	apt-get install -y --no-install-recommends ./PlaneFinder.deb && \
+	pfclient --version && \
 	chmod +x /start.sh && \
 	apt-get clean && apt-get autoremove -y && \
 	rm -rf /var/lib/apt/lists/* /tmp/*

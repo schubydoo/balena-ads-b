@@ -173,6 +173,39 @@
       "datasourceTemplate": "repology",
       "versioningTemplate": "loose",
       "extractVersionTemplate": "^(?<version>\\d+)"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)planefinder/Dockerfile\\.template$/"
+      ],
+      "matchStrings": [
+        "PLANEFINDER_VERSION_AMD64=(?<currentValue>.*?)\\n"
+      ],
+      "depNameTemplate": "planefinder-binary-amd64",
+      "datasourceTemplate": "custom.planefinder-binary-amd64"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)planefinder/Dockerfile\\.template$/"
+      ],
+      "matchStrings": [
+        "PLANEFINDER_VERSION_ARM64=(?<currentValue>.*?)\\n"
+      ],
+      "depNameTemplate": "planefinder-binary-arm64",
+      "datasourceTemplate": "custom.planefinder-binary-arm64"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)planefinder/Dockerfile\\.template$/"
+      ],
+      "matchStrings": [
+        "PLANEFINDER_VERSION_ARMHF=(?<currentValue>.*?)\\n"
+      ],
+      "depNameTemplate": "planefinder-binary-armhf",
+      "datasourceTemplate": "custom.planefinder-binary-armhf"
     }
   ],
   "customDatasources": {
@@ -200,6 +233,27 @@
       "transformTemplates": [
         "{\"releases\":[{\"version\": $.Version, \"digest\": $.Sha256}]}"
       ]
+    },
+    "planefinder-binary-amd64": {
+      "defaultRegistryUrlTemplate": "https://raw.githubusercontent.com/sdr-enthusiasts/docker-planefinder/main/Dockerfile",
+      "transformTemplates": [
+        "{ \"releases\": [{ \"version\": $[0].releases.version.$match(/pfclient_([0-9.]+)_amd64\\.tar\\.gz/).groups[0] }] }"
+      ],
+      "format": "plain"
+    },
+    "planefinder-binary-arm64": {
+      "defaultRegistryUrlTemplate": "https://raw.githubusercontent.com/sdr-enthusiasts/docker-planefinder/main/Dockerfile",
+      "transformTemplates": [
+        "{ \"releases\": [{ \"version\": $[0].releases.version.$match(/pfclient_([0-9.]+)_arm64\\.tar\\.gz/).groups[0] }] }"
+      ],
+      "format": "plain"
+    },
+    "planefinder-binary-armhf": {
+      "defaultRegistryUrlTemplate": "https://raw.githubusercontent.com/sdr-enthusiasts/docker-planefinder/main/Dockerfile",
+      "transformTemplates": [
+        "{ \"releases\": [{ \"version\": $[0].releases.version.$match(/pfclient_([0-9.]+)_armhf\\.tar\\.gz/).groups[0] }] }"
+      ],
+      "format": "plain"
     }
   },
   "packageRules": [

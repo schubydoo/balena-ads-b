@@ -2,12 +2,20 @@
 set -e
 
 arch="$(dpkg --print-architecture)"
-echo System Architecture: $arch
+echo "System Architecture: $arch"
 
+# Per-arch version pins are passed in as separate env vars because
+# upstream releases pfclient asymmetrically across architectures.
+# See planefinder/Dockerfile.template for the tracking rationale.
 case "$arch" in
-	arm64|amd64|armhf)
-		planefinder_version="$PLANEFINDER_VERSION"
-		planefinder_arch="$arch"
+	amd64)
+		planefinder_version="$PLANEFINDER_VERSION_AMD64"
+		;;
+	arm64)
+		planefinder_version="$PLANEFINDER_VERSION_ARM64"
+		;;
+	armhf)
+		planefinder_version="$PLANEFINDER_VERSION_ARMHF"
 		;;
 	*)
 		echo "Unsupported architecture for PlaneFinder: $arch" >&2
@@ -15,7 +23,12 @@ case "$arch" in
 		;;
 esac
 
-planefinder_packet="pfclient_${planefinder_version}_${planefinder_arch}.deb"
+if [ -z "$planefinder_version" ]; then
+	echo "PlaneFinder version pin for $arch is empty" >&2
+	exit 1
+fi
+
+planefinder_packet="pfclient_${planefinder_version}_${arch}.deb"
 
 cd /tmp/
 
