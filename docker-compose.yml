@@ -270,33 +270,11 @@ services:
       - WINGBITS_DEVICE_ID=
       - LAT=
       - LON=
-    # SYS_RAWIO: the wingbits binary embeds GeoSigner support which talks
-    # to the dongle over USB; WINGBITS_IDLE=true + `docker exec` is used
-    # to manually flash the dongle without a compose edit. Bind-mounting
-    # /dev/bus/usb alone exposes the device nodes but USBDEVFS_RESET and
-    # control-transfer ioctls fail with EPERM unless the container is
-    # privileged or has SYS_RAWIO. USB is not used during normal feeder
-    # operation (start.sh runs the readsb fork with --net-only).
-    #
-    # NET_ADMIN: the wingbits binary also embeds Tailscale (tsnet) which
-    # wants SO_MARK / fwmark / netlink writes / raw disco listener — all
-    # gated on CAP_NET_ADMIN. Without it Tailscale logs "raw disco
-    # listening disabled, SO_MARK unavailable" and falls back to a
-    # degraded mode; in some setups this also delays/blocks the Beast
-    # listener (port 30015) coming up, which is what readsb-wingbits
-    # connects to.
-    cap_add:
-      - SYS_RAWIO
-      - NET_ADMIN
-    devices:
-      - "/dev/bus/usb"
-    # USB character devices (major 189) — current AND hotplugged. Without
-    # this rule, the devices cgroup allow-list is fixed at container start
-    # to the /dev/bus/usb/<bus>/<dev> nodes present at that moment, so a
-    # GeoSigner replug or USB-bus renumber silently EPERMs on ioctl even
-    # though the new device node appears in the bind-mounted /dev/bus/usb.
-    device_cgroup_rules:
-      - "c 189:* rwm"
+    # privileged is required: without it the embedded Beast listener
+    # on port 30015 never comes up and GeoSigners are not detected.
+    # Granular caps/devices (SYS_RAWIO, NET_ADMIN, /dev/bus/usb,
+    # major-189 cgroup rule) are not sufficient.
+    privileged: true
     expose:
       - '30154'
     labels:
