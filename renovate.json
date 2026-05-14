@@ -1,14 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    "helpers:pinGitHubActionDigests",
+    ":disableRateLimiting"
   ],
-  "prHourlyLimit": 0,
-  "prConcurrentLimit": 0,
-  "ignorePaths": [],
-  "github-actions": {
-    "pinDigests": true
-  },
   "customManagers": [
     {
       "customType": "regex",
@@ -85,7 +81,8 @@
         "WINGBITS_CONFIG_VERSION=(?<currentValue>.*?)\\n"
       ],
       "depNameTemplate": "wingbits-version",
-      "datasourceTemplate": "custom.wingbits-version"
+      "datasourceTemplate": "custom.wingbits-version",
+      "versioningTemplate": "loose"
     },
     {
       "customType": "regex",
@@ -207,16 +204,12 @@
   },
   "packageRules": [
     {
-      "matchDepNames": [
-        "/^wingbits/"
-      ],
       "matchDatasources": [
         "custom.wingbits-version",
         "custom.wingbits-meta",
         "custom.wingbits-binary"
       ],
       "groupName": "wingbits version to latest",
-      "groupSlug": "wingbits-version-to-latest",
       "separateMajorMinor": false,
       "separateMinorPatch": false,
       "separateMultipleMajor": false

@@ -45,7 +45,8 @@ ARG RTLSDR_VERSION=v2.0.2
 ARG DUMP1090_VERSION=v10.2
 # renovate: datasource=github-tags depName=flightaware/beast-splitter versioning=loose
 ARG BEAST_SPLITTER_VERSION=v10.2
-# renovate: datasource=git-refs depName=wiedehopf/airspy-conf versioning=loose
+# AIRSPY_VERSION is the master-branch commit SHA of wiedehopf/airspy-conf;
+# tracked by the git-refs custom manager in renovate.json.
 ARG AIRSPY_VERSION=7f07ea95311cceb7eb37cbaf965b65faae5551bd
 ARG TEMP_INSTALL="git build-essential fakeroot cmake debhelper pkg-config libncurses5-dev libbladerf-dev libhackrf-dev liblimesuite-dev libusb-1.0-0-dev libsoapysdr-dev librtlsdr-dev libboost-system-dev libboost-program-options-dev libboost-regex-dev apt-utils apt-transport-https wget"
 

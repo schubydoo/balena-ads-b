@@ -1,11 +1,12 @@
 # Uses base image from sdr-enthusiasts
-# renovate: datasource=docker depName=ghcr.io/sdr-enthusiasts/docker-tar1090
 ARG TAR1090_VERSION=latest-build-1436
+# renovate: datasource=docker depName=ghcr.io/sdr-enthusiasts/docker-tar1090 versioning=regex:^latest-build-(?<patch>\d+)$
 FROM ghcr.io/sdr-enthusiasts/docker-tar1090:${TAR1090_VERSION} AS base
 LABEL maintainer="https://github.com/ketilmo"
 
-# renovate: datasource=git-refs depName=https://github.com/wiedehopf/tar1090
 ARG TAR1090_NGINX_REF=6565eadb23b987e78ef2729ca8e254e4c9e68734
+# TAR1090_NGINX_REF is the master-branch commit SHA of wiedehopf/tar1090;
+# tracked by the git-refs custom manager in renovate.json.
 
 # Copy our start script into correct place to be at the beginning of s6 startup
 COPY 00-startup-checks /etc/s6-overlay/startup.d

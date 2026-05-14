@@ -8,7 +8,8 @@ ENV WINGBITS_DEVICE_ID=
 ENV RECEIVER_HOST=dump1090-fa
 ENV RECEIVER_PORT=30005
 
-# renovate: datasource=custom.wingbits-version depName=wingbits-version versioning=loose
+# WINGBITS_CONFIG_VERSION is parsed from the wingbits config download.sh;
+# tracked by the wingbits-version custom manager in renovate.json.
 ENV WINGBITS_CONFIG_VERSION=0.2.1
 # WINGBITS_COMMIT_ID, WINGBITS_DATE and the per-arch SHA256 hashes
 # below are managed by Renovate. Each line is paired with
