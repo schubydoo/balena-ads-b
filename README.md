@@ -559,8 +559,8 @@ Automatically keep your balenaOS host release and/or the balena Supervisor up-to
 
 ### Supervisor updates
 
-- `SUPERVISOR_CHECK_INTERVAL`: Interval between checking for available Supervisor updates. Default is `1d`.
-- `SUPERVISOR_TARGET_VERSION`: The Supervisor version you want the device pinned to. This variable must be set for a Supervisor update to be performed. Set it to `latest`/`recommended` to always pull the newest available Supervisor for the device's CPU architecture, or to a specific version substring (e.g. `16.8.2` or `16.8`). Do **not** include a leading `v`. Once a new target is set the on-device Supervisor updater applies it on its next poll — 15 minutes after boot, then every 24 hours thereafter — so the actual upgrade may take up to a day to land unless the device is rebooted.
+- `SUPERVISOR_CHECK_INTERVAL`: Interval between checking for available Supervisor updates. Default is `1d`. Must include a unit (`s`/`m`/`h`/`d`); minimum `1s`, maximum `24d`.
+- `SUPERVISOR_TARGET_VERSION`: The Supervisor version you want the device pinned to. This variable must be set for a Supervisor update to be performed. Set it to `latest`/`recommended` to always pull the newest available Supervisor for the device's CPU architecture, to a full version like `16.8.2` for an exact pin, or to a partial version like `16.8` to track the newest release in that line. Matching is segment-aware, so `16.8` matches `16.8.x` but not `16.80.x`. Do **not** include a leading `v`. Once a new target is set the on-device Supervisor updater applies it on its next poll — 15 minutes after boot, then every 24 hours thereafter — so the actual upgrade may take up to a day to land unless the device is rebooted.
 
 ## Custom MLAT client
 

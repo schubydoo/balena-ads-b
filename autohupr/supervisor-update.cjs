@@ -39,21 +39,35 @@ for (const [name, value] of [
 }
 
 const parseDurationMs = (v) => {
-	const m = String(v).trim().match(/^(\d+(?:\.\d+)?)\s*(ms|s|m|h|d)?$/i);
+	const m = String(v).trim().match(/^(\d+(?:\.\d+)?)\s*(ms|s|m|h|d)$/i);
 	if (!m) {
-		throw new Error(`Cannot parse duration: ${v}`);
+		throw new Error(`expected a number with unit (e.g. '30s', '5m', '1h', '1d'), got '${v}'`);
 	}
 	const n = Number(m[1]);
-	const unit = (m[2] || 'ms').toLowerCase();
-	return n * { ms: 1, s: 1e3, m: 6e4, h: 36e5, d: 864e5 }[unit];
+	const unit = m[2].toLowerCase();
+	const ms = n * { ms: 1, s: 1e3, m: 6e4, h: 36e5, d: 864e5 }[unit];
+	// setTimeout silently clamps to 1ms when the delay > 2^31-1, which would
+	// turn the loop into a busy poller. Reject anything below 1s or above the
+	// ~24.8d setTimeout ceiling.
+	if (ms < 1000) {
+		throw new Error(`duration '${v}' is below the 1s minimum`);
+	}
+	if (ms > 2_147_483_647) {
+		throw new Error(`duration '${v}' exceeds the ~24.8d maximum`);
+	}
+	return ms;
 };
 
+const DEFAULT_INTERVAL = '1d';
 let checkIntervalMs;
+let checkIntervalDisplay;
 try {
 	checkIntervalMs = parseDurationMs(checkIntervalRaw);
+	checkIntervalDisplay = checkIntervalRaw;
 } catch (e) {
-	err(`Invalid SUPERVISOR_CHECK_INTERVAL='${checkIntervalRaw}'; falling back to 1d.`);
-	checkIntervalMs = 86_400_000;
+	err(`Invalid SUPERVISOR_CHECK_INTERVAL='${checkIntervalRaw}': ${e.message}. Falling back to ${DEFAULT_INTERVAL}.`);
+	checkIntervalMs = parseDurationMs(DEFAULT_INTERVAL);
+	checkIntervalDisplay = DEFAULT_INTERVAL;
 }
 
 const balena = getSdk({ apiUrl, dataDirectory: '/tmp/work' });
@@ -92,6 +106,11 @@ const getCurrentSupervisorVersion = async (uuid) => {
 	return stripV(device.supervisor_version || '');
 };
 
+// Segment-aware match: '16.8.2' matches only the exact '16.8.2' (not
+// '16.8.20'), and '16.8' matches '16.8.x' (not '16.80.x' or '16.81.x').
+const matchesTargetVersion = (raw, wanted) =>
+	raw === wanted || raw.startsWith(wanted + '.');
+
 const resolveTargetVersion = async (arch) => {
 	const releases = await balena.models.os.getSupervisorReleasesForCpuArchitecture(
 		arch,
@@ -104,7 +123,7 @@ const resolveTargetVersion = async (arch) => {
 		return stripV(releases[0].raw_version);
 	}
 	const wanted = stripV(userTargetVersion);
-	const match = releases.find((r) => stripV(r.raw_version).includes(wanted));
+	const match = releases.find((r) => matchesTargetVersion(stripV(r.raw_version), wanted));
 	return match ? stripV(match.raw_version) : null;
 };
 
@@ -161,7 +180,7 @@ const main = async () => {
 		} catch (e) {
 			err('Error in loop:', e?.message || e);
 		}
-		log(`Will check again in ${checkIntervalRaw}.`);
+		log(`Will check again in ${checkIntervalDisplay}.`);
 		await delay(checkIntervalMs);
 	}
 };
