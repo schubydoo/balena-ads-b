@@ -13,7 +13,7 @@ RUN printf '%s\n' \
         'path-include /usr/share/locale/en*' \
         > /etc/dpkg/dpkg.cfg.d/01_nodoc && \
     apt-get update && \
-    apt-get install -y --no-install-recommends dnsmasq wireless-tools curl ca-certificates && \
+    apt-get install -y --no-install-recommends tini dnsmasq wireless-tools curl ca-certificates && \
     apt-get clean && apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
@@ -38,4 +38,6 @@ RUN \
 
 COPY start.sh .
 
-CMD ["bash", "start.sh"]
+RUN chmod +x /usr/src/app/start.sh
+
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/src/app/start.sh"]

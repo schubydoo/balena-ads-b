@@ -55,9 +55,6 @@ case "$(uname -m)" in
 	x86_64)
 		GOARCH="amd64"
 		;;
-	i386|i686)
-		GOARCH="386"
-		;;
 	armv7l)
 		GOARCH="arm"
 		;;

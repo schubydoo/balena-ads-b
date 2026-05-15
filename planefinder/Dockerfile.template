@@ -29,17 +29,41 @@ RUN printf '%s\n' \
 
 FROM base AS buildstep
 
-ARG PLANEFINDER_VERSION=5.3.29
+# Renovate tracks each ARG below via the planefinder-binary-<arch>
+# custom datasources defined in renovate.json, which scrape the
+# per-arch version matrix sdr-enthusiasts/docker-planefinder
+# maintains by hand against the same upstream:
+# https://github.com/sdr-enthusiasts/docker-planefinder/blob/main/Dockerfile
+ARG PLANEFINDER_VERSION_AMD64=5.3.29
+ARG PLANEFINDER_VERSION_ARM64=5.3.29
+ARG PLANEFINDER_VERSION_ARMHF=5.3.29
+ARG TEMP_INSTALL="wget"
+
+RUN apt-get update && \
+	apt-get install -y --no-install-recommends $TEMP_INSTALL
+
+WORKDIR /tmp
 
 COPY planefinder_installer.sh /tmp
+RUN chmod +x /tmp/planefinder_installer.sh && \
+	PLANEFINDER_VERSION_AMD64="${PLANEFINDER_VERSION_AMD64}" \
+	PLANEFINDER_VERSION_ARM64="${PLANEFINDER_VERSION_ARM64}" \
+	PLANEFINDER_VERSION_ARMHF="${PLANEFINDER_VERSION_ARMHF}" \
+	./planefinder_installer.sh
+
+FROM base AS release
+
+COPY --from=buildstep /tmp/PlaneFinder.deb /tmp/
 COPY start.sh /
 COPY pfclient-config.json.tpl /etc
 
 WORKDIR /tmp
 
-RUN chmod +x /tmp/planefinder_installer.sh && \
-	./planefinder_installer.sh && \
+RUN apt-get update && \
+	apt-get install -y --no-install-recommends ./PlaneFinder.deb && \
+	pfclient --version && \
 	chmod +x /start.sh && \
-	rm -rf /tmp/*
+	apt-get clean && apt-get autoremove -y && \
+	rm -rf /var/lib/apt/lists/* /tmp/*
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/start.sh"]
