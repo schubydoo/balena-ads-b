@@ -39,13 +39,13 @@ for (const [name, value] of [
 }
 
 const parseDurationMs = (v) => {
-	const m = String(v).trim().match(/^(\d+(?:\.\d+)?)\s*(ms|s|m|h|d)$/i);
+	const m = String(v).trim().match(/^(\d+(?:\.\d+)?)\s*(s|m|h|d)$/i);
 	if (!m) {
 		throw new Error(`expected a number with unit (e.g. '30s', '5m', '1h', '1d'), got '${v}'`);
 	}
 	const n = Number(m[1]);
 	const unit = m[2].toLowerCase();
-	const ms = n * { ms: 1, s: 1e3, m: 6e4, h: 36e5, d: 864e5 }[unit];
+	const ms = n * { s: 1e3, m: 6e4, h: 36e5, d: 864e5 }[unit];
 	// setTimeout silently clamps to 1ms when the delay > 2^31-1, which would
 	// turn the loop into a busy poller. Reject anything below 1s or above the
 	// ~24.8d setTimeout ceiling.
@@ -173,15 +173,39 @@ const tick = async () => {
 	log('Target set. On-device updater applies it on next poll (15min after boot, then every 24h).');
 };
 
+const ERROR_BACKOFF_START_MS = 30_000;
+
+const formatMs = (ms) => {
+	if (ms >= 86_400_000 && ms % 86_400_000 === 0) return `${ms / 86_400_000}d`;
+	if (ms >= 3_600_000 && ms % 3_600_000 === 0) return `${ms / 3_600_000}h`;
+	if (ms >= 60_000 && ms % 60_000 === 0) return `${ms / 60_000}m`;
+	return `${Math.round(ms / 1000)}s`;
+};
+
 const main = async () => {
+	// On error we back off exponentially starting at 30s, doubling each
+	// consecutive failure and capped at the configured check interval. On any
+	// successful tick we reset to the configured cadence. This keeps transient
+	// API or network blips from skipping a full SUPERVISOR_CHECK_INTERVAL.
+	let errorBackoffMs = ERROR_BACKOFF_START_MS;
 	while (true) {
+		let failed = false;
 		try {
 			await tick();
 		} catch (e) {
 			err('Error in loop:', e?.message || e);
+			failed = true;
 		}
-		log(`Will check again in ${checkIntervalDisplay}.`);
-		await delay(checkIntervalMs);
+		if (failed) {
+			const sleepMs = Math.min(errorBackoffMs, checkIntervalMs);
+			log(`Will retry in ${formatMs(sleepMs)} after error.`);
+			await delay(sleepMs);
+			errorBackoffMs = Math.min(errorBackoffMs * 2, checkIntervalMs);
+		} else {
+			errorBackoffMs = ERROR_BACKOFF_START_MS;
+			log(`Will check again in ${checkIntervalDisplay}.`);
+			await delay(checkIntervalMs);
+		}
 	}
 };
 
