@@ -1,0 +1,93 @@
+Package: dump1090-mutability
+Version: 1.14
+Architecture: armhf
+Maintainer: Oliver Jowett <oliver@mutability.co.uk>
+Installed-Size: 453
+Depends: libc6 (>= 2.13-28), libgcc1 (>= 1:4.4.0), librtlsdr0, libusb-1.0-0 (>= 2:1.0.8), debconf (>= 0.5) | debconf-2.0, adduser
+Suggests: lighttpd
+Provides: fatsv-data-source
+Homepage: https://github.com/mutability/dump1090
+Priority: extra
+Section: embedded
+Filename: pool/custom/d/dump1090-mutability/dump1090-mutability_1.14_armhf.deb
+Size: 212958
+SHA256: 13b885ebfdfb63e63da66a294a4a2e785721a395c6b03074dadc02c87282c0f1
+SHA1: 77a8b9152b88e61491b88a2080cfc96a4d4ee9d1
+MD5sum: 42a4fc280f61c46046a3a0e49afa1b2b
+Description: ADS-B Ground Station System for RTL-SDR
+ Networked Aviation Mode S / ADS-B decoder/translator with RTL-SDR software
+ defined radio USB device support.
+ .
+ This is a packaging of the "mutability" fork of dump1090 that includes
+ sampling at 2.4MHz and other improvements.
+
+Package: opensky-feeder
+Source: openskyd
+Version: 2.1.7-1
+Architecture: armhf
+Maintainer: OpenSky Network <contact@opensky-network.org>
+Installed-Size: 76
+Depends: libc6 (>= 2.17), perl:any, debconf (>= 0.5) | debconf-2.0, init-system-helpers (>= 1.18~), adduser (>= 3.11)
+Conflicts: opensky-feeder-donated, opensky-feeder-kit
+Homepage: http://opensky-network.org
+Priority: optional
+Section: custom
+Filename: pool/custom/o/openskyd/opensky-feeder_2.1.7-1_armhf.deb
+Size: 25916
+SHA256: 76924b152ac836faac8ef79348180ee5e0a3d2b9068b7c1e57fa21a35e9dbff0
+SHA1: 008ceb0ac3d8760a91e1c671f6311b9654f87585
+MD5sum: 774dd5d7da4b35a3a5132af468f2e4cf
+Description: Feeds ADS-B frames received from dump1090 into the OpenSky Network
+
+Package: opensky-feeder-donated
+Source: openskyd
+Version: 2.1.7-1
+Architecture: armhf
+Maintainer: OpenSky Network <contact@opensky-network.org>
+Installed-Size: 80
+Depends: libc6 (>= 2.17), perl:any, debconf (>= 0.5) | debconf-2.0, init-system-helpers (>= 1.18~), adduser (>= 3.11), rcc
+Conflicts: opensky-feeder, opensky-feeder-kit
+Homepage: http://opensky-network.org
+Priority: optional
+Section: custom
+Filename: pool/custom/o/openskyd/opensky-feeder-donated_2.1.7-1_armhf.deb
+Size: 26484
+SHA256: dd5e2ee232b0a30f2b45cad8cbffb2d35a48b8058dbcdd583092e139d86a1ed2
+SHA1: b0bc46a198f02aff5cebc7ef777e5028064aa830
+MD5sum: 88cd21b8d0d077799366afafa883e0be
+Description: Feeds ADS-B frames received from dump1090 into the OpenSky Network
+
+Package: opensky-feeder-kit
+Source: openskyd
+Version: 2.1.7-1
+Architecture: armhf
+Maintainer: OpenSky Network <contact@opensky-network.org>
+Installed-Size: 76
+Depends: libc6 (>= 2.17), perl:any, debconf (>= 0.5) | debconf-2.0, init-system-helpers (>= 1.18~), adduser (>= 3.11)
+Conflicts: opensky-feeder, opensky-feeder-donated
+Homepage: http://opensky-network.org
+Priority: optional
+Section: custom
+Filename: pool/custom/o/openskyd/opensky-feeder-kit_2.1.7-1_armhf.deb
+Size: 25794
+SHA256: 2944f5e879af3b2579fd817de7258cea44823b43fdf404aba65c3dbed3eedadc
+SHA1: de8021a381c66da4da7afe31d21f827d6ca0961b
+MD5sum: e876e41a022d4c7ba657acb4d2bf8238
+Description: Feeds ADS-B frames received from dump1090 into the OpenSky Network
+
+Package: rcc
+Source: rc
+Version: 0.1.5-2
+Architecture: armhf
+Maintainer: Markus Engel <engel@opensky-network.org>
+Installed-Size: 38
+Depends: libc6 (>= 2.4)
+Priority: optional
+Section: custom
+Filename: pool/custom/r/rc/rcc_0.1.5-2_armhf.deb
+Size: 4696
+SHA256: 9ec61fe6f340f01c6ada95775bae625161c5d6a6865c3e24f49ad4a52f2ea164
+SHA1: 09e3cc74bdf6c628965bb8866020f3acb7e76cc8
+MD5sum: e8fa1f418d6f98eae28abc971bcc2817
+Description: RadarCape Client Helper for OpenSky Network
+

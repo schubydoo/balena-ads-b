@@ -1,11 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    "helpers:pinGitHubActionDigests",
+    ":disableRateLimiting"
   ],
-  "prHourlyLimit": 0,
-  "prConcurrentLimit": 0,
-  "ignorePaths": [],
   "customManagers": [
     {
       "customType": "regex",
@@ -21,14 +20,57 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/(^|/)Dockerfile\\.[^/]*$/"
+        "/(^|/)wingbits/Dockerfile\\.template$/"
       ],
+      "matchStringsStrategy": "combination",
       "matchStrings": [
-        "WINGBITS_COMMIT_ID=(?<currentDigest>.*?)\\nENV WINGBITS_DATE=(?<currentValue>.*?)\\n"
+        "ENV WINGBITS_COMMIT_ID=(?<currentValue>.*?)\\n",
+        "ENV WINGBITS_DATE=(?<currentDigest>.*?)\\n"
       ],
-      "versioningTemplate": "regex:^(?<major>20\\d\\d)-(?<minor>\\d\\d)-(?<patch>\\d\\d)T(?<build>\\d\\d)",
-      "depNameTemplate": "wingbits-json",
-      "datasourceTemplate": "custom.wingbits-json"
+      "depNameTemplate": "wingbits-meta",
+      "datasourceTemplate": "custom.wingbits-meta"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)wingbits/Dockerfile\\.template$/"
+      ],
+      "matchStringsStrategy": "combination",
+      "matchStrings": [
+        "ENV WINGBITS_COMMIT_ID=(?<currentValue>.*?)\\n",
+        "ENV WINGBITS_SHA256_AMD64=(?<currentDigest>.*?)\\n"
+      ],
+      "depNameTemplate": "wingbits-binary-amd64",
+      "packageNameTemplate": "amd64",
+      "datasourceTemplate": "custom.wingbits-binary"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)wingbits/Dockerfile\\.template$/"
+      ],
+      "matchStringsStrategy": "combination",
+      "matchStrings": [
+        "ENV WINGBITS_COMMIT_ID=(?<currentValue>.*?)\\n",
+        "ENV WINGBITS_SHA256_ARM64=(?<currentDigest>.*?)\\n"
+      ],
+      "depNameTemplate": "wingbits-binary-arm64",
+      "packageNameTemplate": "arm64",
+      "datasourceTemplate": "custom.wingbits-binary"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)wingbits/Dockerfile\\.template$/"
+      ],
+      "matchStringsStrategy": "combination",
+      "matchStrings": [
+        "ENV WINGBITS_COMMIT_ID=(?<currentValue>.*?)\\n",
+        "ENV WINGBITS_SHA256_ARM=(?<currentDigest>.*?)\\n"
+      ],
+      "depNameTemplate": "wingbits-binary-arm",
+      "packageNameTemplate": "arm",
+      "datasourceTemplate": "custom.wingbits-binary"
     },
     {
       "customType": "regex",
@@ -39,18 +81,8 @@
         "WINGBITS_CONFIG_VERSION=(?<currentValue>.*?)\\n"
       ],
       "depNameTemplate": "wingbits-version",
-      "datasourceTemplate": "custom.wingbits-version"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/(^|/)Dockerfile\\.[^/]*$/"
-      ],
-      "matchStrings": [
-        "OPENSKY_VERSION=(?<currentValue>.*?)\\n"
-      ],
-      "depNameTemplate": "opensky",
-      "datasourceTemplate": "custom.opensky"
+      "datasourceTemplate": "custom.wingbits-version",
+      "versioningTemplate": "loose"
     },
     {
       "customType": "regex",
@@ -103,6 +135,18 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
+        "/(^|/)Dockerfile\\.[^/]*$/"
+      ],
+      "matchStrings": [
+        "TAR1090_NGINX_REF=(?<currentDigest>.*?)\\n"
+      ],
+      "currentValueTemplate": "master",
+      "packageNameTemplate": "https://github.com/wiedehopf/tar1090",
+      "datasourceTemplate": "git-refs"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
         "/(^|/)autohupr/Dockerfile\\.template$/"
       ],
       "matchStringsStrategy": "combination",
@@ -129,6 +173,39 @@
       "datasourceTemplate": "repology",
       "versioningTemplate": "loose",
       "extractVersionTemplate": "^(?<version>\\d+)"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)planefinder/Dockerfile\\.template$/"
+      ],
+      "matchStrings": [
+        "ARG PLANEFINDER_VERSION_AMD64=(?<currentValue>.*?)\\n"
+      ],
+      "depNameTemplate": "planefinder-binary-amd64",
+      "datasourceTemplate": "custom.planefinder-binary-amd64"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)planefinder/Dockerfile\\.template$/"
+      ],
+      "matchStrings": [
+        "ARG PLANEFINDER_VERSION_ARM64=(?<currentValue>.*?)\\n"
+      ],
+      "depNameTemplate": "planefinder-binary-arm64",
+      "datasourceTemplate": "custom.planefinder-binary-arm64"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)planefinder/Dockerfile\\.template$/"
+      ],
+      "matchStrings": [
+        "ARG PLANEFINDER_VERSION_ARMHF=(?<currentValue>.*?)\\n"
+      ],
+      "depNameTemplate": "planefinder-binary-armhf",
+      "datasourceTemplate": "custom.planefinder-binary-armhf"
     }
   ],
   "customDatasources": {
@@ -138,13 +215,6 @@
         "{\"releases\":[{\"version\": $.platform.linux_arm64_tgz.version}]}"
       ]
     },
-    "opensky": {
-      "defaultRegistryUrlTemplate": "https://raw.githubusercontent.com/ketilmo/balena-ads-b/refs/heads/master/opensky-network/.Packages",
-      "transformTemplates": [
-        "{ \"releases\": [{ \"version\": $trim($[0].releases.version.$match(/Version: ([^\\s]+)/).groups[0]) }] }"
-      ],
-      "format": "plain"
-    },
     "wingbits-version": {
       "defaultRegistryUrlTemplate": "https://gitlab.com/wingbits/config/-/raw/master/download.sh",
       "transformTemplates": [
@@ -152,23 +222,51 @@
       ],
       "format": "plain"
     },
-    "wingbits-json": {
+    "wingbits-meta": {
       "defaultRegistryUrlTemplate": "https://install.wingbits.com/linux-arm64.json",
       "transformTemplates": [
-        "{\"releases\":[{\"version\": $.Date, \"releaseTimestamp\": $.Date, \"digest\": $.Version}]}"
+        "{\"releases\":[{\"version\": $.Version, \"digest\": $.Date}]}"
       ]
+    },
+    "wingbits-binary": {
+      "defaultRegistryUrlTemplate": "https://install.wingbits.com/linux-{{packageName}}.json",
+      "transformTemplates": [
+        "{\"releases\":[{\"version\": $.Version, \"digest\": $.Sha256}]}"
+      ]
+    },
+    "planefinder-binary-amd64": {
+      "defaultRegistryUrlTemplate": "https://raw.githubusercontent.com/sdr-enthusiasts/docker-planefinder/main/Dockerfile",
+      "transformTemplates": [
+        "{ \"releases\": [{ \"version\": $[0].releases.version.$match(/pfclient_([0-9.]+)_amd64\\.tar\\.gz/).groups[0] }] }"
+      ],
+      "format": "plain"
+    },
+    "planefinder-binary-arm64": {
+      "defaultRegistryUrlTemplate": "https://raw.githubusercontent.com/sdr-enthusiasts/docker-planefinder/main/Dockerfile",
+      "transformTemplates": [
+        "{ \"releases\": [{ \"version\": $[0].releases.version.$match(/pfclient_([0-9.]+)_arm64\\.tar\\.gz/).groups[0] }] }"
+      ],
+      "format": "plain"
+    },
+    "planefinder-binary-armhf": {
+      "defaultRegistryUrlTemplate": "https://raw.githubusercontent.com/sdr-enthusiasts/docker-planefinder/main/Dockerfile",
+      "transformTemplates": [
+        "{ \"releases\": [{ \"version\": $[0].releases.version.$match(/pfclient_([0-9.]+)_armhf\\.tar\\.gz/).groups[0] }] }"
+      ],
+      "format": "plain"
     }
   },
   "packageRules": [
     {
-      "matchDepNames": [
-        "/^wingbits/"
-      ],
       "matchDatasources": [
         "custom.wingbits-version",
-        "custom.wingbits-json"
+        "custom.wingbits-meta",
+        "custom.wingbits-binary"
       ],
-      "groupName": "wingbits version to latest"
+      "groupName": "wingbits version to latest",
+      "separateMajorMinor": false,
+      "separateMinorPatch": false,
+      "separateMultipleMajor": false
     }
   ],
   "logLevelRemap": [

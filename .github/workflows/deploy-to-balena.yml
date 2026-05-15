@@ -9,12 +9,15 @@ on:
 env:
   BALENA_APP: ketil/balena-ads-b
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: "Deploy-to-Balena"
     runs-on: "ubuntu-latest"
     steps:
-      - name: Checkout main branch
+      - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Update balena.yml

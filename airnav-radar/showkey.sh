@@ -13,10 +13,10 @@ fi
 # Purge old log file if it exists.
 rm -f /tmp/rbfeeder.log
 
-if [ "$arch" = "i386" ] || [ "$arch" = "amd64" ]; then 
+if [ "$arch" = "amd64" ]; then
     /usr/bin/qemu-arm-static /usr/bin/rbfeeder > /tmp/rbfeeder.log 2>&1 &
     servicePID=$!
-else 
+else
     /usr/bin/rbfeeder > /tmp/rbfeeder.log 2>&1 &
     servicePID=$!
 fi
@@ -28,9 +28,9 @@ while true; do
         echo "Key detected, stopping rbfeeder..."
         kill $servicePID
         # Show key and exit
-        if [ "$arch" = "i386" ] || [ "$arch" = "amd64" ]; then 
+        if [ "$arch" = "amd64" ]; then
             /usr/bin/qemu-arm-static /usr/bin/rbfeeder --showkey --no-start
-        else 
+        else
             /usr/bin/rbfeeder --showkey --no-start
         fi
         break

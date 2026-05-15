@@ -15,7 +15,7 @@ echo "System Architecture: $arch"
 
 # --- CONFIGURATION ---
 # Configure multi-arch if necessary before updating sources
-if [ "$arch" = "i386" ] || [ "$arch" = "amd64" ]; then
+if [ "$arch" = "amd64" ]; then
     dpkg --add-architecture armhf
 fi
 
@@ -40,7 +40,7 @@ echo 'exit 0' >> /usr/bin/systemctl
 chmod +x /usr/bin/systemctl
 
 # --- INSTALL RBFEEDER ---
-if [ "$arch" = "i386" ] || [ "$arch" = "amd64" ]; then
+if [ "$arch" = "amd64" ]; then
     apt-get install -y --no-install-recommends \
        rbfeeder:armhf qemu-user qemu-user-static binfmt-support libc6-armhf-cross
 else

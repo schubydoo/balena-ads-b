@@ -3,6 +3,9 @@ volumes:
   settings:
   airnav-radar:
   tar1090:
+  tar1090-timelapse:
+  tar1090-collectd:
+  tar1090-log:
 services:
   kiosk:
     restart: unless-stopped
@@ -44,6 +47,12 @@ services:
     build: ./dump1090-fa
     image: dump1090-fa
     restart: unless-stopped
+    # privileged is required so start.sh can write
+    # /sys/module/usbcore/parameters/usbfs_memory_mb=0 (lifts the 16 MB
+    # usbfs buffer cap for high-rate SDR captures such as Airspy at 12 Msps).
+    # Unprivileged containers get /sys mounted read-only regardless of
+    # capabilities, so the write fails with EROFS and trips the start.sh
+    # set -e crash loop.
     privileged: true
     environment:
       - LAT=
@@ -83,11 +92,17 @@ services:
       - "traefik.http.middlewares.skyaware-redirect.redirectregex.permanent=true"
       # Temporary redirect for legacy purposes (from 13 March 2021)
       - "traefik.http.routers.dump1090-fa.rule=PathPrefix(`/dump1090-fa`)"
-      - "traefik.http.routers.dump1090-fa.middlewares=dump1090-fa-redirect" 
+      - "traefik.http.routers.dump1090-fa.middlewares=dump1090-fa-redirect"
       - "traefik.http.middlewares.dump1090-fa-redirect.redirectregex.regex=^.*/dump1090-fa.*$$"
       - "traefik.http.middlewares.dump1090-fa-redirect.redirectregex.replacement=/skyaware/"
       - "traefik.http.middlewares.dump1090-fa-redirect.redirectregex.permanent=true"
-# Uncomment to enable dump978 UAT tracking (USA only).
+      # Airspy stats page, served by the in-container lighttpd when
+      # AIRSPY_ADSB_STATS=true (87-airspy.conf adds /airspy_adsb/ -> /run/airspy_adsb/).
+      - "traefik.http.routers.airspy-adsb.rule=PathPrefix(`/airspy_adsb`)"
+      - "traefik.http.routers.airspy-adsb.middlewares=airspy-adsb-redirect"
+      - "traefik.http.middlewares.airspy-adsb-redirect.redirectregex.regex=^.*/airspy_adsb$$"
+      - "traefik.http.middlewares.airspy-adsb-redirect.redirectregex.replacement=/airspy_adsb/"
+      - "traefik.http.middlewares.airspy-adsb-redirect.redirectregex.permanent=true"
   dump978-fa:
     build: ./dump978-fa
     image: dump978-fa
@@ -149,10 +164,21 @@ services:
       - "traefik.http.routers.fr24feed-g.rule=Path(`/jquery.js`)"
       - "traefik.http.routers.fr24feed-h.rule=Path(`/flights.json`)"
       - "traefik.http.routers.fr24feed-i.rule=Path(`/shutdown.html`)"
-      - "traefik.http.routers.fr24feed-j.rule=Path(`/logs.json`)"
+      - "traefik.http.routers.fr24feed-j.rule=Path(`/logs.bin`)"
       - "traefik.http.routers.fr24feed-k.rule=Path(`/shutdown.bin`)"
       - "traefik.http.routers.fr24feed-l.rule=Path(`/restart.bin`)"
       - "traefik.http.routers.fr24feed-m.rule=Path(`/config.json`)"
+      - "traefik.http.routers.fr24feed-n.rule=Path(`/index.html`)"
+      - "traefik.http.routers.fr24feed-o.rule=Path(`/settings_na.html`)"
+      - "traefik.http.routers.fr24feed-p.rule=Path(`/logs.html`)"
+      - "traefik.http.routers.fr24feed-q.rule=Path(`/wifi.html`)"
+      - "traefik.http.routers.fr24feed-r.rule=Path(`/access_points.json`)"
+      - "traefik.http.routers.fr24feed-s.rule=Path(`/monitor.txt`)"
+      - "traefik.http.routers.fr24feed-t.rule=Path(`/save.bin`)"
+      - "traefik.http.routers.fr24feed-u.rule=Path(`/wifi.bin`)"
+      - "traefik.http.routers.fr24feed-v.rule=Path(`/logs-uat-fr24.bin`)"
+      - "traefik.http.routers.fr24feed-w.rule=Path(`/logs-uat-tcp.bin`)"
+      - "traefik.http.routers.fr24feed-x.rule=Path(`/diagnostics_dump.tgz`)"
       - "traefik.http.routers.fr24feed.middlewares=fr24feed-redirect,fr24feed-stripprefix"
       - "traefik.http.middlewares.fr24feed-redirect.redirectregex.regex=^.*/fr24feed$$"
       - "traefik.http.middlewares.fr24feed-redirect.redirectregex.replacement=/fr24feed/"
@@ -170,17 +196,10 @@ services:
       - "io.balena.features.supervisor-api=1"
       - "traefik.enable=true"
       - "traefik.http.routers.planefinder.rule=PathPrefix(`/planefinder`)"
-      - "traefik.http.routers.planefinder-a.rule=PathPrefix(`/`)"
-      - "traefik.http.routers.planefinder-b.rule=PathPrefix(`/ajax/`)"
-      - "traefik.http.routers.planefinder-c.rule=PathPrefix(`/assets/`)"
-      - "traefik.http.routers.planefinder-d.rule=PathPrefix(`/client/`)"
-      - "traefik.http.routers.planefinder-e.rule=Path(`/map.html`)"
-      - "traefik.http.routers.planefinder-f.rule=Path(`/map3D.html`)"
-      - "traefik.http.routers.planefinder-g.rule=Path(`/data.html`)"
-      - "traefik.http.routers.planefinder-h.rule=Path(`/logs.html`)"
-      - "traefik.http.routers.planefinder-i.rule=Path(`/viz.html`)"
-      - "traefik.http.routers.planefinder-j.rule=Path(`/stats.html`)"
-      - "traefik.http.routers.planefinder-l.rule=Path(`/setup.html`)"
+      - "traefik.http.routers.planefinder-a.rule=PathPrefix(`/ajax/`)"
+      - "traefik.http.routers.planefinder-b.rule=PathPrefix(`/assets/`)"
+      - "traefik.http.routers.planefinder-c.rule=PathPrefix(`/client/`)"
+      - "traefik.http.routers.planefinder-d.rule=Path(`/gps.html`)"
       - "traefik.http.routers.planefinder.middlewares=planefinder-redirect,planefinder-stripprefix"
       - "traefik.http.middlewares.planefinder-redirect.redirectregex.regex=^.*/planefinder$$"
       - "traefik.http.middlewares.planefinder-redirect.redirectregex.replacement=/planefinder/"
@@ -211,9 +230,15 @@ services:
       - LON=
       - ALT=
     volumes:
-      #Slight hack to make AirNav Radar run on i386 and amd64 architectures.
+      # Slight hack to make AirNav Radar run on the amd64 architecture
+      # which lacks a kernel-provided /sys/class/thermal. The Dockerfile
+      # bakes /var/radarbox/thermal/thermal_zone0/temp = 24000 into the
+      # image; on first container start, Docker copies that path's content
+      # into the (empty) named volume, so the same fake temp is also
+      # visible at /sys/class/thermal. Nothing writes at runtime, so both
+      # mounts are :ro.
       - 'airnav-radar:/sys/class/thermal:ro'
-      - 'airnav-radar:/var/radarbox/thermal'
+      - 'airnav-radar:/var/radarbox/thermal:ro'
     labels:
       io.balena.features.supervisor-api: '1'
   adsb-exchange:
@@ -241,11 +266,15 @@ services:
     build: ./wingbits
     image: wingbits
     restart: unless-stopped
-    privileged: true
     environment:
       - WINGBITS_DEVICE_ID=
       - LAT=
       - LON=
+    # privileged is required: without it the embedded Beast listener
+    # on port 30015 never comes up and GeoSigners are not detected.
+    # Granular caps/devices (SYS_RAWIO, NET_ADMIN, /dev/bus/usb,
+    # major-189 cgroup rule) are not sufficient.
+    privileged: true
     expose:
       - '30154'
     labels:
@@ -266,7 +295,8 @@ services:
     labels:
       io.balena.features.supervisor-api: '1'
   autohupr:
-    build: ./autohupr
+    image: ghcr.io/schubydoo/autohupr:latest
+    restart: unless-stopped
     tmpfs:
       - /tmp/work
     labels:
@@ -287,10 +317,9 @@ services:
       - LON=
     volumes:
       - tar1090:/var/globe_history
-      - tar1090:/var/timelapse1090
-      - tar1090:/var/lib/collectd
-      - tar1090:/var/lib/collectd/rrd
-      - tar1090:/var/log
+      - tar1090-timelapse:/var/timelapse1090
+      - tar1090-collectd:/var/lib/collectd
+      - tar1090-log:/var/log
     ports:
       - "8078:80"
     labels:
