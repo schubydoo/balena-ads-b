@@ -295,7 +295,7 @@ services:
     labels:
       io.balena.features.supervisor-api: '1'
   autohupr:
-    build: ./autohupr
+    image: ghcr.io/schubydoo/autohupr:latest
     restart: unless-stopped
     tmpfs:
       - /tmp/work
