@@ -8,10 +8,12 @@
 //
 // User config:
 //   SUPERVISOR_TARGET_VERSION   '' (disabled) | 'latest' | 'recommended' |
-//                               version substring, e.g. '16.8.2' or '16.8'.
-//                               Do NOT prefix with 'v' — balena-sdk's
-//                               raw_version field has no leading 'v'.
-//   SUPERVISOR_CHECK_INTERVAL   default '1d'. Supports s/m/h/d suffixes.
+//                               a full version like '16.8.2' (exact match) or
+//                               a partial like '16.8' (segment-aware: matches
+//                               '16.8.x' but not '16.80.x'). Do NOT prefix
+//                               with 'v' — balena-sdk's raw_version has none.
+//   SUPERVISOR_CHECK_INTERVAL   default '1d'. Must include a unit (s/m/h/d);
+//                               minimum 1s, maximum ~24.8d.
 
 'use strict';
 
@@ -76,34 +78,37 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const stripV = (s) => String(s || '').replace(/^v/i, '');
 
-const getCpuArch = async (uuid) => {
+// Single-call fetch: supervisor version + device-type slug + CPU arch slug,
+// via nested $expand. Saves two extra round-trips per tick vs. doing each
+// lookup separately.
+const getDeviceInfo = async (uuid) => {
 	const device = await balena.models.device.get(uuid, {
-		$expand: { is_of__device_type: { $select: 'slug' } },
+		$select: ['supervisor_version'],
+		$expand: {
+			is_of__device_type: {
+				$select: 'slug',
+				$expand: { is_of__cpu_architecture: { $select: 'slug' } },
+			},
+		},
 	});
-	const dtSlug = Array.isArray(device.is_of__device_type)
-		? device.is_of__device_type[0]?.slug
+	const dt = Array.isArray(device.is_of__device_type)
+		? device.is_of__device_type[0]
 		: undefined;
+	const dtSlug = dt?.slug;
 	if (!dtSlug) {
 		throw new Error(`Could not resolve device-type slug for ${uuid}`);
 	}
-	const dt = await balena.models.deviceType.getBySlugOrName(dtSlug, {
-		$select: 'slug',
-		$expand: { is_of__cpu_architecture: { $select: 'slug' } },
-	});
 	const arch = Array.isArray(dt.is_of__cpu_architecture)
 		? dt.is_of__cpu_architecture[0]?.slug
 		: undefined;
 	if (!arch) {
 		throw new Error(`Could not resolve CPU architecture for device-type ${dtSlug}`);
 	}
-	return { dtSlug, arch };
-};
-
-const getCurrentSupervisorVersion = async (uuid) => {
-	const device = await balena.models.device.get(uuid, {
-		$select: ['supervisor_version'],
-	});
-	return stripV(device.supervisor_version || '');
+	return {
+		supervisorVersion: stripV(device.supervisor_version || ''),
+		dtSlug,
+		arch,
+	};
 };
 
 // Segment-aware match: '16.8.2' matches only the exact '16.8.2' (not
@@ -153,8 +158,8 @@ const tick = async () => {
 		await delay(120_000);
 	}
 
-	const { dtSlug, arch } = await getCpuArch(deviceUuid);
-	const currentVersion = await getCurrentSupervisorVersion(deviceUuid);
+	const { supervisorVersion: currentVersion, dtSlug, arch } =
+		await getDeviceInfo(deviceUuid);
 	log(`Current supervisor: ${currentVersion || '(unknown)'} (device type ${dtSlug}, arch ${arch})`);
 
 	const targetVersion = await resolveTargetVersion(arch);

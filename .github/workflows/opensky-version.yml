@@ -35,7 +35,6 @@ jobs:
               --timeout=30 \
               --lowest-speed-limit=10K \
               --max-tries=1 \
-              -x 2 \
               --allow-overwrite=true \
               -o opensky-network/.Packages.arm64 \
               https://s3.opensky-network.org/website-public-repos/debian/dists/opensky/custom/binary-arm64/Packages
@@ -53,7 +52,6 @@ jobs:
               --timeout=30 \
               --lowest-speed-limit=10K \
               --max-tries=1 \
-              -x 2 \
               --allow-overwrite=true \
               -o opensky-network/.Packages.amd64 \
               https://s3.opensky-network.org/website-public-repos/debian/dists/opensky/custom/binary-amd64/Packages
@@ -71,7 +69,6 @@ jobs:
               --timeout=30 \
               --lowest-speed-limit=10K \
               --max-tries=1 \
-              -x 2 \
               --allow-overwrite=true \
               -o opensky-network/.Packages.armhf \
               https://s3.opensky-network.org/website-public-repos/debian/dists/opensky/custom/binary-armhf/Packages
