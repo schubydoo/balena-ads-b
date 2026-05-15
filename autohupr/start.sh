@@ -7,7 +7,10 @@ if [[ ",$(echo -e "${ENABLED_SERVICES}" | tr -d '[:space:]')," != *",$BALENA_SER
         echo "$BALENA_SERVICE_NAME is not enabled. Sending request to stop the service:"
         curl --fail --retry 86400 --retry-delay 1 --retry-all-errors --header "Content-Type:application/json" "$BALENA_SUPERVISOR_ADDRESS/v2/applications/$BALENA_APP_ID/stop-service?apikey=$BALENA_SUPERVISOR_API_KEY" -d '{"serviceName": "'$BALENA_SERVICE_NAME'"}'
         echo " "
-        tail -f /dev/null
+        # Replace this shell with tail so a docker stop / SIGTERM terminates
+        # the container directly instead of letting bash fall through into the
+        # updater section below once tail exits.
+        exec tail -f /dev/null
 fi
 
 # Run the upstream host-OS updater (build/main.js) and our Supervisor updater
