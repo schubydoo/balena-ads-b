@@ -146,6 +146,15 @@ const pinSupervisor = async (uuid, version) => {
 	return fn.call(balena.models.device, uuid, version);
 };
 
+// Tracks the version we most recently asked the API to pin (within this
+// process). The on-device Supervisor updater polls only every 15min/24h, so
+// the running supervisor_version stays unchanged for a while after a pin; if
+// we re-called pinSupervisor every tick during that window we'd hammer the
+// balenaCloud API with redundant idempotent writes. Reset to null after the
+// pin actually lands (currentVersion === targetVersion) so a later user
+// change of SUPERVISOR_TARGET_VERSION still triggers a fresh pin.
+let lastPinnedVersion = null;
+
 const tick = async () => {
 	if (userTargetVersion === '') {
 		log("SUPERVISOR_TARGET_VERSION not set; skipping. (Set to 'latest' or e.g. '16.8.2' to enable.)");
@@ -170,12 +179,19 @@ const tick = async () => {
 	}
 
 	if (currentVersion === targetVersion) {
+		lastPinnedVersion = null;
 		log(`Already on target supervisor ${targetVersion}.`);
+		return;
+	}
+
+	if (lastPinnedVersion === targetVersion) {
+		log(`Target ${targetVersion} already pinned this run; waiting for the on-device updater to apply it.`);
 		return;
 	}
 
 	log(`Setting target supervisor release ${targetVersion} (current ${currentVersion || 'unknown'})...`);
 	await pinSupervisor(deviceUuid, targetVersion);
+	lastPinnedVersion = targetVersion;
 	log('Target set. On-device updater applies it on next poll (15min after boot, then every 24h).');
 };
 
