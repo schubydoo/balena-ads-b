@@ -29,14 +29,21 @@ const deviceUuid = process.env.BALENA_DEVICE_UUID;
 const userTargetVersion = (process.env.SUPERVISOR_TARGET_VERSION || '').trim();
 const checkIntervalRaw = process.env.SUPERVISOR_CHECK_INTERVAL || '1d';
 
-for (const [name, value] of [
-	['BALENA_API_KEY', apiKey],
-	['BALENA_API_URL', apiUrl],
-	['BALENA_DEVICE_UUID', deviceUuid],
-]) {
-	if (!value) {
-		err(`${name} required in environment`);
-		process.exit(1);
+// Only require the balena-api credentials when the sidecar is actually
+// enabled. If SUPERVISOR_TARGET_VERSION is empty we want this process to be a
+// pure no-op: hard-exiting here would propagate through start.sh's `wait -n`
+// and take the HUP updater down with us, breaking the documented "the two
+// updaters are independent" contract.
+if (userTargetVersion !== '') {
+	for (const [name, value] of [
+		['BALENA_API_KEY', apiKey],
+		['BALENA_API_URL', apiUrl],
+		['BALENA_DEVICE_UUID', deviceUuid],
+	]) {
+		if (!value) {
+			err(`${name} required in environment when SUPERVISOR_TARGET_VERSION is set`);
+			process.exit(1);
+		}
 	}
 }
 
