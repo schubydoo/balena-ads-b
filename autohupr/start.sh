@@ -10,5 +10,20 @@ if [[ ",$(echo -e "${ENABLED_SERVICES}" | tr -d '[:space:]')," != *",$BALENA_SER
         tail -f /dev/null
 fi
 
-# Start app
-node ./build/main.js
+# Run the upstream host-OS updater (build/main.js) and our Supervisor updater
+# (supervisor-update.cjs) in parallel. If either exits, terminate the other so
+# the container exits cleanly and the compose restart policy respawns it.
+set +e
+
+node ./build/main.js &
+PID_HUP=$!
+node ./supervisor-update.cjs &
+PID_SUP=$!
+
+trap 'kill -TERM "$PID_HUP" "$PID_SUP" 2>/dev/null; wait; exit 0' SIGTERM SIGINT
+
+wait -n
+EXIT_CODE=$?
+kill -TERM "$PID_HUP" "$PID_SUP" 2>/dev/null
+wait
+exit "$EXIT_CODE"
