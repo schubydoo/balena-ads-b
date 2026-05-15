@@ -35,7 +35,7 @@ FROM base AS buildstep
 # maintains by hand against the same upstream:
 # https://github.com/sdr-enthusiasts/docker-planefinder/blob/main/Dockerfile
 ARG PLANEFINDER_VERSION_AMD64=5.3.29
-ARG PLANEFINDER_VERSION_ARM64=5.3.29
+ARG PLANEFINDER_VERSION_ARM64=5.3.31
 ARG PLANEFINDER_VERSION_ARMHF=5.3.29
 ARG TEMP_INSTALL="wget"
 
