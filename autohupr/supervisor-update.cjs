@@ -13,7 +13,7 @@
 //                               '16.8.x' but not '16.80.x'). Do NOT prefix
 //                               with 'v' — balena-sdk's raw_version has none.
 //   SUPERVISOR_CHECK_INTERVAL   default '1d'. Must include a unit (s/m/h/d);
-//                               minimum 1s, maximum ~24.8d.
+//                               minimum 1s, maximum 24d.
 
 'use strict';
 
@@ -49,13 +49,14 @@ const parseDurationMs = (v) => {
 	const unit = m[2].toLowerCase();
 	const ms = n * { s: 1e3, m: 6e4, h: 36e5, d: 864e5 }[unit];
 	// setTimeout silently clamps to 1ms when the delay > 2^31-1, which would
-	// turn the loop into a busy poller. Reject anything below 1s or above the
-	// ~24.8d setTimeout ceiling.
+	// turn the loop into a busy poller. Reject anything below 1s, and cap the
+	// max at exactly 24d so the documented limit and the enforced limit agree
+	// (24d = 2_073_600_000 ms is safely within the setTimeout 32-bit window).
 	if (ms < 1000) {
 		throw new Error(`duration '${v}' is below the 1s minimum`);
 	}
-	if (ms > 2_147_483_647) {
-		throw new Error(`duration '${v}' exceeds the ~24.8d maximum`);
+	if (ms > 24 * 86_400_000) {
+		throw new Error(`duration '${v}' exceeds the 24d maximum`);
 	}
 	return ms;
 };
