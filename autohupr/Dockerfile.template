@@ -31,7 +31,7 @@ RUN apk add --no-cache --virtual .git-deps git && \
 RUN npm ci && npm run build && npm prune --omit=dev && \
     npm cache clean --force && rm -rf /tmp/*
 
-COPY start.sh ./
+COPY start.sh supervisor-update.cjs ./
 
 RUN chmod +x ./start.sh
 

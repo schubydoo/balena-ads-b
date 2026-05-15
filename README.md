@@ -548,12 +548,19 @@ By default, dump1090 will run with adaptive gain in dynamic range mode. You can 
 ## Device reboot on service exit
 dump978 and dump1090 can restart the device if it hits an error. You can enable this feature by setting a *Device Variable* named `REBOOT_DEVICE_ON_SERVICE_EXIT` with the value of `true`.
 
-## Automatic balenaOS host updates
+## Automatic balenaOS host and Supervisor updates
 
-Automatically keep your balenaOS host release up-to-date. To enable this service, create a *Device Variables* named `ENABLED_SERVICES` with the value of `autohupr`. You may also want to set the following *Device Variables*:
+Automatically keep your balenaOS host release and/or the balena Supervisor up-to-date. To enable this service, create a *Device Variable* named `ENABLED_SERVICES` with the value of `autohupr`. The two updaters are independent: set the target-version variable for whichever you want to keep up-to-date and leave the other unset.
 
-- `HUP_CHECK_INTERVAL`: Interval between checking for available updates. Default is 1d.
-- `HUP_TARGET_VERSION`: The OS version you want balenaHUP to automatically update your device to. This is a required variable to be specified, otherwise, an update won't be performed by default. Set the variable to 'latest'/'recommended' for your device to always update to the latest OS version or set it to a specific version (e.g '2.107.10').
+### Host OS updates
+
+- `HUP_CHECK_INTERVAL`: Interval between checking for available host OS updates. Default is `1d`.
+- `HUP_TARGET_VERSION`: The OS version you want balenaHUP to automatically update your device to. This variable must be set for an OS update to be performed. Set it to `latest`/`recommended` to always pull the latest OS version, or to a specific version (e.g. `2.107.10`).
+
+### Supervisor updates
+
+- `SUPERVISOR_CHECK_INTERVAL`: Interval between checking for available Supervisor updates. Default is `1d`. Must include a unit (`s`/`m`/`h`/`d`); minimum `1s`, maximum `24d`.
+- `SUPERVISOR_TARGET_VERSION`: The Supervisor version you want the device pinned to. This variable must be set for a Supervisor update to be performed. Set it to `latest`/`recommended` to always pull the newest available Supervisor for the device's CPU architecture, to a full version like `16.8.2` for an exact pin, or to a partial version like `16.8` to track the newest release in that line. Matching is segment-aware, so `16.8` matches `16.8.x` but not `16.80.x`. Do **not** include a leading `v`. Once a new target is set the on-device Supervisor updater applies it on its next poll — 15 minutes after boot, then every 24 hours thereafter — so the actual upgrade may take up to a day to land unless the device is rebooted.
 
 ## Custom MLAT client
 

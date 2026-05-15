@@ -11,6 +11,7 @@ permissions:
 jobs:
   update-check:
     runs-on: ubuntu-latest
+    timeout-minutes: 360
     permissions:
       contents: write
       pull-requests: write
@@ -21,22 +22,56 @@ jobs:
         with:
           ref: 'master'
 
-      - name: Download Package Files
-        timeout-minutes: 360
-        shell: bash
-        run: |
-          for arch in arm64 amd64 armhf; do
+      - name: Download arm64 Package File
+        uses: nick-fields/retry@ad984534de44a9489a53aefd81eb77f87c70dc60 # v4.0.0
+        with:
+          timeout_seconds: 60
+          max_attempts: 24
+          retry_wait_seconds: 180
+          shell: bash
+          command: |
             aria2c \
               --connect-timeout=30 \
-              --timeout=120 \
-              --max-tries=24 \
-              --retry-wait=180 \
-              --lowest-speed-limit=1K \
-              -x 2 \
+              --timeout=30 \
+              --lowest-speed-limit=10K \
+              --max-tries=1 \
               --allow-overwrite=true \
-              -o "opensky-network/.Packages.${arch}" \
-              "https://s3.opensky-network.org/website-public-repos/debian/dists/opensky/custom/binary-${arch}/Packages"
-          done
+              -o opensky-network/.Packages.arm64 \
+              https://s3.opensky-network.org/website-public-repos/debian/dists/opensky/custom/binary-arm64/Packages
+
+      - name: Download amd64 Package File
+        uses: nick-fields/retry@ad984534de44a9489a53aefd81eb77f87c70dc60 # v4.0.0
+        with:
+          timeout_seconds: 60
+          max_attempts: 24
+          retry_wait_seconds: 180
+          shell: bash
+          command: |
+            aria2c \
+              --connect-timeout=30 \
+              --timeout=30 \
+              --lowest-speed-limit=10K \
+              --max-tries=1 \
+              --allow-overwrite=true \
+              -o opensky-network/.Packages.amd64 \
+              https://s3.opensky-network.org/website-public-repos/debian/dists/opensky/custom/binary-amd64/Packages
+
+      - name: Download armhf Package File
+        uses: nick-fields/retry@ad984534de44a9489a53aefd81eb77f87c70dc60 # v4.0.0
+        with:
+          timeout_seconds: 60
+          max_attempts: 24
+          retry_wait_seconds: 180
+          shell: bash
+          command: |
+            aria2c \
+              --connect-timeout=30 \
+              --timeout=30 \
+              --lowest-speed-limit=10K \
+              --max-tries=1 \
+              --allow-overwrite=true \
+              -o opensky-network/.Packages.armhf \
+              https://s3.opensky-network.org/website-public-repos/debian/dists/opensky/custom/binary-armhf/Packages
 
       - name: Sync OPENSKY_VERSION in Dockerfile
         shell: bash
