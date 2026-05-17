@@ -552,6 +552,8 @@ dump978 and dump1090 can restart the device if it hits an error. You can enable 
 
 Automatically keep your balenaOS host release and/or the balena Supervisor up-to-date. This service runs the prebuilt [`schubydoo/autohupr`](https://github.com/schubydoo/autohupr) block.
 
+> **Behaviour change:** earlier versions of this block were opt-in — it only ran if you added `autohupr` to `ENABLED_SERVICES`. The prebuilt block no longer reads `ENABLED_SERVICES`; it now starts by default on every device and parks itself when it has nothing to do. **If you never configured autohupr, you don't need to do anything:** with no `HUP_TARGET_VERSION` / `SUPERVISOR_TARGET_VERSION` set it immediately asks the Supervisor to stop the service and idles — the same end state as before, just reached by self-parking instead of by being gated off.
+
 At least one of `HUP_TARGET_VERSION` / `SUPERVISOR_TARGET_VERSION` must be set — the block uses whichever is set and ignores the other, so you can run it as an OS-only updater, a Supervisor-only updater, or both. If neither is set (or `autohupr` is listed in `DISABLED_SERVICES`, or any value is invalid) the block parks itself: it asks the balena Supervisor to stop the service and then idles instead of crash-looping. The reason is logged.
 
 ### Target versions
