@@ -563,7 +563,7 @@ Set `HUP_TARGET_VERSION`, `SUPERVISOR_TARGET_VERSION`, or both. Each updater run
 - `HUP_TARGET_VERSION`: The balenaOS version to track. Leave unset to disable OS updates.
 - `SUPERVISOR_TARGET_VERSION`: The Supervisor version to track. Leave unset to disable Supervisor updates.
 
-A target version is a **family selector**: the components you specify are locked, and anything more specific automatically tracks the highest available release in that family. Set it to `latest`/`recommended` to follow balena's recommended release. Do **not** include a leading `v`.
+A target version is a **family selector**: the components you specify are locked, and anything more specific automatically tracks the highest available release in that family. Do **not** include a leading `v`. The table below illustrates `HUP_TARGET_VERSION` (balenaOS); `SUPERVISOR_TARGET_VERSION` differs — see the note after it.
 
 | You set | It tracks | It will **not** move to |
 |---------|-----------|-------------------------|
@@ -571,9 +571,9 @@ A target version is a **family selector**: the components you specify are locked
 | `17.1` | newest `17.1.x` (e.g. `17.1.5`) | `17.2`, `17.10` |
 | `17.1.1` | that patch, newest revision | `17.1.2` |
 | `17.1.1+rev2` | exactly that release | anything else |
-| `latest` / `recommended` | balena's recommended release | — |
+| `latest` / `recommended` | balena's recommended balenaOS release | — |
 
-`SUPERVISOR_TARGET_VERSION` accepts the same forms but **without** a revision suffix (Supervisor releases are always `X.X.X`). If no release in the supported set matches the family, the block logs it and skips — it never jumps to a different family.
+`SUPERVISOR_TARGET_VERSION` uses the same **family** forms (`16`, `16.8`, `16.8.2`) but **without** a revision suffix (Supervisor releases are always `X.X.X`), and `latest`/`recommended` mean something different from the OS: balena does **not** publish a "recommended" Supervisor, so for the Supervisor both values resolve to the **newest available Supervisor release for the device's CPU architecture** — an explicit alias for *newest available*, not a balena-curated pick. If no release in the supported set matches the family, the block logs it and skips — it never jumps to a different family.
 
 A syntactically valid but currently nonexistent target (e.g. `HUP_TARGET_VERSION=99.0.0`) is **not** a parking condition: the block logs `no eligible release` each check interval and keeps retrying, so a later-published matching release is picked up automatically. Parking is reserved for structurally invalid input.
 
