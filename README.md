@@ -552,9 +552,9 @@ dump978 and dump1090 can restart the device if it hits an error. You can enable 
 
 Automatically keep your balenaOS host release and/or the balena Supervisor up-to-date. This service runs the prebuilt [`schubydoo/autohupr`](https://github.com/schubydoo/autohupr) block.
 
-> **Behaviour change:** earlier versions of this block were opt-in — it only ran if you added `autohupr` to `ENABLED_SERVICES`. The prebuilt block no longer reads `ENABLED_SERVICES`; it now starts by default on every device and parks itself when it has nothing to do. **If you never configured autohupr, you don't need to do anything:** with no `HUP_TARGET_VERSION` / `SUPERVISOR_TARGET_VERSION` set it immediately asks the Supervisor to stop the service and idles — the same end state as before, just reached by self-parking instead of by being gated off.
+> **Behaviour change:** earlier versions of this block were opt-in — it only ran if you added `autohupr` to `ENABLED_SERVICES`. The prebuilt block no longer reads `ENABLED_SERVICES`; it now starts by default on every device and **shuts its own container down** when it has nothing to do (see [Parking](#parking)). **If you never configured autohupr, you don't need to do anything:** with no `HUP_TARGET_VERSION` / `SUPERVISOR_TARGET_VERSION` set it tells the balena Supervisor to stop the `autohupr` service — the same end state as before (the container not running), just reached by stopping itself instead of by being gated off.
 
-At least one of `HUP_TARGET_VERSION` / `SUPERVISOR_TARGET_VERSION` must be set — the block uses whichever is set and ignores the other, so you can run it as an OS-only updater, a Supervisor-only updater, or both. If neither is set (or `autohupr` is listed in `DISABLED_SERVICES`, or any value is invalid) the block parks itself: it asks the balena Supervisor to stop the service and then idles instead of crash-looping. The reason is logged.
+At least one of `HUP_TARGET_VERSION` / `SUPERVISOR_TARGET_VERSION` must be set — the block uses whichever is set and ignores the other, so you can run it as an OS-only updater, a Supervisor-only updater, or both. If neither is set (or `autohupr` is listed in `DISABLED_SERVICES`, or any value is invalid) the block **parks** — it shuts its own container down. See [Parking](#parking) below.
 
 ### Target versions
 
@@ -578,11 +578,21 @@ A target version is a **family selector**: the components you specify are locked
 - `HUP_CHECK_INTERVAL`: Interval between host OS update checks. Default is `1d`.
 - `SUPERVISOR_CHECK_INTERVAL`: Interval between Supervisor update checks. Default is `1d`.
 
-Intervals are `<number><unit>` where unit is one of `m` (minutes), `h`, `d`, `w`, `y`. Compound values (e.g. `1h30m`) and the `s`/`ms` units are rejected, and the **minimum is `30m`** — this protects balena's API from being polled too aggressively. An invalid value parks the block rather than guessing.
+Intervals are `<number><unit>` where unit is one of `m` (minutes), `h`, `d`, `w`, `y`. Compound values (e.g. `1h30m`) and the `s`/`ms` units are rejected, and the **minimum is `30m`** — this protects balena's API from being polled too aggressively. An invalid value parks the block (see [Parking](#parking)) rather than guessing.
 
 ### Update ordering
 
 When both updaters are enabled, the Supervisor is brought to its target **before** each OS update check. The set of supported OS updates depends on the running Supervisor, so the Supervisor is converged first and OS update checks wait until it settles.
+
+### Parking
+
+"Parking" means the block **shuts its own container down** — it is not a paused or idle state. The block calls the balena Supervisor's `stop-service` API to stop the `autohupr` service, so it does not crash-loop or sit running while doing nothing. The container stays stopped until its configuration changes; it starts again and re-evaluates on the next deploy or device reboot, and parks again if the condition still holds. The block parks when:
+
+- `autohupr` is listed in `DISABLED_SERVICES` (kill-switch), **or**
+- neither `HUP_TARGET_VERSION` nor `SUPERVISOR_TARGET_VERSION` is set, **or**
+- any provided target version or check interval is invalid.
+
+The reason is always logged before the container stops. Stopping itself requires the `io.balena.features.supervisor-api` label, which the `docker-compose.yml` in this repo already sets; without that label the block can only idle (the one case where it stays running but inert) because it cannot ask the Supervisor to stop it.
 
 ## Custom MLAT client
 
