@@ -327,18 +327,17 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.tar1090.rule=PathPrefix(`/tar1090`)"
       - "traefik.http.routers.tar1090-a.rule=PathPrefix(`/graphs1090`)"
-# Optional: Uncomment to enable custom mlat server.
-#  mlat-client:
-#    depends_on:
-#      - dump1090-fa
-#    build: ./mlat-client
-#    image: mlat-client
-#    restart: unless-stopped
-#    environment:
-#      - LAT=
-#      - LON=
-#      - ALT=
-#      - MLAT_CLIENT_USER=
-#      - MLAT_SERVER=
-#    labels:
-#      io.balena.features.supervisor-api: '1'
+  mlat-client:
+    depends_on:
+      - dump1090-fa
+    build: ./mlat-client
+    image: mlat-client
+    restart: unless-stopped
+    environment:
+      - LAT=
+      - LON=
+      - ALT=
+      - MLAT_CLIENT_USER=
+      - MLAT_SERVER=
+    labels:
+      io.balena.features.supervisor-api: '1'
