@@ -550,17 +550,53 @@ dump978 and dump1090 can restart the device if it hits an error. You can enable 
 
 ## Automatic balenaOS host and Supervisor updates
 
-Automatically keep your balenaOS host release and/or the balena Supervisor up-to-date. To enable this service, create a *Device Variable* named `ENABLED_SERVICES` with the value of `autohupr`. The two updaters are independent: set the target-version variable for whichever you want to keep up-to-date and leave the other unset.
+Automatically keep your balenaOS host release and/or the balena Supervisor up-to-date. This service runs the prebuilt [`schubydoo/autohupr`](https://github.com/schubydoo/autohupr) block.
 
-### Host OS updates
+> **Behaviour change:** earlier versions of this block were opt-in — it only ran if you added `autohupr` to `ENABLED_SERVICES`. The prebuilt block no longer reads `ENABLED_SERVICES`; it now starts by default on every device and **shuts its own container down** when it has nothing to do (see [Parking](#parking)). **If you never configured autohupr, you don't need to do anything:** with no `HUP_TARGET_VERSION` / `SUPERVISOR_TARGET_VERSION` set it tells the balena Supervisor to stop the `autohupr` service — the same end state as before (the container not running), just reached by stopping itself instead of by being gated off.
+>
+> **Migration note:** `HUP_CHECK_INTERVAL` / `SUPERVISOR_CHECK_INTERVAL` are now validated and stricter than the old build — values earlier versions accepted (a sub-`30m` interval, an `s` unit, a compound form like `1h30m`, decimals, or the old README's `1s` example) now make the block **park** on startup instead of running. If you set either variable, use a single `m`/`h`/`d`/`w`/`y` unit of at least `30m`.
 
-- `HUP_CHECK_INTERVAL`: Interval between checking for available host OS updates. Default is `1d`.
-- `HUP_TARGET_VERSION`: The OS version you want balenaHUP to automatically update your device to. This variable must be set for an OS update to be performed. Set it to `latest`/`recommended` to always pull the latest OS version, or to a specific version (e.g. `2.107.10`).
+Set `HUP_TARGET_VERSION`, `SUPERVISOR_TARGET_VERSION`, or both. Each updater runs independently and only when its own target variable is set, so the block can act as an OS-only updater, a Supervisor-only updater, or both at once; leaving a target unset simply disables that one updater. If neither is set (or `autohupr` is listed in `DISABLED_SERVICES`, or any value is invalid) the block **parks** — it shuts its own container down. See [Parking](#parking) below.
 
-### Supervisor updates
+### Target versions
 
-- `SUPERVISOR_CHECK_INTERVAL`: Interval between checking for available Supervisor updates. Default is `1d`. Must include a unit (`s`/`m`/`h`/`d`); minimum `1s`, maximum `24d`.
-- `SUPERVISOR_TARGET_VERSION`: The Supervisor version you want the device pinned to. This variable must be set for a Supervisor update to be performed. Set it to `latest`/`recommended` to always pull the newest available Supervisor for the device's CPU architecture, to a full version like `16.8.2` for an exact pin, or to a partial version like `16.8` to track the newest release in that line. Matching is segment-aware, so `16.8` matches `16.8.x` but not `16.80.x`. Do **not** include a leading `v`. Once a new target is set the on-device Supervisor updater applies it on its next poll — 15 minutes after boot, then every 24 hours thereafter — so the actual upgrade may take up to a day to land unless the device is rebooted.
+- `HUP_TARGET_VERSION`: The balenaOS version to track. Leave unset to disable OS updates.
+- `SUPERVISOR_TARGET_VERSION`: The Supervisor version to track. Leave unset to disable Supervisor updates.
+
+A target version is a **family selector**: the components you specify are locked, and anything more specific automatically tracks the highest available release in that family. Do **not** include a leading `v`. The table below illustrates `HUP_TARGET_VERSION` (balenaOS); `SUPERVISOR_TARGET_VERSION` differs — see the note after it.
+
+| You set | It tracks | It will **not** move to |
+|---------|-----------|-------------------------|
+| `17` | newest `17.x.y` | `18.x` |
+| `17.1` | newest `17.1.x` (e.g. `17.1.5`) | `17.2`, `17.10` |
+| `17.1.1` | that patch, newest revision | `17.1.2` |
+| `17.1.1+rev2` | exactly that release | anything else |
+| `latest` / `recommended` | balena's recommended balenaOS release | — |
+
+`SUPERVISOR_TARGET_VERSION` uses the same **family** forms (`16`, `16.8`, `16.8.2`) but **without** a revision suffix (Supervisor releases are always `X.X.X`), and `latest`/`recommended` mean something different from the OS: balena does **not** publish a "recommended" Supervisor, so for the Supervisor both values resolve to the **newest available Supervisor release for the device's CPU architecture** — an explicit alias for *newest available*, not a balena-curated pick. If no release in the supported set matches the family, the block logs it and skips — it never jumps to a different family.
+
+A syntactically valid but currently nonexistent target (e.g. `HUP_TARGET_VERSION=99.0.0`) is **not** a parking condition: the block logs `no eligible release` each check interval and keeps retrying, so a later-published matching release is picked up automatically. Parking is reserved for structurally invalid input.
+
+### Check intervals
+
+- `HUP_CHECK_INTERVAL`: Interval between host OS update checks. Default is `1d`.
+- `SUPERVISOR_CHECK_INTERVAL`: Interval between Supervisor update checks. Default is `1d`.
+
+Intervals are `<number><unit>` where unit is one of `m` (minutes), `h`, `d`, `w`, `y`. Compound values (e.g. `1h30m`) and the `s`/`ms` units are rejected, and the **minimum is `30m`** — this protects balena's API from being polled too aggressively. An invalid value parks the block (see [Parking](#parking)) rather than guessing.
+
+### Update ordering
+
+When both updaters are enabled, the Supervisor is brought to its target **before** each OS update check. The set of supported OS updates depends on the running Supervisor, so the Supervisor is converged first and OS update checks wait until it settles. Once the Supervisor is pinned, the block waits for the on-device Supervisor updater to converge — polling every 2 minutes for up to ~60 minutes — before resuming OS update checks; if it has not converged by then it proceeds anyway so OS updates are never blocked indefinitely.
+
+### Parking
+
+"Parking" means the block **shuts its own container down** — it is not a paused or idle state. The block calls the balena Supervisor's `stop-service` API to stop the `autohupr` service, so it does not crash-loop or sit running while doing nothing. The container stays stopped until its configuration changes; it starts again and re-evaluates on the next deploy or device reboot, and parks again if the condition still holds. The block parks when:
+
+- `autohupr` is listed in `DISABLED_SERVICES` (kill-switch), **or**
+- neither `HUP_TARGET_VERSION` nor `SUPERVISOR_TARGET_VERSION` is set, **or**
+- any provided target version or check interval is invalid.
+
+The reason is always logged before the container stops. Stopping itself requires the `io.balena.features.supervisor-api` label, which the `docker-compose.yml` in this repo already sets; without that label the block can only idle (the one case where it stays running but inert) because it cannot ask the Supervisor to stop it.
 
 ## Custom MLAT client
 

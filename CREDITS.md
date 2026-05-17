@@ -2586,7 +2586,9 @@ Public License instead of this License.
 
 ## autohupr
 ### URL
-https://github.com/balena-labs-projects/autohupr
+https://github.com/schubydoo/autohupr
+
+Originally based on https://github.com/balena-io-experimental/autohupr-example
 
 ### License
 
