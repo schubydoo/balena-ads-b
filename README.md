@@ -550,17 +550,37 @@ dump978 and dump1090 can restart the device if it hits an error. You can enable 
 
 ## Automatic balenaOS host and Supervisor updates
 
-Automatically keep your balenaOS host release and/or the balena Supervisor up-to-date. To enable this service, create a *Device Variable* named `ENABLED_SERVICES` with the value of `autohupr`. The two updaters are independent: set the target-version variable for whichever you want to keep up-to-date and leave the other unset.
+Automatically keep your balenaOS host release and/or the balena Supervisor up-to-date. This service runs the prebuilt [`schubydoo/autohupr`](https://github.com/schubydoo/autohupr) block.
 
-### Host OS updates
+At least one of `HUP_TARGET_VERSION` / `SUPERVISOR_TARGET_VERSION` must be set — the block uses whichever is set and ignores the other, so you can run it as an OS-only updater, a Supervisor-only updater, or both. If neither is set (or `autohupr` is listed in `DISABLED_SERVICES`, or any value is invalid) the block parks itself: it asks the balena Supervisor to stop the service and then idles instead of crash-looping. The reason is logged.
 
-- `HUP_CHECK_INTERVAL`: Interval between checking for available host OS updates. Default is `1d`.
-- `HUP_TARGET_VERSION`: The OS version you want balenaHUP to automatically update your device to. This variable must be set for an OS update to be performed. Set it to `latest`/`recommended` to always pull the latest OS version, or to a specific version (e.g. `2.107.10`).
+### Target versions
 
-### Supervisor updates
+- `HUP_TARGET_VERSION`: The balenaOS version to track. Leave unset to disable OS updates.
+- `SUPERVISOR_TARGET_VERSION`: The Supervisor version to track. Leave unset to disable Supervisor updates.
 
-- `SUPERVISOR_CHECK_INTERVAL`: Interval between checking for available Supervisor updates. Default is `1d`. Must include a unit (`s`/`m`/`h`/`d`); minimum `1s`, maximum `24d`.
-- `SUPERVISOR_TARGET_VERSION`: The Supervisor version you want the device pinned to. This variable must be set for a Supervisor update to be performed. Set it to `latest`/`recommended` to always pull the newest available Supervisor for the device's CPU architecture, to a full version like `16.8.2` for an exact pin, or to a partial version like `16.8` to track the newest release in that line. Matching is segment-aware, so `16.8` matches `16.8.x` but not `16.80.x`. Do **not** include a leading `v`. Once a new target is set the on-device Supervisor updater applies it on its next poll — 15 minutes after boot, then every 24 hours thereafter — so the actual upgrade may take up to a day to land unless the device is rebooted.
+A target version is a **family selector**: the components you specify are locked, and anything more specific automatically tracks the highest available release in that family. Set it to `latest`/`recommended` to follow balena's recommended release. Do **not** include a leading `v`.
+
+| You set | It tracks | It will **not** move to |
+|---------|-----------|-------------------------|
+| `17` | newest `17.x.y` | `18.x` |
+| `17.1` | newest `17.1.x` (e.g. `17.1.5`) | `17.2`, `17.10` |
+| `17.1.1` | that patch, newest revision | `17.1.2` |
+| `17.1.1+rev2` | exactly that release | anything else |
+| `latest` / `recommended` | balena's recommended release | — |
+
+`SUPERVISOR_TARGET_VERSION` accepts the same forms but **without** a revision suffix (Supervisor releases are always `X.X.X`). If no release in the supported set matches the family, the block logs it and skips — it never jumps to a different family.
+
+### Check intervals
+
+- `HUP_CHECK_INTERVAL`: Interval between host OS update checks. Default is `1d`.
+- `SUPERVISOR_CHECK_INTERVAL`: Interval between Supervisor update checks. Default is `1d`.
+
+Intervals are `<number><unit>` where unit is one of `m` (minutes), `h`, `d`, `w`, `y`. Compound values (e.g. `1h30m`) and the `s`/`ms` units are rejected, and the **minimum is `30m`** — this protects balena's API from being polled too aggressively. An invalid value parks the block rather than guessing.
+
+### Update ordering
+
+When both updaters are enabled, the Supervisor is brought to its target **before** each OS update check. The set of supported OS updates depends on the running Supervisor, so the Supervisor is converged first and OS update checks wait until it settles.
 
 ## Custom MLAT client
 
