@@ -600,11 +600,11 @@ The reason is always logged before the container stops. Stopping itself requires
 
 ## Custom MLAT client
 
-In the [docker compose file]([https://github.com/ketilmo/balena-ads-b/blob/shawaj/mlat-version/docker-compose.yml](https://github.com/ketilmo/balena-ads-b/blob/master/docker-compose.yml#L258-L271)) you will notice at the bottom there is a section labelled `Optional: Uncomment to enable custom mlat server.` This allows you to share MLAT data with an MLAT server of your choosing, unrelated to any of the above services.
+The `mlat-client` service lets you share MLAT data with an MLAT server of your choosing, unrelated to any of the above services.
 
-In order to enable this, you will need to fork the repo and edit the docker-compose.yml file to remove the `#` at the beginning of each line starting with the one that says `mlat-client`. Once done you should save the file, and then you can deploy it to your fleet using the manual method described above in [Part 2 – Setup balena and configure the device](#part-2--setup-balena-and-configure-the-device).
+To enable it, create a *Device Variable* named `ENABLED_SERVICES` with the value of `mlat-client`. The service is opt-in: if `mlat-client` is not listed in `ENABLED_SERVICES` it asks the balena Supervisor to stop its own container, so devices that do not opt in pay no runtime cost. To enable more than one opt-in service, separate the names with commas (e.g. `ENABLED_SERVICES=mlat-client,otherservice`).
 
-You will also need to add *Device Variables* named `MLAT_CLIENT_USER` with a value of your desired username or UUID and another one named `MLAT_SERVER` with a value or your desired MLAT server address and port. For example you might have an `MLAT_CLIENT_USER` of `0327791e-3777-40a5-addc-aa13408d3b07` and an `MLAT_SERVER` of `feed.mymlatserver.com:31090`.
+Once enabled, add *Device Variables* named `MLAT_CLIENT_USER` with a value of your desired username or UUID and `MLAT_SERVER` with a value of your desired MLAT server address and port. For example you might have an `MLAT_CLIENT_USER` of `0327791e-3777-40a5-addc-aa13408d3b07` and an `MLAT_SERVER` of `feed.mymlatserver.com:31090`. The Supervisor restarts the service when these variables change, so no fork or redeploy is required.
 
 # Part 16 – Updating to the latest version
 
