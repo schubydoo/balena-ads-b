@@ -2588,6 +2588,8 @@ Public License instead of this License.
 ### URL
 https://github.com/schubydoo/autohupr
 
+Originally based on https://github.com/balena-io-experimental/autohupr-example
+
 ### License
 
                                  Apache License
