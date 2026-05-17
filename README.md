@@ -553,8 +553,10 @@ dump978 and dump1090 can restart the device if it hits an error. You can enable 
 Automatically keep your balenaOS host release and/or the balena Supervisor up-to-date. This service runs the prebuilt [`schubydoo/autohupr`](https://github.com/schubydoo/autohupr) block.
 
 > **Behaviour change:** earlier versions of this block were opt-in — it only ran if you added `autohupr` to `ENABLED_SERVICES`. The prebuilt block no longer reads `ENABLED_SERVICES`; it now starts by default on every device and **shuts its own container down** when it has nothing to do (see [Parking](#parking)). **If you never configured autohupr, you don't need to do anything:** with no `HUP_TARGET_VERSION` / `SUPERVISOR_TARGET_VERSION` set it tells the balena Supervisor to stop the `autohupr` service — the same end state as before (the container not running), just reached by stopping itself instead of by being gated off.
+>
+> **Migration note:** `HUP_CHECK_INTERVAL` / `SUPERVISOR_CHECK_INTERVAL` are now validated and stricter than the old build — values earlier versions accepted (a sub-`30m` interval, an `s` unit, a compound form like `1h30m`, decimals, or the old README's `1s` example) now make the block **park** on startup instead of running. If you set either variable, use a single `m`/`h`/`d`/`w`/`y` unit of at least `30m`.
 
-At least one of `HUP_TARGET_VERSION` / `SUPERVISOR_TARGET_VERSION` must be set — the block uses whichever is set and ignores the other, so you can run it as an OS-only updater, a Supervisor-only updater, or both. If neither is set (or `autohupr` is listed in `DISABLED_SERVICES`, or any value is invalid) the block **parks** — it shuts its own container down. See [Parking](#parking) below.
+Set `HUP_TARGET_VERSION`, `SUPERVISOR_TARGET_VERSION`, or both. Each updater runs independently and only when its own target variable is set, so the block can act as an OS-only updater, a Supervisor-only updater, or both at once; leaving a target unset simply disables that one updater. If neither is set (or `autohupr` is listed in `DISABLED_SERVICES`, or any value is invalid) the block **parks** — it shuts its own container down. See [Parking](#parking) below.
 
 ### Target versions
 
@@ -573,6 +575,8 @@ A target version is a **family selector**: the components you specify are locked
 
 `SUPERVISOR_TARGET_VERSION` accepts the same forms but **without** a revision suffix (Supervisor releases are always `X.X.X`). If no release in the supported set matches the family, the block logs it and skips — it never jumps to a different family.
 
+A syntactically valid but currently nonexistent target (e.g. `HUP_TARGET_VERSION=99.0.0`) is **not** a parking condition: the block logs `no eligible release` each check interval and keeps retrying, so a later-published matching release is picked up automatically. Parking is reserved for structurally invalid input.
+
 ### Check intervals
 
 - `HUP_CHECK_INTERVAL`: Interval between host OS update checks. Default is `1d`.
@@ -582,7 +586,7 @@ Intervals are `<number><unit>` where unit is one of `m` (minutes), `h`, `d`, `w`
 
 ### Update ordering
 
-When both updaters are enabled, the Supervisor is brought to its target **before** each OS update check. The set of supported OS updates depends on the running Supervisor, so the Supervisor is converged first and OS update checks wait until it settles.
+When both updaters are enabled, the Supervisor is brought to its target **before** each OS update check. The set of supported OS updates depends on the running Supervisor, so the Supervisor is converged first and OS update checks wait until it settles. Once the Supervisor is pinned, the block waits for the on-device Supervisor updater to converge — polling every 2 minutes for up to ~60 minutes — before resuming OS update checks; if it has not converged by then it proceeds anyway so OS updates are never blocked indefinitely.
 
 ### Parking
 
