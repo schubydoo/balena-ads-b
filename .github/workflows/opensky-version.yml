@@ -26,7 +26,7 @@ jobs:
         uses: nick-fields/retry@ad984534de44a9489a53aefd81eb77f87c70dc60 # v4.0.0
         with:
           timeout_seconds: 60
-          max_attempts: 24
+          max_attempts: 200
           retry_wait_seconds: 180
           shell: bash
           command: |
@@ -43,7 +43,7 @@ jobs:
         uses: nick-fields/retry@ad984534de44a9489a53aefd81eb77f87c70dc60 # v4.0.0
         with:
           timeout_seconds: 60
-          max_attempts: 24
+          max_attempts: 200
           retry_wait_seconds: 180
           shell: bash
           command: |
@@ -60,7 +60,7 @@ jobs:
         uses: nick-fields/retry@ad984534de44a9489a53aefd81eb77f87c70dc60 # v4.0.0
         with:
           timeout_seconds: 60
-          max_attempts: 24
+          max_attempts: 200
           retry_wait_seconds: 180
           shell: bash
           command: |
