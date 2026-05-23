@@ -608,7 +608,7 @@ The reason is always logged before the container stops. Stopping itself requires
 
 The service ships pre-configured with `IDENT_UPSTREAM_TYPE=dump1090-fa` so the receiver type is detected without further tuning. Aircraft data is shared from `dump1090-fa` to `ident` through the `aircraft-data` named volume (read-only on the `ident` side).
 
-Note: Future updates may enable this automatically after sufficient testing, thus why this is opt-in for now.
+Note: Future updates may enable this automatically after sufficient testing, which is why this is opt-in for now.
 
 ## Custom MLAT client
 
