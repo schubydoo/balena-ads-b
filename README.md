@@ -121,6 +121,7 @@ Software packages downloaded, installed, and configured by the balena-ads-b scri
     * [Setting dump1090 antenna gain](#setting-dump1090-antenna-gain)
     * [Device reboot on service exit](#device-reboot-on-service-exit)
     * [Automatic balenaOS host updates](#automatic-balenaos-host-updates)
+    * [Ident operator console](#ident-operator-console)
     * [Custom MLAT client](#custom-mlat-client)
 - [Part 16 – Updating to the latest version](#part-16--updating-to-the-latest-version)
 
@@ -468,6 +469,9 @@ If you live in the US and have configuered UAT feeding, you can explore the data
 **Graphs1090 Stats Graphs**
 [Graphs1090](https://github.com/wiedehopf/graphs1090) is a graphical output that plots performance graphs of the interesting data from both your SDR data and your system data. You can see things like your ADS-B range, message rates, number of planes and signal levels as well as system data such as CPU and memory usage, temperature and bandwidth. When you are in your local network, head to `YOURIP/graphs1090` to check it out. When remote, open balena's *Public Device URL* and add `/graphs1090/` to the tail end of the URL, e.g. `https://6g31f15653bwt4y251b18c1daf4qw164.balena-devices.com/graphs1090/`
 
+**Ident Operator Console (Optional)**
+[Ident](https://github.com/Ident-1090/Ident) is a modern operator console with a live map, filters, and aircraft details, fed directly from the `aircraft.json` produced by your local dump1090 receiver. Ident is an opt-in service – see *Part 15 – Advanced configuration* below for how to enable it. Once enabled, head to `YOURIP/ident/` (or `YOURIP:8090`) when you are on your local network. When remote, open balena's *Public Device URL* and add `/ident/` to the tail end of the URL, e.g. `https://6g31f15653bwt4y251b18c1daf4qw164.balena-devices.com/ident/`
+
 # Part 15 – Advanced configuration
 ## Disabling specific services
 You can disable any of the balena-ads-b services by creating a *Device Variable* named `DISABLED_SERVICES` with the services you want to disable as comma-separated values. For example, if you want to disable the dump1090fa service, you set the `DISABLED_SERVICES` variable to `dump1090fa`. If you want to disable the dump1090fa and piaware services, you set the `DISABLED_SERVICES` variable to `dump1090fa, piaware`.
@@ -597,6 +601,14 @@ When both updaters are enabled, the Supervisor is brought to its target **before
 - any provided target version or check interval is invalid.
 
 The reason is always logged before the container stops. Stopping itself requires the `io.balena.features.supervisor-api` label, which the `docker-compose.yml` in this repo already sets; without that label the block can only idle (the one case where it stays running but inert) because it cannot ask the Supervisor to stop it.
+
+## Ident operator console
+
+[Ident](https://github.com/Ident-1090/Ident) is an opt-in operator console that watches `aircraft.json` from your dump1090 receiver and presents it in a modern web UI. To enable it, create a *Device Variable* named `ENABLED_SERVICES` with the value of `ident` (or append `,ident` to an existing comma-separated list, for example `autohupr,ident`). The console is then reachable at `YOURIP/ident/` via traefik or directly on `YOURIP:8090`.
+
+The service ships pre-configured with `IDENT_UPSTREAM_TYPE=dump1090-fa` so the receiver type is detected without further tuning. Aircraft data is shared from `dump1090-fa` to `ident` through the `aircraft-data` named volume (read-only on the `ident` side).
+
+Note: Future updates may enable this automatically after sufficient testing, which is why this is opt-in for now.
 
 ## Custom MLAT client
 
