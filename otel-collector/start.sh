@@ -112,10 +112,12 @@ LOGS_RECEIVERS=()
 
 if [ "$OTEL_HOSTMETRICS_ENABLED" = "true" ]; then
 	METRICS_RECEIVERS+=("hostmetrics")
+	# /proc and /sys come from the host via the procfs/sysfs balena labels
+	# in docker-compose.yml, so the collector's default root_path: "/" reads
+	# the host's view directly — no /hostfs prefix needed.
 	cat >> "$CONFIG_FILE" <<EOF
   hostmetrics:
     collection_interval: ${OTEL_COLLECTION_INTERVAL}
-    root_path: /hostfs
     scrapers:
       cpu:
       load:
@@ -123,7 +125,7 @@ if [ "$OTEL_HOSTMETRICS_ENABLED" = "true" ]; then
       disk:
       filesystem:
         exclude_mount_points:
-          mount_points: ["/dev/*", "/proc/*", "/sys/*", "/run/*", "/var/lib/docker/*", "/var/lib/balena-engine/*", "/hostfs/var/lib/docker/*", "/hostfs/var/lib/balena-engine/*"]
+          mount_points: ["/dev/.*", "/proc/.*", "/sys/.*", "/run/.*", "/var/lib/docker/.*", "/var/lib/balena-engine/.*", "/mnt/data/docker/.*", "/mnt/data/balena-engine/.*"]
           match_type: regexp
       network:
       paging:

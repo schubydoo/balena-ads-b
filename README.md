@@ -653,7 +653,7 @@ Each signal is wired to its own switch so you can pick exactly what you ship and
 
 ### Logs and persistent logging
 
-The `journald` receiver mounts both `/var/log/journal` (persistent) and `/run/log/journal` (volatile / tmpfs) read-only. `journalctl` inside the container reads whichever the host populates:
+The container is granted access to the host journal through balena's `io.balena.features.journal-logs` label, which read-only bind-mounts `/var/log/journal` (persistent) and `/run/log/journal` (volatile / tmpfs) along with `/etc/machine-id`. `journalctl` inside the container reads whichever the host populates:
 
 - If you have **enabled persistent logging** in the balena dashboard (*Configuration → Persistent logging*), the host writes to `/var/log/journal/<machine-id>/`, the collector reads from there, and logs survive reboots. This is the recommended setup — see the [balena docs on persistent logging](https://docs.balena.io/learn/manage/device-logs#persistent-logging).
 - If persistent logging is **off**, the host writes only to `/run/log/journal/<machine-id>/` (tmpfs). The collector still reads that, but log buffer is capped by journald's runtime size and is cleared on reboot.

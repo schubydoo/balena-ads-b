@@ -408,21 +408,22 @@ services:
       - DUMP1090_PORT=8080
       - LAT=
       - LON=
-    volumes:
-      # hostmetrics receiver runs inside the container; root_path=/hostfs lets
-      # it read host CPU/memory/disk/network instead of the container's own
-      # cgroup-scoped view.
-      - /proc:/hostfs/proc:ro
-      - /sys:/hostfs/sys:ro
-      - /:/hostfs/root:ro,rslave
-      # journald receiver — mount both the persistent and volatile journal
-      # paths read-only. journalctl picks up whichever the host populates.
-      # See https://docs.balena.io/learn/manage/device-logs#persistent-logging
-      - /var/log/journal:/var/log/journal:ro
-      - /run/log/journal:/run/log/journal:ro
     labels:
-      # balena-socket exposes /var/run/balena.sock so docker_stats receiver
-      # can list and read container stats from the balena engine.
+      # balenaCloud disallows arbitrary host bind mounts, so we expose the
+      # host filesystem to the collector through balena's feature labels
+      # instead. Each label maps to the documented bind mount path it would
+      # otherwise require (see https://docs.balena.io/reference/supervisor/docker-compose).
+      # procfs / sysfs power the hostmetrics receiver (host CPU, memory,
+      # disk, network — read from /proc and /sys).
+      io.balena.features.procfs: '1'
+      io.balena.features.sysfs: '1'
+      # journal-logs mounts /var/log/journal, /run/log/journal, and
+      # /etc/machine-id read-only — exactly what the journald receiver needs
+      # to ship container and host logs regardless of whether persistent
+      # logging is enabled on the fleet.
+      io.balena.features.journal-logs: '1'
+      # balena-socket exposes /var/run/balena.sock so the docker_stats
+      # receiver can list and read per-container stats from the balena engine.
       io.balena.features.balena-socket: '1'
       io.balena.features.balena-api: '1'
       io.balena.features.supervisor-api: '1'
