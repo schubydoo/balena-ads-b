@@ -389,7 +389,6 @@ services:
     build: ./otel-collector
     image: otel-collector
     restart: unless-stopped
-    expose:
     # expose: kept for docs, see dump1090-fa note
     # expose:
     #   "13133"
