@@ -1,0 +1,44 @@
+# renovate: datasource=docker depName=otel/opentelemetry-collector-contrib versioning=semver
+ARG OTELCOL_VERSION=0.152.0
+FROM otel/opentelemetry-collector-contrib:${OTELCOL_VERSION} AS otelcol
+
+FROM debian:trixie-slim AS release
+LABEL maintainer="https://github.com/ketilmo"
+
+# Runtime packages only. systemd is pulled in for journalctl (used by the
+# otelcol journald receiver), gettext-base for envsubst, python3 for the
+# bundled stdlib-only dump1090 exporter (see dump1090_exporter.py).
+ARG PERM_INSTALL="tini ca-certificates curl gettext-base systemd python3"
+
+RUN printf '%s\n' \
+		'path-exclude /usr/share/doc/*' \
+		'path-exclude /usr/share/man/*' \
+		'path-exclude /usr/share/groff/*' \
+		'path-exclude /usr/share/info/*' \
+		'path-exclude /usr/share/lintian/*' \
+		'path-exclude /usr/share/linda/*' \
+		'path-exclude /usr/share/locale/*' \
+		'path-include /usr/share/locale/en*' \
+		> /etc/dpkg/dpkg.cfg.d/01_nodoc && \
+	apt-get update && \
+	apt-get install -y --no-install-recommends $PERM_INSTALL && \
+	apt-get clean && apt-get autoremove -y && \
+	rm -rf /var/lib/apt/lists/*
+
+# otelcol-contrib binary from the official upstream multi-arch image
+# (https://github.com/open-telemetry/opentelemetry-collector-contrib, Apache-2.0).
+COPY --from=otelcol /otelcol-contrib /usr/local/bin/otelcol-contrib
+
+# Stdlib-only dump1090-fa → Prometheus exporter. Metric naming follows
+# https://github.com/clawsicus/dump1090exporter (MIT) for dashboard compatibility,
+# but the implementation is in-tree because the original package's pinned
+# aiohttp==3.8.1 transitive dep no longer builds on Python >= 3.12.
+COPY dump1090_exporter.py /usr/local/bin/dump1090_exporter.py
+
+RUN mkdir -p /etc/otelcol && \
+	chmod +x /usr/local/bin/dump1090_exporter.py
+
+COPY start.sh /
+RUN chmod +x /start.sh
+
+ENTRYPOINT ["/usr/bin/tini", "--", "/start.sh"]

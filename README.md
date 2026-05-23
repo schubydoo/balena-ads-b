@@ -123,6 +123,7 @@ Software packages downloaded, installed, and configured by the balena-ads-b scri
     * [Automatic balenaOS host updates](#automatic-balenaos-host-updates)
     * [Ident operator console](#ident-operator-console)
     * [Custom MLAT client](#custom-mlat-client)
+    * [OpenTelemetry collector (metrics and logs export)](#opentelemetry-collector-metrics-and-logs-export)
 - [Part 16 – Updating to the latest version](#part-16--updating-to-the-latest-version)
 
 # Part 1 – Build the receiver
@@ -617,6 +618,68 @@ The `mlat-client` service lets you share MLAT data with an MLAT server of your c
 To enable it, create a *Device Variable* named `ENABLED_SERVICES` with the value of `mlat-client`. The service is opt-in: if `mlat-client` is not listed in `ENABLED_SERVICES` it asks the balena Supervisor to stop its own container, so devices that do not opt in pay no runtime cost. To enable more than one opt-in service, separate the names with commas (e.g. `ENABLED_SERVICES=mlat-client,otherservice`).
 
 Once enabled, add *Device Variables* named `MLAT_CLIENT_USER` with a value of your desired username or UUID and `MLAT_SERVER` with a value of your desired MLAT server address and port. For example you might have an `MLAT_CLIENT_USER` of `0327791e-3777-40a5-addc-aa13408d3b07` and an `MLAT_SERVER` of `feed.mymlatserver.com:31090`. The Supervisor restarts the service when these variables change, so no fork or redeploy is required.
+
+## OpenTelemetry collector (metrics and logs export)
+
+The `otel-collector` service streams device telemetry — host metrics, per-container metrics, container logs, and (optionally) ADS-B application metrics — to any OTLP/HTTP backend. Grafana Cloud, Honeycomb, Datadog, New Relic, and a self-hosted Grafana / Prometheus / Loki stack are all valid targets. The collector itself is the upstream [OpenTelemetry Collector Contrib](https://github.com/open-telemetry/opentelemetry-collector-contrib) build (Apache-2.0); the ADS-B Prometheus exporter is a small stdlib-only Python script bundled in this repo, with the metric naming scheme borrowed from [clawsicus/dump1090exporter](https://github.com/clawsicus/dump1090exporter) (MIT) so existing Grafana dashboards keep working.
+
+The service is opt-in: if `otel-collector` is not listed in `ENABLED_SERVICES` the container asks the balena Supervisor to stop itself, so devices that do not opt in pay no runtime cost. To enable, set `ENABLED_SERVICES=otel-collector` (comma-separate with `mlat-client` or other opt-in services as needed).
+
+### Required configuration
+
+| Variable | Description |
+| --- | --- |
+| `OTLP_ENDPOINT` | Full OTLP/HTTP base URL. For Grafana Cloud this is `https://otlp-gateway-<region>.grafana.net/otlp` (find the exact value on the *Connections → OpenTelemetry* page of your Grafana Cloud stack). |
+| `OTLP_AUTH_HEADER` | The full `Authorization` header value for your backend. For Grafana Cloud this is `Basic <base64(instanceID:token)>` — copy the ready-made value Grafana shows on the same OTel setup page. |
+
+### Per-signal toggles
+
+Each signal is wired to its own switch so you can pick exactly what you ship and keep volume inside whatever free tier you are on (Grafana Cloud Free includes 50 GB of logs, 10 k Prometheus series, and 14 days of retention as of writing). All default values are listed below.
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `OTEL_HOSTMETRICS_ENABLED` | `true` | CPU, memory, load, disk, filesystem, network, paging, processes — taken from `/proc` and `/sys` of the balena host, not the container's own view. |
+| `OTEL_DOCKER_STATS_ENABLED` | `true` | Per-container CPU %, memory %, network rx/tx, and restart count via the balena engine socket. Lets you see which feeder is misbehaving. |
+| `OTEL_LOGS_ENABLED` | `false` | Streams journald logs (which is what balena-engine writes to) for **all** containers on the device. Off by default because log volume can be high. See *Logs and persistent logging* below. |
+| `OTEL_DUMP1090_ENABLED` | `false` | Starts the bundled ADS-B exporter as a sidecar that scrapes `dump1090-fa`'s `stats.json` and `aircraft.json` and exposes Prometheus metrics for aircraft count, max range, message rates, signal level, CPU usage per period, etc. The collector then picks them up via its `prometheus` receiver. |
+| `OTEL_COLLECTION_INTERVAL` | `30s` | Scrape interval applied to host metrics, docker stats, and the dump1090 exporter. |
+| `OTEL_LOG_LEVEL` | `info` | Verbosity of the collector's own diagnostic logs (`debug`, `info`, `warn`, `error`). |
+| `OTEL_LOG_PRIORITY` | `info` | Minimum journald priority to ship when `OTEL_LOGS_ENABLED=true` (`debug`, `info`, `notice`, `warn`, `err`, `crit`). |
+| `OTEL_LOG_UNITS` | *(empty = all)* | Comma-separated list of systemd unit names to restrict log collection to (for example `balena.service` to ship only engine logs). Empty means every unit. |
+| `OTEL_DOCKER_ENDPOINT` | `unix:///var/run/balena.sock` | Override only if you need to point the docker_stats receiver at a non-standard socket. |
+| `DUMP1090_HOST` / `DUMP1090_PORT` | `dump1090-fa` / `8080` | Where the bundled `dump1090exporter` reaches the radio decoder. Override if you swap in a different decoder service. |
+| `DUMP1090_EXPORTER_PORT` | `9105` | Localhost port the exporter listens on for the collector to scrape. |
+| `DUMP1090_EXPORTER_LOG_LEVEL` | `warning` | Verbosity of the bundled exporter (`debug`, `info`, `warning`, `error`). |
+
+### Logs and persistent logging
+
+The `journald` receiver mounts both `/var/log/journal` (persistent) and `/run/log/journal` (volatile / tmpfs) read-only. `journalctl` inside the container reads whichever the host populates:
+
+- If you have **enabled persistent logging** in the balena dashboard (*Configuration → Persistent logging*), the host writes to `/var/log/journal/<machine-id>/`, the collector reads from there, and logs survive reboots. This is the recommended setup — see the [balena docs on persistent logging](https://docs.balena.io/learn/manage/device-logs#persistent-logging).
+- If persistent logging is **off**, the host writes only to `/run/log/journal/<machine-id>/` (tmpfs). The collector still reads that, but log buffer is capped by journald's runtime size and is cleared on reboot.
+
+Persistent logging increases SD-card wear, so for long-running fleets keep `OTEL_LOGS_ENABLED=true` enabled so logs are streamed off-device and journald can keep its on-device retention small.
+
+### Example: Grafana Cloud setup
+
+1. In Grafana Cloud, open your stack → *Connections → Add new connection → OpenTelemetry (OTLP)*.
+2. Copy the **OTLP Endpoint** and the **Authorization** header value Grafana presents.
+3. On your balena fleet (or device), set:
+   - `ENABLED_SERVICES = otel-collector` (or `mlat-client,otel-collector` if you already use mlat).
+   - `OTLP_ENDPOINT = <the URL Grafana gave you>`
+   - `OTLP_AUTH_HEADER = Basic <the base64 value Grafana gave you>`
+4. Optionally flip on logs and ADS-B metrics:
+   - `OTEL_LOGS_ENABLED = true`
+   - `OTEL_DUMP1090_ENABLED = true`
+
+The Supervisor restarts the service whenever any of these variables change, so no fork or redeploy is required after the first deployment.
+
+### Acknowledgements
+
+This service is inspired by the [`balena-io-experimental/otel-collector-device-prom`](https://github.com/balena-io-experimental/otel-collector-device-prom) reference and pulls in two upstream projects directly:
+
+- [`open-telemetry/opentelemetry-collector-contrib`](https://github.com/open-telemetry/opentelemetry-collector-contrib) (Apache-2.0) — the collector binary, copied straight from the official multi-arch image.
+- [`clawsicus/dump1090exporter`](https://github.com/clawsicus/dump1090exporter) (MIT) — the bundled stdlib-only exporter (`otel-collector/dump1090_exporter.py`) reuses its metric naming so dashboards from that project keep working. The implementation is in-tree because the original package's aiohttp dependency no longer builds on modern Python.
 
 # Part 16 – Updating to the latest version
 
