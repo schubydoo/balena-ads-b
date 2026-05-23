@@ -1,3 +1,9 @@
+# `version: '2.4'` is reported as obsolete and ignored by the newer balena-cli
+# used in local `balena push`, but the older balena-cli bundled in the CI's
+# balena-io/deploy-to-balena-action@v2.2.3 still requires it: without the
+# version key, that older parser rejects the top-level named-volumes block
+# with `data/volumes should NOT have additional properties`.
+version: '2.4'
 volumes:
   settings:
   airnav-radar:
