@@ -355,8 +355,9 @@ services:
       - IDENT_DATA_DIR=/run/dump1090-fa
       - IDENT_UPSTREAM_TYPE=dump1090-fa
       - IDENT_BASE_PATH=/ident
-    expose:
-      - "8080"
+    # expose: kept for docs, see dump1090-fa note
+    # expose:
+    #   - "8080"
     ports:
       - "8090:8080"
     volumes:
