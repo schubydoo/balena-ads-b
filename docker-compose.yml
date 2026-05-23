@@ -1,4 +1,3 @@
-version: '2.4'
 volumes:
   settings:
   airnav-radar:
@@ -59,17 +58,20 @@ services:
       - LON=
     devices:
       - "/dev/bus/usb"
-    expose:
-      - "30001"
-      - "30002"
-      - "30003"
-      - "30004"
-      - "30005"
-      - "30102"
-      - "30104"
-      - "30105"
-      - "30106"
-      - "8080"
+    # `expose:` is informational only on the default Compose bridge network and
+    # balena-cli strips it from the composition at push time. Kept commented as
+    # documentation of which ports each service makes available to peers.
+    # expose:
+    #   - "30001"
+    #   - "30002"
+    #   - "30003"
+    #   - "30004"
+    #   - "30005"
+    #   - "30102"
+    #   - "30104"
+    #   - "30105"
+    #   - "30106"
+    #   - "8080"
     ports:
       - "30001:30001"
       - "30002:30002"
@@ -114,10 +116,11 @@ services:
       - DUMP978_ENABLED=false
     devices:
       - "/dev/bus/usb"
-    expose:
-      - "30978"
-      - "30979"
-      - "8978"
+    # expose: kept for docs, see dump1090-fa note
+    # expose:
+    #   - "30978"
+    #   - "30979"
+    #   - "8978"
     ports:
       - "30978:30978"
       - "30979:30979"
@@ -222,8 +225,9 @@ services:
     build: ./airnav-radar
     image: airnav-radar
     restart: unless-stopped
-    expose:
-      - "32088"
+    # expose: kept for docs, see dump1090-fa note
+    # expose:
+    #   - "32088"
     environment:
       - AIRNAV_RADAR_KEY=
       - LAT=
@@ -254,10 +258,11 @@ services:
       LAT: ''
       LON: ''
       ALT: ''
-    expose:
-      - '30154'
-      - '30157'
-      - '31003'
+    # expose: kept for docs, see dump1090-fa note
+    # expose:
+    #   - '30154'
+    #   - '30157'
+    #   - '31003'
     labels:
       io.balena.features.supervisor-api: '1'
   wingbits:
@@ -275,8 +280,9 @@ services:
     # Granular caps/devices (SYS_RAWIO, NET_ADMIN, /dev/bus/usb,
     # major-189 cgroup rule) are not sufficient.
     privileged: true
-    expose:
-      - '30154'
+    # expose: kept for docs, see dump1090-fa note
+    # expose:
+    #   - '30154'
     labels:
       io.balena.features.supervisor-api: '1'
   planewatch:
@@ -290,8 +296,9 @@ services:
       - LON=
       - ALT=
       - PLANEWATCH_API_KEY=
-    expose:
-      - '30105'
+    # expose: kept for docs, see dump1090-fa note
+    # expose:
+    #   - '30105'
     labels:
       io.balena.features.supervisor-api: '1'
   autohupr:

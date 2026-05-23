@@ -25,3 +25,5 @@ README.md
 **/*.asc
 **/credentials*
 **/.netrc
+**/SharecodeGenerator.html
+**/SharecodeGeneratorFiles/
