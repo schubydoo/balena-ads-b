@@ -123,6 +123,7 @@ Software packages downloaded, installed, and configured by the balena-ads-b scri
     * [Automatic balenaOS host updates](#automatic-balenaos-host-updates)
     * [Ident operator console](#ident-operator-console)
     * [Custom MLAT client](#custom-mlat-client)
+    * [Tailscale remote access](#tailscale-remote-access)
 - [Part 16 – Updating to the latest version](#part-16--updating-to-the-latest-version)
 
 # Part 1 – Build the receiver
@@ -617,6 +618,51 @@ The `mlat-client` service lets you share MLAT data with an MLAT server of your c
 To enable it, create a *Device Variable* named `ENABLED_SERVICES` with the value of `mlat-client`. The service is opt-in: if `mlat-client` is not listed in `ENABLED_SERVICES` it asks the balena Supervisor to stop its own container, so devices that do not opt in pay no runtime cost. To enable more than one opt-in service, separate the names with commas (e.g. `ENABLED_SERVICES=mlat-client,otherservice`).
 
 Once enabled, add *Device Variables* named `MLAT_CLIENT_USER` with a value of your desired username or UUID and `MLAT_SERVER` with a value of your desired MLAT server address and port. For example you might have an `MLAT_CLIENT_USER` of `0327791e-3777-40a5-addc-aa13408d3b07` and an `MLAT_SERVER` of `feed.mymlatserver.com:31090`. The Supervisor restarts the service when these variables change, so no fork or redeploy is required.
+
+## Tailscale remote access
+
+The `tailscale` service joins your device to a [Tailscale](https://tailscale.com/) tailnet so you can reach the receiver — and every web UI it serves — from anywhere, without exposing anything to the public internet or relying on balena's *Public Device URL*. It runs on top of the prebuilt [`klutchell/balena-tailscale`](https://github.com/klutchell/balena-tailscale) block.
+
+The service runs in host network mode, so the device's tailnet IP automatically reaches every port the rest of the stack already publishes. From any other machine on the same tailnet, the URLs from [Part 14](#part-14--exploring-flight-traffic-locally-on-your-device) work exactly the same — just swap `YOURIP` for `<device>.<tailnet>.ts.net`.
+
+To enable it, create a *Device Variable* named `ENABLED_SERVICES` with the value of `tailscale`. The service is opt-in: if `tailscale` is not listed in `ENABLED_SERVICES` it asks the balena Supervisor to stop its own container, so devices that do not opt in pay no runtime cost. To enable more than one opt-in service, separate the names with commas (e.g. `ENABLED_SERVICES=mlat-client,tailscale`).
+
+### Authenticating the device
+
+Three authentication methods are supported. All are configured through the same `TS_AUTHKEY` *Device Variable*; the value's prefix determines the mode.
+
+- **Pre-auth key** (simplest). In your Tailscale admin console, go to *Settings → Keys → Generate auth key*. Set `TS_AUTHKEY` to the resulting `tskey-auth-…` string. Tag the key (for example `tag:adsb`) so you can write ACLs against the device.
+- **OAuth client** (recommended for fleets, integrates with your SSO). In your Tailscale admin console, go to *Settings → OAuth clients* and create a client with the `auth_keys` scope and the tag(s) you want devices to inherit. Set `TS_AUTHKEY` to the resulting `tskey-client-…?ephemeral=false&preauthorized=true` string. The OAuth client is tied to the SSO-authenticated identity that created it, so devices joining with this credential are auditable back to that identity.
+- **Interactive SSO via login URL**. Leave `TS_AUTHKEY` unset. The service prints a one-time login URL in a clearly-marked banner to the container logs (visible in the balenaCloud dashboard or via `balena logs --tail`); open it in a browser that is signed in to your tailnet's SSO provider (Google, Microsoft, Okta, etc.) and approve the device. State is persisted to the `tailscale-state` volume so this is a one-time step per device. Note that each container restart with no existing state generates a fresh URL — only the most recent one is valid.
+
+The Supervisor restarts the service when `TS_AUTHKEY` changes, so no fork or redeploy is required.
+
+### Optional configuration
+
+- `TS_HOSTNAME` (default: the balena device name): The hostname registered with the tailnet. Override if you want a different MagicDNS name.
+- `TAILSCALE_SERVE_TRAEFIK` (default: `false`): When `true`, runs [Tailscale Serve](https://tailscale.com/kb/1312/serve) in front of traefik so `https://<device>.<tailnet>.ts.net/` proxies to traefik with an automatically-issued TLS certificate.
+- `TS_ROUTES` (default: unset): Comma-separated CIDRs to advertise as a [subnet route](https://tailscale.com/kb/1019/subnets) (for example `192.168.1.0/24` to reach your LAN). You must approve the route in the Tailscale admin console after the device first checks in.
+- `TS_EXTRA_ARGS` (default: unset): Additional arguments passed to `tailscale up`. Useful values include `--ssh` to enable Tailscale SSH and `--advertise-tags=tag:adsb`.
+- `TS_ACCEPT_DNS` (default: `false`): When `true`, the device uses MagicDNS for name resolution. Off by default to avoid clashing with balena's resolver.
+- `TS_EXCLUDED_INTERFACES` (default: `resin-vpn resin-dns`): Interfaces hidden from tailscaled's interface enumeration. The defaults keep Tailscale from picking balena's management-VPN interfaces as default-route candidates; you rarely need to change this.
+- `TS_UPDATE_CHECK` (default: `false`): When `false`, disables tailscaled's outbound update-check probes. Set to `true` if you want tailscaled to notify you about new Tailscale versions in its logs.
+- `TS_POST_UP_SET_ARGS` (default: unset): Additional arguments appended verbatim (space-separated) to a single `tailscale set` invocation that runs after the daemon reaches the *Running* state. Use it to apply any other persistent preference (for example `--shields-up=true`) without editing `start.sh`.
+
+### Troubleshooting
+
+- **Logs contain `open-conn-track: timeout opening (TCP <tailnet-ip>:… => x.x.x.x:443); no associated peer node` warnings.** These are mostly tailscaled's captive-portal probes leaking from the tailnet interface. Disable captive-portal detection cluster-wide by adding a `nodeAttrs` rule to your tailnet ACL (admin console → *Access Controls*):
+
+  ```jsonc
+  {
+    // …existing policy…
+    "nodeAttrs": [
+      {
+        "target": ["*"],                              // or scope to ["tag:adsb"] if you tag balena nodes
+        "attr":   ["disable-captive-portal-detection"]
+      }
+    ]
+  }
+  ```
 
 # Part 16 – Updating to the latest version
 
