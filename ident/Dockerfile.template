@@ -4,12 +4,9 @@ ARG IDENT_VERSION=v0.3.1
 FROM ghcr.io/ident-1090/ident:${IDENT_VERSION}
 LABEL maintainer="https://github.com/ketilmo"
 
-USER root
 RUN apk add --no-cache bash curl ca-certificates tini
 
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
-
-USER ident
 
 ENTRYPOINT ["/sbin/tini", "--", "/start.sh"]
