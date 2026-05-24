@@ -627,10 +627,13 @@ Both services are opt-in: if either is not listed in `ENABLED_SERVICES`, its con
 
 ### Required configuration
 
+You must set the OTLP endpoint **and** an auth header. The auth header can be provided directly (any backend) or built from Grafana Cloud instance ID + API key (Grafana convenience shortcut).
+
 | Variable | Description |
 | --- | --- |
 | `OTLP_ENDPOINT` | Full OTLP/HTTP base URL. For Grafana Cloud this is `https://otlp-gateway-<region>.grafana.net/otlp` (find the exact value on the *Connections → OpenTelemetry* page of your Grafana Cloud stack). |
-| `OTLP_AUTH_HEADER` | The full `Authorization` header value for your backend. For Grafana Cloud this is `Basic <base64(instanceID:token)>` — copy the ready-made value Grafana shows on the same OTel setup page. |
+| `OTLP_AUTH_HEADER` | The full `Authorization` header value, e.g. `Basic <base64>` or `Bearer <token>` for non-Grafana backends. Wins if set. |
+| `GRAFANA_INSTANCE_ID` + `GRAFANA_API_KEY` | Grafana Cloud shortcut. If `OTLP_AUTH_HEADER` is empty and both of these are set, `start.sh` builds `Basic <base64(instanceID:apiKey)>` for you — so you can paste both raw values straight off Grafana's onboarding page without hand-encoding anything. |
 
 ### Per-signal toggles
 
@@ -669,13 +672,19 @@ Grafana Cloud's UI walks you through several disambiguation screens before it ha
 3. **"What language is your application written in?"** → choose **Other**. (The collector is a Go binary, but the OTLP gateway treats us as a generic OTLP producer either way, and "Other" is the only path that leads to the credentials we need.)
 4. **"Where will your application run?"** → choose **Linux**.
 5. **"How would you like to send data?"** → choose **OpenTelemetry Collector**. (We are literally running the upstream OTel Collector; **Direct** is for apps that emit OTLP themselves without a collector, and **Grafana Alloy** is Grafana's own agent which has no `linux/arm/v7` build.)
-6. Grafana will now show a config snippet for `otelcol`. **Don't paste the snippet** — `otel-collector/start.sh` generates its own config. You only need two values from the snippet:
-   - The `endpoint:` URL under the `otlphttp` exporter (looks like `https://otlp-gateway-<region>.grafana.net/otlp`) → this is your `OTLP_ENDPOINT`.
-   - The full `Authorization` header value (looks like `Basic <long base64 string>`) → this is your `OTLP_AUTH_HEADER`. Grafana usually shows this either inline in the snippet under `headers:` or in a separate "Generate API token" panel near the top of the page; create the token if it's not already shown.
+6. **"Authentication"** → choose **Create a new token**, give it a name (e.g. `balena-ads-b`), and click **Create token**. Grafana now generates and displays a `bash` snippet under *Configure the OpenTelemetry Collector* containing four `GRAFANA_CLOUD_*` lines. From that snippet, you only need two raw values — no need to copy any of the curl/echo commands:
+   - `GRAFANA_CLOUD_OTLP_ENDPOINT="https://otlp-gateway-<region>.grafana.net/otlp"` → this is your `OTLP_ENDPOINT`.
+   - `GRAFANA_CLOUD_INSTANCE_ID="<number>"` → this is your `GRAFANA_INSTANCE_ID`.
+   - `GRAFANA_CLOUD_API_KEY="glc_..."` → this is your `GRAFANA_API_KEY`.
+
+   Copy all three before navigating away — Grafana will not show the API key again.
 7. On your balena fleet (or device), set:
    - `ENABLED_SERVICES = otel-collector` (comma-separate with other opt-in services like `mlat-client` or `dump1090-exporter` as needed).
    - `OTLP_ENDPOINT = <the URL from step 6>`
-   - `OTLP_AUTH_HEADER = <the full "Basic …" string from step 6>`
+   - `GRAFANA_INSTANCE_ID = <the number from step 6>`
+   - `GRAFANA_API_KEY = <the glc_... value from step 6>`
+
+   `start.sh` will base64-encode `instanceID:apiKey` and build the `Basic` auth header automatically. (Advanced: if you'd rather build the header yourself or you're shipping to a non-Grafana backend, set `OTLP_AUTH_HEADER` directly instead — it wins over the two shortcut vars.)
 8. Optionally flip on logs and ADS-B metrics:
    - `OTEL_LOGS_ENABLED = true`
    - `OTEL_DUMP1090_ENABLED = true` — **and** add `dump1090-exporter` to `ENABLED_SERVICES` so the companion exporter actually starts.

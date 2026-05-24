@@ -14,9 +14,22 @@ echo "Verifying settings..."
 echo " "
 sleep 2
 
+# Grafana Cloud convenience: if the user pasted the instance ID + API key
+# raw off the OTel onboarding page (Connections → OpenTelemetry → Create
+# new token), build the Basic auth header ourselves instead of asking them
+# to base64-encode `instanceID:token` by hand. OTLP_AUTH_HEADER still wins
+# if explicitly set — anyone shipping to a non-Grafana backend
+# (Honeycomb, Datadog, self-hosted) is unaffected.
+if [ -z "$OTLP_AUTH_HEADER" ] && [ -n "$GRAFANA_INSTANCE_ID" ] && [ -n "$GRAFANA_API_KEY" ]; then
+	OTLP_AUTH_HEADER="Basic $(printf '%s:%s' "$GRAFANA_INSTANCE_ID" "$GRAFANA_API_KEY" | base64 -w0)"
+	echo "OTLP_AUTH_HEADER computed from GRAFANA_INSTANCE_ID + GRAFANA_API_KEY."
+	export OTLP_AUTH_HEADER
+fi
+
 missing_variables=false
 
 [ -z "$OTLP_ENDPOINT" ] && echo "OTLP_ENDPOINT is missing, will abort startup." && missing_variables=true || echo "OTLP_ENDPOINT is set: $OTLP_ENDPOINT"
+[ -z "$OTLP_AUTH_HEADER" ] && echo "OTLP_AUTH_HEADER is missing (or GRAFANA_INSTANCE_ID + GRAFANA_API_KEY), will abort startup." && missing_variables=true || echo "OTLP_AUTH_HEADER is set."
 
 if [ "$missing_variables" = true ]; then
 	echo "Settings missing, aborting..."
