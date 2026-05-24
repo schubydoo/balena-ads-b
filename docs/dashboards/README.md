@@ -9,11 +9,15 @@ Drop-in dashboards for the `otel-collector` service. Import in Grafana via **Das
 
 Both dashboards have an `Instance` dropdown driven by the `container_device_short_uuid` label, which `otel-collector/start.sh` derives from `BALENA_DEVICE_UUID` via its `resource/docker` processor.
 
+## Known empty panels
+
+- **Disk I/O** — stays empty on balena-engine. Both dashboards query `container_blockio_io_service_bytes_recursive`, but balena-engine on cgroup v2 doesn't expose block I/O counters through the Docker stats API, so the OTel `docker_stats` receiver has nothing to emit. Nothing fixable on the collector side; ignore the panel.
+
 ## Attribution
 
-These JSON files are vendored unchanged from [`balena-io-experimental/otel-collector-device-prom`](https://github.com/balena-io-experimental/otel-collector-device-prom) (Apache-2.0). Original authors © balena.
+These JSON files originate from [`balena-io-experimental/otel-collector-device-prom`](https://github.com/balena-io-experimental/otel-collector-device-prom) (Apache-2.0). Original authors © balena. The only local modification is appending the `_total` suffix to `container_network_io_usage_{rx,tx}_bytes` queries — Grafana Cloud's OTLP→Prometheus translation adds that suffix to monotonic counters on ingest, so the un-suffixed names from the upstream JSON return no data.
 
-The metric names and labels the dashboards filter on (`container_cpu_utilization_ratio`, `container_memory_usage_total_bytes`, `container_network_io_usage_{rx,tx}_bytes`, `container_blockio_io_service_bytes_recursive`, `container_service_name`, `container_name`, `container_device_short_uuid`) are exactly what `otel-collector` is configured to emit — see `otel-collector/start.sh` for the receiver wiring.
+The metric names and labels the dashboards filter on (`container_cpu_utilization_ratio`, `container_memory_usage_total_bytes`, `container_network_io_usage_{rx,tx}_bytes_total`, `container_blockio_io_service_bytes_recursive`, `container_service_name`, `container_name`, `container_device_short_uuid`) are exactly what `otel-collector` is configured to emit — see `otel-collector/start.sh` for the receiver wiring.
 
 ## Other useful dashboards (external)
 

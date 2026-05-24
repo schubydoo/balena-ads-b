@@ -732,7 +732,7 @@
             "uid": "$prometheus_datasource"
           },
           "editorMode": "code",
-          "expr": "sum by (container_service_name) (rate(container_network_io_usage_rx_bytes{container_device_short_uuid=~\"$instance\", container_service_name=~\"$service\"}[$__rate_interval]))",
+          "expr": "sum by (container_service_name) (rate(container_network_io_usage_rx_bytes_total{container_device_short_uuid=~\"$instance\", container_service_name=~\"$service\"}[$__rate_interval]))",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{container_service_name}} rx",
@@ -746,7 +746,7 @@
             "uid": "${DS_PROM}"
           },
           "editorMode": "code",
-          "expr": "sum by (container_service_name) (rate(container_network_io_usage_tx_bytes{container_device_short_uuid=~\"$instance\", container_service_name=~\"$service\"}[$__rate_interval]))",
+          "expr": "sum by (container_service_name) (rate(container_network_io_usage_tx_bytes_total{container_device_short_uuid=~\"$instance\", container_service_name=~\"$service\"}[$__rate_interval]))",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{container_service_name}} tx",
