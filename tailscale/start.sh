@@ -25,15 +25,17 @@ esac
 #                       login URL to the container logs; open it in your
 #                       SSO-enabled browser to authorize the device.
 
-if [ -z "${TS_AUTHKEY:-}" ]; then
+if [ -n "${TS_AUTHKEY:-}" ]; then
+	echo "TS_AUTHKEY is set, proceeding with non-interactive authentication."
+	echo " "
+elif [ -z "$(ls -A /var/lib/tailscale 2>/dev/null)" ]; then
+	# No auth key AND no persisted state — first-boot SSO flow.
 	echo "TS_AUTHKEY is not set – Tailscale will print an interactive login URL"
 	echo "to the container logs. Open it in your SSO-enabled browser to authorize"
 	echo "this device, or set TS_AUTHKEY to a pre-auth key / OAuth client secret."
-else
-	echo "TS_AUTHKEY is set, proceeding with non-interactive authentication."
+	echo " "
 fi
-
-echo " "
+# else: state already exists, tailscaled will resume silently — no banner.
 
 # balena-friendly defaults; only set when the user has not overridden.
 
@@ -53,9 +55,6 @@ mkdir -p /dev/net
 if [ ! -c /dev/net/tun ]; then
 	mknod /dev/net/tun c 10 200
 fi
-
-mount -o remount,rw /proc/sys 2>/dev/null || \
-	echo "remount /proc/sys rw failed; tailscaled will warn about src_valid_mark and connmark rp_filter workaround will be ineffective."
 
 # Optional: terminate Tailscale Serve (HTTPS on :443) in front of traefik. The
 # file ships unmodified — ${TS_CERT_DOMAIN} inside is a magic placeholder
