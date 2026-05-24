@@ -126,6 +126,11 @@ fi
 
 if [ -n "${TS_UPDATE_CHECK:-}" ] || [ -n "${TS_POST_UP_SET_ARGS:-}" ]; then
 	(
+		# Disable pathname expansion inside this subshell so that
+		# TS_POST_UP_SET_ARGS values containing glob characters
+		# (e.g. tag patterns with `*`, `?`, `[...]`) survive the
+		# unquoted expansion below without globbing against the CWD.
+		set -f
 		s=0
 		while [ ! -S /var/run/tailscale/tailscaled.sock ]; do
 			s=$((s + 1))
