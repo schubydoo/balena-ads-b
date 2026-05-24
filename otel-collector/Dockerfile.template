@@ -6,9 +6,8 @@ FROM debian:trixie-slim AS release
 LABEL maintainer="https://github.com/ketilmo"
 
 # Runtime packages only. systemd is pulled in for journalctl (used by the
-# otelcol journald receiver), gettext-base for envsubst, python3 for the
-# bundled stdlib-only dump1090 exporter (see dump1090_exporter.py).
-ARG PERM_INSTALL="tini ca-certificates curl gettext-base systemd python3"
+# otelcol journald receiver), gettext-base for envsubst.
+ARG PERM_INSTALL="tini ca-certificates curl gettext-base systemd"
 
 RUN printf '%s\n' \
 		'path-exclude /usr/share/doc/*' \
@@ -29,14 +28,7 @@ RUN printf '%s\n' \
 # (https://github.com/open-telemetry/opentelemetry-collector-contrib, Apache-2.0).
 COPY --from=otelcol /otelcol-contrib /usr/local/bin/otelcol-contrib
 
-# Stdlib-only dump1090-fa → Prometheus exporter. Metric naming follows
-# https://github.com/clawsicus/dump1090exporter (MIT) for dashboard compatibility,
-# but the implementation is in-tree because the original package's pinned
-# aiohttp==3.8.1 transitive dep no longer builds on Python >= 3.12.
-COPY dump1090_exporter.py /usr/local/bin/dump1090_exporter.py
-
-RUN mkdir -p /etc/otelcol && \
-	chmod +x /usr/local/bin/dump1090_exporter.py
+RUN mkdir -p /etc/otelcol
 
 COPY start.sh /
 RUN chmod +x /start.sh

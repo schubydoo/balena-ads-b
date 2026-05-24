@@ -36,8 +36,10 @@ OTEL_DUMP1090_ENABLED="${OTEL_DUMP1090_ENABLED:-false}"
 
 OTEL_COLLECTION_INTERVAL="${OTEL_COLLECTION_INTERVAL:-30s}"
 OTEL_DOCKER_ENDPOINT="${OTEL_DOCKER_ENDPOINT:-unix:///var/run/balena.sock}"
-DUMP1090_HOST="${DUMP1090_HOST:-dump1090-fa}"
-DUMP1090_PORT="${DUMP1090_PORT:-8080}"
+# Scrape target for ADS-B app metrics. Defaults to the sibling
+# dump1090-exporter service on the compose bridge network; users can override
+# (e.g. point at a different host) without rebuilding.
+DUMP1090_EXPORTER_HOST="${DUMP1090_EXPORTER_HOST:-dump1090-exporter}"
 DUMP1090_EXPORTER_PORT="${DUMP1090_EXPORTER_PORT:-9105}"
 
 CONFIG_FILE=/etc/otelcol/config.yaml
@@ -156,6 +158,11 @@ fi
 
 if [ "$OTEL_DUMP1090_ENABLED" = "true" ]; then
 	METRICS_RECEIVERS+=("prometheus/dump1090")
+	# Scrape the sibling dump1090-exporter service
+	# (https://github.com/schubydoo/dump1090-exporter, MIT) over the balena
+	# compose bridge network. The dump1090-exporter service must also be
+	# listed in ENABLED_SERVICES on the device — otherwise it parks itself
+	# and the scrape will fail (the collector logs a warning per interval).
 	cat >> "$CONFIG_FILE" <<EOF
   prometheus/dump1090:
     config:
@@ -163,7 +170,7 @@ if [ "$OTEL_DUMP1090_ENABLED" = "true" ]; then
         - job_name: dump1090
           scrape_interval: ${OTEL_COLLECTION_INTERVAL}
           static_configs:
-            - targets: ['127.0.0.1:${DUMP1090_EXPORTER_PORT}']
+            - targets: ['${DUMP1090_EXPORTER_HOST}:${DUMP1090_EXPORTER_PORT}']
 EOF
 fi
 
@@ -230,21 +237,6 @@ echo "--------"
 cat "$CONFIG_FILE"
 echo "--------"
 echo " "
-
-# Optionally launch the bundled dump1090 → Prometheus exporter
-# (otel-collector/dump1090_exporter.py — stdlib only, metric naming borrowed
-# from https://github.com/clawsicus/dump1090exporter, MIT). The collector's
-# prometheus receiver above scrapes it on 127.0.0.1:${DUMP1090_EXPORTER_PORT}.
-if [ "$OTEL_DUMP1090_ENABLED" = "true" ]; then
-	echo "Starting dump1090 exporter sidecar against http://${DUMP1090_HOST}:${DUMP1090_PORT}/data ..."
-	python3 /usr/local/bin/dump1090_exporter.py \
-		--resource-path="http://${DUMP1090_HOST}:${DUMP1090_PORT}/data" \
-		--port="${DUMP1090_EXPORTER_PORT}" \
-		--bind=127.0.0.1 \
-		${LAT:+--latitude="${LAT}"} \
-		${LON:+--longitude="${LON}"} \
-		--log-level="${DUMP1090_EXPORTER_LOG_LEVEL:-warning}" &
-fi
 
 echo "Starting otelcol-contrib..."
 exec /usr/local/bin/otelcol-contrib --config="$CONFIG_FILE"

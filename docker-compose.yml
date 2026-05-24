@@ -403,10 +403,10 @@ services:
       - OTEL_LOG_LEVEL=info
       - OTEL_LOG_PRIORITY=info
       - OTEL_LOG_UNITS=
-      - DUMP1090_HOST=dump1090-fa
-      - DUMP1090_PORT=8080
-      - LAT=
-      - LON=
+      # Hostname:port the collector scrapes for ADS-B app metrics when
+      # OTEL_DUMP1090_ENABLED=true. Default targets the sibling service.
+      - DUMP1090_EXPORTER_HOST=dump1090-exporter
+      - DUMP1090_EXPORTER_PORT=9105
     labels:
       # balenaCloud disallows arbitrary host bind mounts, so we expose the
       # host filesystem to the collector through balena's feature labels
@@ -425,4 +425,25 @@ services:
       # receiver can list and read per-container stats from the balena engine.
       io.balena.features.balena-socket: '1'
       io.balena.features.balena-api: '1'
+      io.balena.features.supervisor-api: '1'
+  dump1090-exporter:
+    depends_on:
+      - dump1090-fa
+    build: ./dump1090-exporter
+    image: dump1090-exporter
+    restart: unless-stopped
+    # expose: kept for docs, see dump1090-fa note
+    # expose:
+    #   - "9105"
+    environment:
+      - LAT=
+      - LON=
+      - DUMP1090_RESOURCE_PATH=/run/dump1090-fa
+      - DUMP1090_EXPORTER_LOG_LEVEL=info
+    volumes:
+      # Shared named volume populated by dump1090-fa --write-json.
+      # Filesystem scrape is faster than the HTTP /data path and avoids
+      # depending on lighttpd inside the dump1090-fa container.
+      - 'aircraft-data:/run/dump1090-fa:ro'
+    labels:
       io.balena.features.supervisor-api: '1'
