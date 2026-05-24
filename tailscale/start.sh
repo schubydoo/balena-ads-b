@@ -186,6 +186,21 @@ if [ -n "${TS_UPDATE_CHECK:-}" ] || [ -n "${TS_POST_UP_SET_ARGS:-}" ]; then
 	) &
 fi
 
-# Hand off to upstream containerboot.
+# Hand off to upstream containerboot, piping its combined output through
+# awk so we can drop two well-known cosmetic log lines that the upstream
+# image has no knob to silence:
+#   * `localapi: [POST] /localapi/v0/debug` — containerboot's own 15s
+#     peerPoll watcher hitting the local LocalAPI debug action. Unix
+#     socket only, no network I/O, fires every 15s for the life of the
+#     container.
+#   * `magicsock: derp-NN does not know about peer [XX/YY], removing
+#     route` — disco probe spam against an offline peer's cached home
+#     DERP region; loops every ~5s until that peer reconnects.
+# awk is in busybox, doesn't need GNU-grep's --line-buffered, and we
+# call fflush() to keep balena's log shipper seeing lines promptly.
 
-exec /usr/local/bin/containerboot
+exec /usr/local/bin/containerboot 2>&1 | awk '
+	/localapi: \[POST\] \/localapi\/v0\/debug/ { next }
+	/magicsock: derp-[0-9]+ does not know about peer/ { next }
+	{ print; fflush() }
+'
