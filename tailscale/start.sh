@@ -202,5 +202,6 @@ fi
 exec /usr/local/bin/containerboot 2>&1 | awk '
 	/localapi: \[POST\] \/localapi\/v0\/debug/ { next }
 	/magicsock: derp-[0-9]+ does not know about peer/ { next }
+	/\[RATELIMIT\] format\("magicsock: derp-%d does not know about peer/ { next }
 	{ print; fflush() }
 '
