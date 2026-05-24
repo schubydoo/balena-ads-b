@@ -173,12 +173,15 @@ if [ -n "${TS_UPDATE_CHECK:-}" ] || [ -n "${TS_POST_UP_SET_ARGS:-}" ]; then
 			echo "tailscale set: backend did not reach Running within 2 minutes; skipping."
 			exit 0
 		fi
-		SET_ARGS=""
-		[ -n "${TS_UPDATE_CHECK:-}" ] && SET_ARGS="$SET_ARGS --update-check=$TS_UPDATE_CHECK"
-		[ -n "${TS_POST_UP_SET_ARGS:-}" ] && SET_ARGS="$SET_ARGS $TS_POST_UP_SET_ARGS"
-		echo "Applying post-up tailscale set:$SET_ARGS"
-		# shellcheck disable=SC2086   # intentional word-splitting on SET_ARGS
-		/usr/local/bin/tailscale set $SET_ARGS || \
+		# Build the argument vector via positional parameters so
+		# --update-check is always one quoted arg, while $TS_POST_UP_SET_ARGS
+		# is intentionally space-split into multiple flags.
+		set --
+		[ -n "${TS_UPDATE_CHECK:-}" ] && set -- "$@" "--update-check=$TS_UPDATE_CHECK"
+		# shellcheck disable=SC2086   # intentional word-splitting on TS_POST_UP_SET_ARGS
+		[ -n "${TS_POST_UP_SET_ARGS:-}" ] && set -- "$@" $TS_POST_UP_SET_ARGS
+		echo "Applying post-up tailscale set: $*"
+		/usr/local/bin/tailscale set "$@" || \
 			echo "tailscale set failed (exit $?); continuing."
 	) &
 fi
