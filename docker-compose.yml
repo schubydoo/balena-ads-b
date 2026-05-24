@@ -401,6 +401,7 @@ services:
       - GRAFANA_INSTANCE_ID=
       - GRAFANA_API_KEY=
       - OTEL_HOSTMETRICS_ENABLED=true
+      - OTEL_FILESYSTEM_ENABLED=false
       - OTEL_DOCKER_STATS_ENABLED=true
       - OTEL_LOGS_ENABLED=false
       - OTEL_DUMP1090_ENABLED=false

@@ -130,6 +130,15 @@ if [ "$OTEL_HOSTMETRICS_ENABLED" = "true" ]; then
 	# /proc and /sys come from the host via the procfs/sysfs balena labels
 	# in docker-compose.yml, so the collector's default root_path: "/" reads
 	# the host's view directly — no /hostfs prefix needed.
+	#
+	# The `filesystem` scraper is intentionally off by default: with the
+	# procfs label active, /proc/mounts lists the host's mount points
+	# (/mnt/sysroot/active, /mnt/data, /mnt/boot, …) but the actual disk
+	# paths are NOT bind-mounted into the container (balena disallows
+	# arbitrary host bind mounts), so statfs() fails on every host mount
+	# and the scraper spams the log with errors every collection interval.
+	# Users who only care about the container's own writable layer can flip
+	# OTEL_FILESYSTEM_ENABLED=true to opt in.
 	cat >> "$CONFIG_FILE" <<EOF
   hostmetrics:
     collection_interval: ${OTEL_COLLECTION_INTERVAL}
@@ -138,14 +147,18 @@ if [ "$OTEL_HOSTMETRICS_ENABLED" = "true" ]; then
       load:
       memory:
       disk:
-      filesystem:
-        exclude_mount_points:
-          mount_points: ["/dev/.*", "/proc/.*", "/sys/.*", "/run/.*", "/var/lib/docker/.*", "/var/lib/balena-engine/.*", "/mnt/data/docker/.*", "/mnt/data/balena-engine/.*"]
-          match_type: regexp
       network:
       paging:
       processes:
 EOF
+	if [ "${OTEL_FILESYSTEM_ENABLED:-false}" = "true" ]; then
+		cat >> "$CONFIG_FILE" <<EOF
+      filesystem:
+        exclude_mount_points:
+          mount_points: ["/dev/.*", "/proc/.*", "/sys/.*", "/run/.*", "/var/lib/docker/.*", "/var/lib/balena-engine/.*", "/mnt/data/docker/.*", "/mnt/data/balena-engine/.*"]
+          match_type: regexp
+EOF
+	fi
 fi
 
 if [ "$OTEL_DOCKER_STATS_ENABLED" = "true" ]; then

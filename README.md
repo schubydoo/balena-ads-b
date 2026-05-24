@@ -641,7 +641,8 @@ Each signal is wired to its own switch so you can pick exactly what you ship and
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `OTEL_HOSTMETRICS_ENABLED` | `true` | CPU, memory, load, disk, filesystem, network, paging, processes — taken from `/proc` and `/sys` of the balena host, not the container's own view. |
+| `OTEL_HOSTMETRICS_ENABLED` | `true` | CPU, load, memory, disk I/O, network, paging, processes — taken from `/proc` and `/sys` of the balena host, not the container's own view. Filesystem capacity/usage is split out separately (see next row) because it requires extra access balena doesn't grant. |
+| `OTEL_FILESYSTEM_ENABLED` | `false` | Add the `filesystem` scraper (disk capacity / free space per mountpoint). Off by default: the `procfs` feature label makes `/proc/mounts` list the host's partitions (`/mnt/data`, `/mnt/sysroot/active`, …) but balena disallows arbitrary host bind mounts, so `statfs()` on those paths fails every collection interval and spams the logs. Flip on only if you want stats for the *container's own* writable layer and accept the noise. |
 | `OTEL_DOCKER_STATS_ENABLED` | `true` | Per-container CPU %, memory %, network rx/tx, and restart count via the balena engine socket. Lets you see which feeder is misbehaving. |
 | `OTEL_LOGS_ENABLED` | `false` | Streams journald logs (which is what balena-engine writes to) for **all** containers on the device. Off by default because log volume can be high. See *Logs and persistent logging* below. |
 | `OTEL_DUMP1090_ENABLED` | `false` | Tells the collector's `prometheus` receiver to scrape the sibling `dump1090-exporter` service for ADS-B app metrics (aircraft count, max range, message rates, signal level, CPU usage per period, etc.). Also requires `dump1090-exporter` itself to be listed in `ENABLED_SERVICES` so its container actually runs. |
