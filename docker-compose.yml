@@ -402,7 +402,7 @@ services:
       - TS_USERSPACE=false
       # resin-vpn / resin-dns are balena's management-VPN interfaces;
       # excluding them keeps tailscaled's netmon from picking them as
-      # default-route candidates (see patches/01-custom-interfaces.patch).
+      # default-route candidates.
       - TS_EXCLUDED_INTERFACES=resin-vpn resin-dns
       - TAILSCALE_SERVE_TRAEFIK=false
       # Disable tailscaled's outbound update-check probes. The check uses

@@ -108,12 +108,15 @@ fi
 
 # Optional post-up `tailscale set` preferences. Two layers:
 #   TS_UPDATE_CHECK      convenience var; if non-empty, becomes
-#                        --update-check=$value. Disables tailscaled's
-#                        outbound update-check probes.
+#                        --update-check=$value (true|false), toggling
+#                        tailscaled's outbound update-check probes.
 #   TS_POST_UP_SET_ARGS  escape hatch; raw `tailscale set` args appended
 #                        verbatim (space-separated).
-# Both feed a single `tailscale set` invocation, run after tailscaled
-# reaches the Running state. Skipped silently if neither var is set.
+# Applied in two stages: stage 1 pushes --update-check as soon as the
+# LocalAPI accepts prefs edits (any non-empty BackendState); stage 2
+# waits for BackendState=Running and applies TS_POST_UP_SET_ARGS,
+# re-applying --update-check defensively. Skipped silently if neither
+# var is set.
 
 if [ -n "${TS_UPDATE_CHECK:-}" ] || [ -n "${TS_POST_UP_SET_ARGS:-}" ]; then
 	(
