@@ -75,7 +75,13 @@ esac
 
 if [ -z "${TS_AUTHKEY:-}" ]; then
 	(
+		s=0
 		while [ ! -S /var/run/tailscale/tailscaled.sock ]; do
+			s=$((s + 1))
+			if [ "$s" -gt 180 ]; then
+				echo "Tailscale SSO URL poller: tailscaled socket never appeared after 3 minutes; giving up."
+				exit 0
+			fi
 			sleep 1
 		done
 		i=0
@@ -120,7 +126,15 @@ fi
 
 if [ -n "${TS_UPDATE_CHECK:-}" ] || [ -n "${TS_POST_UP_SET_ARGS:-}" ]; then
 	(
-		while [ ! -S /var/run/tailscale/tailscaled.sock ]; do sleep 1; done
+		s=0
+		while [ ! -S /var/run/tailscale/tailscaled.sock ]; do
+			s=$((s + 1))
+			if [ "$s" -gt 180 ]; then
+				echo "tailscale set: tailscaled socket never appeared after 3 minutes; skipping post-up runner."
+				exit 0
+			fi
+			sleep 1
+		done
 
 		# Stage 1: push --update-check as soon as the LocalAPI accepts
 		# prefs edits (any non-empty BackendState).
