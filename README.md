@@ -662,17 +662,27 @@ Persistent logging increases SD-card wear, so for long-running fleets keep `OTEL
 
 ### Example: Grafana Cloud setup
 
-1. In Grafana Cloud, open your stack → *Connections → Add new connection → OpenTelemetry (OTLP)*.
-2. Copy the **OTLP Endpoint** and the **Authorization** header value Grafana presents.
-3. On your balena fleet (or device), set:
-   - `ENABLED_SERVICES = otel-collector` (or `mlat-client,otel-collector` if you already use mlat).
-   - `OTLP_ENDPOINT = <the URL Grafana gave you>`
-   - `OTLP_AUTH_HEADER = Basic <the base64 value Grafana gave you>`
-4. Optionally flip on logs and ADS-B metrics:
+Grafana Cloud's UI walks you through several disambiguation screens before it hands you OTLP credentials. Follow this exact path so the values it generates match what `otel-collector` expects:
+
+1. In Grafana Cloud, open your stack → **Connections** → **Add new connection** → search for **"OpenTelemetry (OTLP)"** and open it.
+2. **"What are you using to send your data?"** → choose **OpenTelemetry SDK**. (Grafana Beyla is a different agent we are not using.)
+3. **"What language is your application written in?"** → choose **Other**. (The collector is a Go binary, but the OTLP gateway treats us as a generic OTLP producer either way, and "Other" is the only path that leads to the credentials we need.)
+4. **"Where will your application run?"** → choose **Linux**.
+5. **"How would you like to send data?"** → choose **OpenTelemetry Collector**. (We are literally running the upstream OTel Collector; **Direct** is for apps that emit OTLP themselves without a collector, and **Grafana Alloy** is Grafana's own agent which has no `linux/arm/v7` build.)
+6. Grafana will now show a config snippet for `otelcol`. **Don't paste the snippet** — `otel-collector/start.sh` generates its own config. You only need two values from the snippet:
+   - The `endpoint:` URL under the `otlphttp` exporter (looks like `https://otlp-gateway-<region>.grafana.net/otlp`) → this is your `OTLP_ENDPOINT`.
+   - The full `Authorization` header value (looks like `Basic <long base64 string>`) → this is your `OTLP_AUTH_HEADER`. Grafana usually shows this either inline in the snippet under `headers:` or in a separate "Generate API token" panel near the top of the page; create the token if it's not already shown.
+7. On your balena fleet (or device), set:
+   - `ENABLED_SERVICES = otel-collector` (comma-separate with other opt-in services like `mlat-client` or `dump1090-exporter` as needed).
+   - `OTLP_ENDPOINT = <the URL from step 6>`
+   - `OTLP_AUTH_HEADER = <the full "Basic …" string from step 6>`
+8. Optionally flip on logs and ADS-B metrics:
    - `OTEL_LOGS_ENABLED = true`
-   - `OTEL_DUMP1090_ENABLED = true` — and add `dump1090-exporter` to `ENABLED_SERVICES` so the companion exporter actually starts.
+   - `OTEL_DUMP1090_ENABLED = true` — **and** add `dump1090-exporter` to `ENABLED_SERVICES` so the companion exporter actually starts.
 
 The Supervisor restarts the service whenever any of these variables change, so no fork or redeploy is required after the first deployment.
+
+After a minute or two, telemetry should appear under **Explore → Metrics** (filter by `balena_app_name` or `balena_device_uuid`) and, if you enabled logs, under **Explore → Logs**.
 
 ### Acknowledgements
 
