@@ -113,6 +113,20 @@ processors:
       - key: balena.host_os_version
         value: ${env:BALENA_HOST_OS_VERSION}
         action: upsert
+  resource/docker:
+    # Extract the first 7 characters of the full container_device_uuid
+    # (auto-injected by balena as BALENA_DEVICE_UUID and promoted to a metric
+    # label by docker_stats.env_vars_to_metric_labels) into a separate
+    # short-form label. The Balena example dashboards under docs/dashboards
+    # filter on container_device_short_uuid because Grafana variable
+    # dropdowns are easier to scan with 7-char UUIDs than 32-char ones.
+    # Pattern lifted from balena-io-experimental/otel-collector-device-prom.
+    # No-op on metrics that don't carry container_device_uuid (node-exporter
+    # scrape, dump1090 scrape), so it's safe to apply pipeline-wide.
+    attributes:
+      - key: container_device_uuid
+        pattern: "^(?P<container_device_short_uuid>.{0,7}).*"
+        action: extract
 
 exporters:
   otlphttp:
@@ -193,6 +207,14 @@ if [ "$OTEL_DOCKER_STATS_ENABLED" = "true" ]; then
         enabled: true
       container.memory.percent:
         enabled: true
+      # container.memory.usage.total and container.blockio.io_service_bytes_recursive
+      # are off by default in the docker_stats receiver but required by the
+      # Balena example dashboards bundled under docs/dashboards (see
+      # https://github.com/balena-io-experimental/otel-collector-device-prom).
+      container.memory.usage.total:
+        enabled: true
+      container.blockio.io_service_bytes_recursive:
+        enabled: true
       container.network.io.usage.tx_bytes:
         enabled: true
       container.network.io.usage.rx_bytes:
@@ -264,7 +286,7 @@ yaml_list() {
 	if [ ${#METRICS_RECEIVERS[@]} -gt 0 ]; then
 		echo "    metrics:"
 		echo "      receivers: $(yaml_list "${METRICS_RECEIVERS[@]}")"
-		echo "      processors: [resourcedetection/system, resource/balena, batch]"
+		echo "      processors: [resourcedetection/system, resource/balena, resource/docker, batch]"
 		echo "      exporters: [otlphttp]"
 	fi
 	if [ ${#LOGS_RECEIVERS[@]} -gt 0 ]; then

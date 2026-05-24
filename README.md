@@ -698,21 +698,26 @@ Grafana Cloud's UI walks you through several disambiguation screens before it ha
 8. Optionally flip on logs and ADS-B metrics:
    - `OTEL_LOGS_ENABLED = true`
    - `OTEL_DUMP1090_ENABLED = true` — **and** add `dump1090-exporter` to `ENABLED_SERVICES` so the companion exporter actually starts.
-9. Back in the Grafana wizard: click **Next** to advance past *Instrumentation instructions* (nothing to do — `otel-collector` is the instrumentation), then **Next** again to land on **Final Setup**. **Stay on this page** while Grafana waits for the first batch of metrics; the panel updates as soon as data lands and can take up to ~5 minutes the first time. Grafana does not currently provide a way back to this page once you navigate away — don't close the tab until you see data confirmed. If you do close it early, you can still verify telemetry from *Explore → Metrics* once it starts flowing.
+9. Back in the Grafana wizard: click **Next** to advance past *Instrumentation instructions* (nothing to do — `otel-collector` is the instrumentation), then **Next** again to land on **Final Setup**. Wait a few minutes for data. The page's "data received" detector seems to look for a specific OTel SDK signature and may not flip green even when metrics are arriving (we ship via the OTel Collector with Prometheus-style names like `node_*`, not the SDK's native `system.*`). Don't trust that page — verify directly under *Explore → Metrics* by querying e.g. `up{job="integrations/node_exporter"}`. If that returns `1`, you're good.
 
 The Supervisor restarts the service whenever any of these variables change, so no fork or redeploy is required after the first deployment.
 
-### Optional: install Grafana Cloud's prebuilt Linux dashboards
+### Prebuilt dashboards
 
-The `node-exporter` service emits standard `node_*` Prometheus metrics, which Grafana Cloud's "Linux Server" integration ships dashboards and alert rules for — no dashboard authoring required on your end. Install just the dashboards (the agent install is unnecessary because we already ship the data via OTel):
+Two zero-authoring dashboard sources work out of the box once data is flowing:
+
+**1. Host metrics — Grafana Cloud's "Linux Server" integration** (covers CPU, memory, network, processes from the `node_*` metrics emitted by the `node-exporter` service):
 
 1. In Grafana Cloud, open **Connections → Add new connection → Linux Server**.
-2. Click **Install** in the *Install Dashboards and Alerts* section near the bottom of the page. **Do not install the agent** — that would deploy Grafana Alloy / a Prometheus scraper, duplicating what `otel-collector` already does.
-3. After install, dashboards appear under **Dashboards → Linux Server** ("Node Exporter / Nodes", "Node Exporter / USE Method / Node", etc.). Filter by the `instance` label, which `start.sh` sets to your balena device name.
+2. Scroll past the agent install instructions (they want you to deploy Grafana Alloy — we don't need it, our `node-exporter` + `otel-collector` already ships the data). Click **Install** in the *Install Dashboards and Alerts* section near the bottom of the page.
+3. Open **Dashboards → Linux Server**. Filter by the `instance` label (set by `start.sh` to your balena device name).
 
-Apply the same procedure if you also want the **Docker** integration's prebuilt dashboards — the `docker_stats` receiver emits `container_*` metrics those dashboards understand. Skip the agent install in that flow too.
+**2. Container metrics — JSON files bundled in this repo.** Grafana applies OTel→Prometheus unit suffixes on ingest (`container_cpu_utilization` becomes `container_cpu_utilization_ratio`, `container_memory_usage_total` becomes `container_memory_usage_total_bytes`, etc.), so stock community Docker dashboards built for raw Prometheus names stay blank. Two dashboards from [`balena-io-experimental/otel-collector-device-prom`](https://github.com/balena-io-experimental/otel-collector-device-prom) (Apache-2.0) match the suffixed names exactly and are bundled at [`docs/dashboards/`](docs/dashboards/) — see that directory's README for the full list:
 
-After a minute or two, telemetry should appear under **Explore → Metrics** (filter by `balena_app_name` or `balena_device_uuid`) and, if you enabled logs, under **Explore → Logs**.
+1. **Dashboards → New → Import → Upload JSON file**.
+2. Pick `docs/dashboards/containers.json` (per-container view) or `docs/dashboards/app-services.json` (per-service rollup).
+3. Select your Prometheus data source (`grafanacloud-<stack>-prom`) and **Import**.
+4. Use the `Instance` dropdown (driven by the `container_device_short_uuid` label this fork's `resource/docker` processor adds) and the `Container` / `Service` dropdown to scope panels.
 
 ### Acknowledgements
 
