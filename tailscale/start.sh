@@ -198,16 +198,19 @@ fi
 #   * `[RATELIMIT] format("magicsock: derp-%d does not know about
 #     peer …")` — tailscaled's rate-limiter meta-line for the above.
 #
-# We route via a FIFO + background awk reader rather than the obvious
-# `exec containerboot | awk` pipeline so that containerboot remains
-# tini's direct child: a pipeline would replace this shell with awk,
-# breaking SIGTERM forwarding to containerboot and masking its exit
-# code. With the FIFO, containerboot is exec'd into the current
-# process (so its PID is tini's child) and writes to the FIFO; awk
-# reads, filters, and emits to the inherited container stdout. When
-# containerboot exits, the FIFO write side closes and awk reaches
-# EOF on its own; tini reaps both. awk is in busybox and we call
-# fflush() per line so balena's log shipper sees output promptly.
+# We route via a transient FIFO + background awk reader rather than
+# the obvious `exec containerboot | awk` pipeline so containerboot
+# remains tini's direct child: a pipeline would replace this shell
+# with awk, breaking SIGTERM forwarding to containerboot and masking
+# its exit code. We `mkfifo`, open both ends, then immediately
+# `rm -f` the inode — the kernel pipe object stays alive via the
+# open fds, so no on-disk artifact persists past startup (and /tmp
+# is tmpfs anyway, so even the transient inode is RAM-only). awk
+# reads filtered output to the inherited container stdout. When
+# containerboot exits, every fd that referenced the FIFO write side
+# closes and awk reaches EOF on its own; tini reaps both. awk ships
+# in busybox; we call fflush() per line so balena's log shipper sees
+# output promptly.
 
 LOG_FIFO=/tmp/ts-log.fifo
 rm -f "$LOG_FIFO"
@@ -220,4 +223,13 @@ awk '
 	{ print; fflush() }
 ' < "$LOG_FIFO" &
 
-exec /usr/local/bin/containerboot > "$LOG_FIFO" 2>&1
+# Open the FIFO write end on fd 3 in this shell so we can unlink the
+# inode while the pipe is still in use. Both opens rendezvous here:
+# the background awk's `< "$LOG_FIFO"` and this `3>"$LOG_FIFO"`.
+exec 3> "$LOG_FIFO"
+rm -f "$LOG_FIFO"
+
+# Replace this shell with containerboot, redirecting its stdout and
+# stderr to fd 3 (the FIFO write end). containerboot is now tini's
+# direct child with the same PID this script had.
+exec /usr/local/bin/containerboot 1>&3 2>&3
