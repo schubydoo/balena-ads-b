@@ -127,6 +127,24 @@ processors:
       - key: container_device_uuid
         pattern: "^(?P<container_device_short_uuid>.{0,7}).*"
         action: extract
+  transform/promote_container_attrs:
+    # Grafana Cloud's OTLP→Prometheus translation parks resource attributes
+    # in a `target_info` series and only auto-promotes a small set of
+    # well-known names (container.name, service.name, etc.) onto individual
+    # metric labels. Our docker_stats custom attrs (set via
+    # container_labels_to_metric_labels and env_vars_to_metric_labels) and
+    # the short UUID we extracted above land in target_info but never make
+    # it onto the metric — and Grafana doesn't even create per-container
+    # target_info series, so we can't join. Copy them onto every data point
+    # so they survive as real Prometheus labels on container_* metrics.
+    # Equivalent to the example's
+    # `prometheusremotewrite.resource_to_telemetry_conversion: true`.
+    metric_statements:
+      - context: datapoint
+        statements:
+          - set(attributes["container_service_name"], resource.attributes["container_service_name"]) where resource.attributes["container_service_name"] != nil
+          - set(attributes["container_device_uuid"], resource.attributes["container_device_uuid"]) where resource.attributes["container_device_uuid"] != nil
+          - set(attributes["container_device_short_uuid"], resource.attributes["container_device_short_uuid"]) where resource.attributes["container_device_short_uuid"] != nil
 
 exporters:
   otlphttp:
@@ -286,7 +304,7 @@ yaml_list() {
 	if [ ${#METRICS_RECEIVERS[@]} -gt 0 ]; then
 		echo "    metrics:"
 		echo "      receivers: $(yaml_list "${METRICS_RECEIVERS[@]}")"
-		echo "      processors: [resourcedetection/system, resource/balena, resource/docker, batch]"
+		echo "      processors: [resourcedetection/system, resource/balena, resource/docker, transform/promote_container_attrs, batch]"
 		echo "      exporters: [otlphttp]"
 	fi
 	if [ ${#LOGS_RECEIVERS[@]} -gt 0 ]; then
