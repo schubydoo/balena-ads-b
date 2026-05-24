@@ -40,20 +40,25 @@ fi
 echo "Settings verified, proceeding with startup."
 echo " "
 
-# Resolve per-signal toggles. Default: hostmetrics + docker_stats on (cheap,
-# always useful), logs + ADS-B app metrics off (higher volume / extra deps).
-OTEL_HOSTMETRICS_ENABLED="${OTEL_HOSTMETRICS_ENABLED:-true}"
+# Resolve per-signal toggles. Default: node + docker_stats on (cheap, always
+# useful), logs + ADS-B app metrics off (higher volume / extra services).
+OTEL_NODE_METRICS_ENABLED="${OTEL_NODE_METRICS_ENABLED:-true}"
 OTEL_DOCKER_STATS_ENABLED="${OTEL_DOCKER_STATS_ENABLED:-true}"
 OTEL_LOGS_ENABLED="${OTEL_LOGS_ENABLED:-false}"
 OTEL_DUMP1090_ENABLED="${OTEL_DUMP1090_ENABLED:-false}"
 
 OTEL_COLLECTION_INTERVAL="${OTEL_COLLECTION_INTERVAL:-30s}"
 OTEL_DOCKER_ENDPOINT="${OTEL_DOCKER_ENDPOINT:-unix:///var/run/balena.sock}"
-# Scrape target for ADS-B app metrics. Defaults to the sibling
-# dump1090-exporter service on the compose bridge network; users can override
-# (e.g. point at a different host) without rebuilding.
+# Scrape targets for the prometheus receiver. Defaults point at the sibling
+# services on the balena compose bridge network; users can override (e.g.
+# point at a different host) without rebuilding.
+NODE_EXPORTER_HOST="${NODE_EXPORTER_HOST:-node-exporter}"
+NODE_EXPORTER_PORT="${NODE_EXPORTER_PORT:-9100}"
 DUMP1090_EXPORTER_HOST="${DUMP1090_EXPORTER_HOST:-dump1090-exporter}"
 DUMP1090_EXPORTER_PORT="${DUMP1090_EXPORTER_PORT:-9105}"
+# Pretty instance label for Grafana Cloud's prebuilt Linux Server dashboards.
+# Falls back to device UUID if the friendly name isn't injected.
+NODE_EXPORTER_INSTANCE="${NODE_EXPORTER_INSTANCE:-${BALENA_DEVICE_NAME_AT_INIT:-${BALENA_DEVICE_UUID:-balena-device}}}"
 
 CONFIG_FILE=/etc/otelcol/config.yaml
 
@@ -125,40 +130,32 @@ BASE_CONFIG
 METRICS_RECEIVERS=()
 LOGS_RECEIVERS=()
 
-if [ "$OTEL_HOSTMETRICS_ENABLED" = "true" ]; then
-	METRICS_RECEIVERS+=("hostmetrics")
-	# /proc and /sys come from the host via the procfs/sysfs balena labels
-	# in docker-compose.yml, so the collector's default root_path: "/" reads
-	# the host's view directly — no /hostfs prefix needed.
-	#
-	# The `filesystem` scraper is intentionally off by default: with the
-	# procfs label active, /proc/mounts lists the host's mount points
-	# (/mnt/sysroot/active, /mnt/data, /mnt/boot, …) but the actual disk
-	# paths are NOT bind-mounted into the container (balena disallows
-	# arbitrary host bind mounts), so statfs() fails on every host mount
-	# and the scraper spams the log with errors every collection interval.
-	# Users who only care about the container's own writable layer can flip
-	# OTEL_FILESYSTEM_ENABLED=true to opt in.
+if [ "$OTEL_NODE_METRICS_ENABLED" = "true" ]; then
+	METRICS_RECEIVERS+=("prometheus")
+	# Scrape the sibling node-exporter service for host metrics. This
+	# replaces the OTel hostmetrics receiver because:
+	#   - node_exporter handles unreachable mount points gracefully (no
+	#     per-scrape error spam when /proc/mounts lists host-only paths
+	#     that aren't bind-mounted into the container, which is unavoidable
+	#     on balena — see docker-compose.yml labels).
+	#   - The metric names match Grafana Cloud's prebuilt "Linux Server"
+	#     integration dashboards. Setting job=integrations/node_exporter
+	#     and instance=<device name> is what those dashboards filter on.
+	# Approach borrowed from
+	# https://github.com/balena-io-experimental/otel-collector-device-prom.
 	cat >> "$CONFIG_FILE" <<EOF
-  hostmetrics:
-    collection_interval: ${OTEL_COLLECTION_INTERVAL}
-    scrapers:
-      cpu:
-      load:
-      memory:
-      disk:
-      network:
-      paging:
-      processes:
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: integrations/node_exporter
+          scrape_interval: ${OTEL_COLLECTION_INTERVAL}
+          static_configs:
+            - targets: ['${NODE_EXPORTER_HOST}:${NODE_EXPORTER_PORT}']
+          relabel_configs:
+            - source_labels: [__address__]
+              replacement: '${NODE_EXPORTER_INSTANCE}'
+              target_label: instance
 EOF
-	if [ "${OTEL_FILESYSTEM_ENABLED:-false}" = "true" ]; then
-		cat >> "$CONFIG_FILE" <<EOF
-      filesystem:
-        exclude_mount_points:
-          mount_points: ["/dev/.*", "/proc/.*", "/sys/.*", "/run/.*", "/var/lib/docker/.*", "/var/lib/balena-engine/.*", "/mnt/data/docker/.*", "/mnt/data/balena-engine/.*"]
-          match_type: regexp
-EOF
-	fi
 fi
 
 if [ "$OTEL_DOCKER_STATS_ENABLED" = "true" ]; then
@@ -167,12 +164,24 @@ if [ "$OTEL_DOCKER_STATS_ENABLED" = "true" ]; then
 	# defaults to a v1.44 client and crashes the receiver on startup with
 	# "client version 1.44 is too new. Maximum supported API version is 1.41".
 	# Pin it explicitly so any future API bump in the collector doesn't break us.
+	#
+	# container_labels_to_metric_labels surfaces balena's per-service name on
+	# every container metric (so a Grafana query can do
+	# `sum by (container_service_name) (container_memory_usage_bytes)` and
+	# immediately attribute load to piaware / tar1090 / etc.).
+	# env_vars_to_metric_labels does the same for BALENA_DEVICE_UUID, which
+	# balena auto-injects into every container. Both patterns are borrowed
+	# from balena-io-experimental/otel-collector-device-prom.
 	cat >> "$CONFIG_FILE" <<EOF
   docker_stats:
     endpoint: ${OTEL_DOCKER_ENDPOINT}
     api_version: "${OTEL_DOCKER_API_VERSION:-1.41}"
     collection_interval: ${OTEL_COLLECTION_INTERVAL}
     timeout: 20s
+    container_labels_to_metric_labels:
+      io.balena.service-name: container_service_name
+    env_vars_to_metric_labels:
+      BALENA_DEVICE_UUID: container_device_uuid
     metrics:
       container.cpu.utilization:
         enabled: true
@@ -225,6 +234,11 @@ if [ "$OTEL_LOGS_ENABLED" = "true" ]; then
 		echo "  journald:"
 		echo "    directory: /var/log/journal"
 		echo "    priority: ${OTEL_LOG_PRIORITY:-info}"
+		# balena container log lines often arrive as JSON byte arrays
+		# (e.g. \"[123, 45, …]\") instead of strings; convert them so the
+		# Loki / OTLP backend gets readable text. Pattern lifted from
+		# balena-io-experimental/otel-collector-device-prom.
+		echo "    convert_message_bytes: true"
 		[ -n "$JOURNALD_UNITS_YAML" ] && printf '%s' "$JOURNALD_UNITS_YAML"
 	} >> "$CONFIG_FILE"
 fi
@@ -254,7 +268,7 @@ yaml_list() {
 		echo "      exporters: [otlphttp]"
 	fi
 	if [ ${#METRICS_RECEIVERS[@]} -eq 0 ] && [ ${#LOGS_RECEIVERS[@]} -eq 0 ]; then
-		echo "ERROR: every receiver is disabled, nothing to do. Set at least one of OTEL_HOSTMETRICS_ENABLED, OTEL_DOCKER_STATS_ENABLED, OTEL_DUMP1090_ENABLED, OTEL_LOGS_ENABLED to true."
+		echo "ERROR: every receiver is disabled, nothing to do. Set at least one of OTEL_NODE_METRICS_ENABLED, OTEL_DOCKER_STATS_ENABLED, OTEL_DUMP1090_ENABLED, OTEL_LOGS_ENABLED to true."
 		echo ""
 		sleep infinity
 	fi

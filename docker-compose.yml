@@ -400,8 +400,7 @@ services:
       # are set.
       - GRAFANA_INSTANCE_ID=
       - GRAFANA_API_KEY=
-      - OTEL_HOSTMETRICS_ENABLED=true
-      - OTEL_FILESYSTEM_ENABLED=false
+      - OTEL_NODE_METRICS_ENABLED=true
       - OTEL_DOCKER_STATS_ENABLED=true
       - OTEL_LOGS_ENABLED=false
       - OTEL_DUMP1090_ENABLED=false
@@ -409,19 +408,19 @@ services:
       - OTEL_LOG_LEVEL=info
       - OTEL_LOG_PRIORITY=info
       - OTEL_LOG_UNITS=
+      # Hostname:port the collector scrapes for host metrics when
+      # OTEL_NODE_METRICS_ENABLED=true. Defaults target the sibling
+      # node-exporter service on the compose bridge network.
+      - NODE_EXPORTER_HOST=node-exporter
+      - NODE_EXPORTER_PORT=9100
       # Hostname:port the collector scrapes for ADS-B app metrics when
       # OTEL_DUMP1090_ENABLED=true. Default targets the sibling service.
       - DUMP1090_EXPORTER_HOST=dump1090-exporter
       - DUMP1090_EXPORTER_PORT=9105
     labels:
-      # balenaCloud disallows arbitrary host bind mounts, so we expose the
-      # host filesystem to the collector through balena's feature labels
-      # instead. Each label maps to the documented bind mount path it would
-      # otherwise require (see https://docs.balena.io/reference/supervisor/docker-compose).
-      # procfs / sysfs power the hostmetrics receiver (host CPU, memory,
-      # disk, network — read from /proc and /sys).
-      io.balena.features.procfs: '1'
-      io.balena.features.sysfs: '1'
+      # balenaCloud disallows arbitrary host bind mounts. The labels below
+      # are the documented bind-mount equivalents that this service needs
+      # (https://docs.balena.io/reference/supervisor/docker-compose).
       # journal-logs mounts /var/log/journal, /run/log/journal, and
       # /etc/machine-id read-only — exactly what the journald receiver needs
       # to ship container and host logs regardless of whether persistent
@@ -431,6 +430,24 @@ services:
       # receiver can list and read per-container stats from the balena engine.
       io.balena.features.balena-socket: '1'
       io.balena.features.balena-api: '1'
+      io.balena.features.supervisor-api: '1'
+  node-exporter:
+    build: ./node-exporter
+    image: node-exporter
+    restart: unless-stopped
+    # pid: host lets node_exporter see all host processes (so process_*,
+    # filefd_*, and certain network counters reflect the device, not just
+    # the container). balena allows pid: host without a feature label.
+    pid: host
+    # expose: kept for docs, see dump1090-fa note
+    # expose:
+    #   - "9100"
+    labels:
+      # procfs / sysfs power node_exporter's host /proc and /sys reads. With
+      # both labels active, the binary's defaults (--path.procfs=/proc,
+      # --path.sysfs=/sys) point at the host's view directly.
+      io.balena.features.procfs: '1'
+      io.balena.features.sysfs: '1'
       io.balena.features.supervisor-api: '1'
   dump1090-exporter:
     depends_on:

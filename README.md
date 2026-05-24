@@ -621,9 +621,17 @@ Once enabled, add *Device Variables* named `MLAT_CLIENT_USER` with a value of yo
 
 ## OpenTelemetry collector (metrics and logs export)
 
-The `otel-collector` service streams device telemetry — host metrics, per-container metrics, container logs, and (optionally) ADS-B application metrics — to any OTLP/HTTP backend. Grafana Cloud, Honeycomb, Datadog, New Relic, and a self-hosted Grafana / Prometheus / Loki stack are all valid targets. The collector itself is the upstream [OpenTelemetry Collector Contrib](https://github.com/open-telemetry/opentelemetry-collector-contrib) build (Apache-2.0). ADS-B application metrics are produced by a companion `dump1090-exporter` service — a thin wrapper around the maintained [`schubydoo/dump1090-exporter`](https://github.com/schubydoo/dump1090-exporter) image (MIT, multi-arch, cosign-signed) — that reads dump1090-fa's JSON output through the shared `aircraft-data` named volume and exposes Prometheus metrics for the collector to scrape.
+The `otel-collector` service streams device telemetry — host metrics, per-container metrics, container logs, and (optionally) ADS-B application metrics — to any OTLP/HTTP backend. Grafana Cloud, Honeycomb, Datadog, New Relic, and a self-hosted Grafana / Prometheus / Loki stack are all valid targets. The collector itself is the upstream [OpenTelemetry Collector Contrib](https://github.com/open-telemetry/opentelemetry-collector-contrib) build (Apache-2.0). Host metrics come from a companion `node-exporter` service (the upstream Prometheus [`node_exporter`](https://github.com/prometheus/node_exporter), Apache-2.0) scraped by the collector — this matches the pattern in [`balena-io-experimental/otel-collector-device-prom`](https://github.com/balena-io-experimental/otel-collector-device-prom) and means Grafana Cloud's prebuilt "Linux Server" integration dashboards work out of the box. ADS-B application metrics are produced by a companion `dump1090-exporter` service — a thin wrapper around the maintained [`schubydoo/dump1090-exporter`](https://github.com/schubydoo/dump1090-exporter) image (MIT, multi-arch, cosign-signed) — that reads dump1090-fa's JSON output through the shared `aircraft-data` named volume and exposes Prometheus metrics for the collector to scrape.
 
-Both services are opt-in: if either is not listed in `ENABLED_SERVICES`, its container asks the balena Supervisor to stop itself, so devices that do not opt in pay no runtime cost. To enable host/container metrics only, set `ENABLED_SERVICES=otel-collector`. To also ship ADS-B app metrics, add `dump1090-exporter` to the list (e.g. `ENABLED_SERVICES=otel-collector,dump1090-exporter`). Comma-separate with `mlat-client` or other opt-in services as needed.
+All three services are opt-in: if any is not listed in `ENABLED_SERVICES`, its container asks the balena Supervisor to stop itself, so devices that do not opt in pay no runtime cost. Typical setups:
+
+| Setup | `ENABLED_SERVICES` |
+| --- | --- |
+| Container metrics + logs only | `otel-collector` |
+| Host metrics (CPU, memory, disk, network) too | `otel-collector,node-exporter` |
+| Add ADS-B app metrics | `otel-collector,node-exporter,dump1090-exporter` |
+
+Comma-separate with `mlat-client` or other opt-in services as needed.
 
 ### Required configuration
 
@@ -641,8 +649,7 @@ Each signal is wired to its own switch so you can pick exactly what you ship and
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `OTEL_HOSTMETRICS_ENABLED` | `true` | CPU, load, memory, disk I/O, network, paging, processes — taken from `/proc` and `/sys` of the balena host, not the container's own view. Filesystem capacity/usage is split out separately (see next row) because it requires extra access balena doesn't grant. |
-| `OTEL_FILESYSTEM_ENABLED` | `false` | Add the `filesystem` scraper (disk capacity / free space per mountpoint). Off by default: the `procfs` feature label makes `/proc/mounts` list the host's partitions (`/mnt/data`, `/mnt/sysroot/active`, …) but balena disallows arbitrary host bind mounts, so `statfs()` on those paths fails every collection interval and spams the logs. Flip on only if you want stats for the *container's own* writable layer and accept the noise. |
+| `OTEL_NODE_METRICS_ENABLED` | `true` | Scrape the sibling `node-exporter` service for host metrics (CPU, load, memory, disk I/O, filesystem, network, processes — emitted as `node_*` Prometheus metrics). Set to `false` if you don't want host metrics, or if you haven't enabled the `node-exporter` service (the scrape would otherwise fail every interval). |
 | `OTEL_DOCKER_STATS_ENABLED` | `true` | Per-container CPU %, memory %, network rx/tx, and restart count via the balena engine socket. Lets you see which feeder is misbehaving. |
 | `OTEL_LOGS_ENABLED` | `false` | Streams journald logs (which is what balena-engine writes to) for **all** containers on the device. Off by default because log volume can be high. See *Logs and persistent logging* below. |
 | `OTEL_DUMP1090_ENABLED` | `false` | Tells the collector's `prometheus` receiver to scrape the sibling `dump1090-exporter` service for ADS-B app metrics (aircraft count, max range, message rates, signal level, CPU usage per period, etc.). Also requires `dump1090-exporter` itself to be listed in `ENABLED_SERVICES` so its container actually runs. |
@@ -651,6 +658,8 @@ Each signal is wired to its own switch so you can pick exactly what you ship and
 | `OTEL_LOG_PRIORITY` | `info` | Minimum journald priority to ship when `OTEL_LOGS_ENABLED=true` (`debug`, `info`, `notice`, `warn`, `err`, `crit`). |
 | `OTEL_LOG_UNITS` | *(empty = all)* | Comma-separated list of systemd unit names to restrict log collection to (for example `balena.service` to ship only engine logs). Empty means every unit. |
 | `OTEL_DOCKER_ENDPOINT` | `unix:///var/run/balena.sock` | Override only if you need to point the docker_stats receiver at a non-standard socket. |
+| `NODE_EXPORTER_HOST` / `NODE_EXPORTER_PORT` | `node-exporter` / `9100` | Where the collector reaches node_exporter for host metrics. Defaults point at the sibling service on the compose bridge network. |
+| `NODE_EXPORTER_INSTANCE` | balena device name (or UUID) | Value used for the Prometheus `instance` label on host metrics. Grafana Cloud's prebuilt Linux dashboards filter on this — defaulting to the device name keeps dashboards readable across a fleet. |
 | `DUMP1090_EXPORTER_HOST` / `DUMP1090_EXPORTER_PORT` | `dump1090-exporter` / `9105` | Where the collector reaches the ADS-B Prometheus exporter. Defaults point at the sibling service on the compose bridge network. |
 
 The `dump1090-exporter` service itself reads a few of its own variables — `LAT`, `LON` (used for range calculation), `DUMP1090_RESOURCE_PATH` (defaults to `/run/dump1090-fa`, the shared volume), and `DUMP1090_EXPORTER_LOG_LEVEL` (`debug`, `info`, `warning`, `error`).
@@ -680,7 +689,7 @@ Grafana Cloud's UI walks you through several disambiguation screens before it ha
 
    Copy all three before navigating away — Grafana will not show the API key again.
 7. On your balena fleet (or device), set:
-   - `ENABLED_SERVICES = otel-collector` (comma-separate with other opt-in services like `mlat-client` or `dump1090-exporter` as needed).
+   - `ENABLED_SERVICES = otel-collector,node-exporter` (add `dump1090-exporter` for ADS-B app metrics, and comma-separate with `mlat-client` or other opt-in services as needed).
    - `OTLP_ENDPOINT = <the URL from step 6>`
    - `GRAFANA_INSTANCE_ID = <the number from step 6>`
    - `GRAFANA_API_KEY = <the glc_... value from step 6>`
@@ -697,11 +706,12 @@ After a minute or two, telemetry should appear under **Explore → Metrics** (fi
 
 ### Acknowledgements
 
-This service is inspired by the [`balena-io-experimental/otel-collector-device-prom`](https://github.com/balena-io-experimental/otel-collector-device-prom) reference and pulls in three upstream projects directly:
+This service follows the architecture in [`balena-io-experimental/otel-collector-device-prom`](https://github.com/balena-io-experimental/otel-collector-device-prom) (Apache-2.0) — node_exporter sidecar for host metrics, OTel Collector for shipping, balena feature labels for host access — and pulls in upstream projects directly:
 
 - [`open-telemetry/opentelemetry-collector-contrib`](https://github.com/open-telemetry/opentelemetry-collector-contrib) (Apache-2.0) — the collector binary, copied straight from the official multi-arch image.
+- [`prometheus/node_exporter`](https://github.com/prometheus/node_exporter) (Apache-2.0) — the Prometheus host metrics exporter, used as-is from `prom/node-exporter` and wrapped only with the `ENABLED_SERVICES` opt-in gate.
 - [`schubydoo/dump1090-exporter`](https://github.com/schubydoo/dump1090-exporter) (MIT) — the ADS-B Prometheus exporter image used by the companion `dump1090-exporter` service. This is a maintained fork of [`claws/dump1090-exporter`](https://github.com/claws/dump1090-exporter) by Chris Laws; all credit for the original design belongs to the upstream author.
-- [balena `journal-logs` / `procfs` / `sysfs` feature labels](https://docs.balena.io/reference/supervisor/docker-compose) — how the collector reaches the host's journal and `/proc`/`/sys` without arbitrary bind mounts.
+- [balena `journal-logs` / `procfs` / `sysfs` / `balena-socket` feature labels](https://docs.balena.io/reference/supervisor/docker-compose) — how the collector and node_exporter reach the host's journal, `/proc`, `/sys`, and engine socket without arbitrary bind mounts.
 
 # Part 16 – Updating to the latest version
 

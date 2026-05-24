@@ -1,0 +1,35 @@
+# Multi-stage: pull the prebuilt, statically-linked node_exporter binary out
+# of the upstream image (https://github.com/prometheus/node_exporter,
+# Apache-2.0), then run it on debian:trixie-slim so we have bash + curl
+# available for the ENABLED_SERVICES gate. The upstream image is busybox /
+# distroless and ships no package manager, so we can't extend it directly.
+# renovate: datasource=docker depName=prom/node-exporter versioning=semver
+ARG NODE_EXPORTER_VERSION=1.11.1
+FROM prom/node-exporter:v${NODE_EXPORTER_VERSION} AS upstream
+
+FROM debian:trixie-slim AS release
+LABEL maintainer="https://github.com/ketilmo"
+
+ARG PERM_INSTALL="tini ca-certificates curl"
+
+RUN printf '%s\n' \
+		'path-exclude /usr/share/doc/*' \
+		'path-exclude /usr/share/man/*' \
+		'path-exclude /usr/share/groff/*' \
+		'path-exclude /usr/share/info/*' \
+		'path-exclude /usr/share/lintian/*' \
+		'path-exclude /usr/share/linda/*' \
+		'path-exclude /usr/share/locale/*' \
+		'path-include /usr/share/locale/en*' \
+		> /etc/dpkg/dpkg.cfg.d/01_nodoc && \
+	apt-get update && \
+	apt-get install -y --no-install-recommends $PERM_INSTALL && \
+	apt-get clean && apt-get autoremove -y && \
+	rm -rf /var/lib/apt/lists/*
+
+COPY --from=upstream /bin/node_exporter /usr/local/bin/node_exporter
+
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+ENTRYPOINT ["/usr/bin/tini", "--", "/start.sh"]
