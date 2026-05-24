@@ -632,7 +632,7 @@ To enable it, create a *Device Variable* named `ENABLED_SERVICES` with the value
 Three authentication methods are supported. All are configured through the same `TS_AUTHKEY` *Device Variable*; the value's prefix determines the mode.
 
 - **Pre-auth key** (simplest). In your Tailscale admin console, go to *Settings → Keys → Generate auth key*. Set `TS_AUTHKEY` to the resulting `tskey-auth-…` string. Tag the key (for example `tag:adsb`) so you can write ACLs against the device.
-- **OAuth client** (recommended for fleets, integrates with your SSO). In your Tailscale admin console, go to *Settings → OAuth clients* and create a client with the `auth_keys` scope and the tag(s) you want devices to inherit. Set `TS_AUTHKEY` to the resulting `tskey-client-…?ephemeral=false&preauthorized=true` string. The OAuth client is tied to the SSO-authenticated identity that created it, so devices joining with this credential are auditable back to that identity.
+- **OAuth client** (recommended for fleets, integrates with your SSO). In your Tailscale admin console go to *Settings → Trust credentials* and press *+ Credential*; pick *OAuth client*, add a description, and grant the *Auth Keys* scope (under *Keys*) `read` + `write` permissions, selecting the tag(s) the client may issue keys for. Set `TS_AUTHKEY` to the resulting `tskey-client-…?ephemeral=false&preauthorized=true` string. Because the `write` scope only issues tagged keys, the device must also advertise a matching tag — set `TS_EXTRA_ARGS=--advertise-tags=tag:adsb` (substituting your tag) or tailscaled refuses to start with `oauth authkeys require --advertise-tags`. The OAuth client is tied to the SSO-authenticated identity that created it, so devices joining with this credential are auditable back to that identity.
 - **Interactive SSO via login URL**. Leave `TS_AUTHKEY` unset. The service prints a one-time login URL in a clearly-marked banner to the container logs (visible in the balenaCloud dashboard or via `balena logs --tail`); open it in a browser that is signed in to your tailnet's SSO provider (Google, Microsoft, Okta, etc.) and approve the device. State is persisted to the `tailscale-state` volume so this is a one-time step per device. Note that each container restart with no existing state generates a fresh URL — only the most recent one is valid.
 
 The Supervisor restarts the service when `TS_AUTHKEY` changes, so no fork or redeploy is required.
@@ -642,7 +642,7 @@ The Supervisor restarts the service when `TS_AUTHKEY` changes, so no fork or red
 - `TS_HOSTNAME` (default: the balena device name): The hostname registered with the tailnet. Override if you want a different MagicDNS name.
 - `TAILSCALE_SERVE_TRAEFIK` (default: `false`): When `true`, runs [Tailscale Serve](https://tailscale.com/kb/1312/serve) in front of traefik so `https://<device>.<tailnet>.ts.net/` proxies to traefik with an automatically-issued TLS certificate.
 - `TS_ROUTES` (default: unset): Comma-separated CIDRs to advertise as a [subnet route](https://tailscale.com/kb/1019/subnets) (for example `192.168.1.0/24` to reach your LAN). You must approve the route in the Tailscale admin console after the device first checks in.
-- `TS_EXTRA_ARGS` (default: unset): Additional arguments passed to `tailscale up`. Useful values include `--ssh` to enable Tailscale SSH and `--advertise-tags=tag:adsb`.
+- `TS_EXTRA_ARGS` (default: unset): Additional arguments passed to `tailscale up`. Useful values include `--ssh` to enable Tailscale SSH and `--advertise-tags=tag:adsb` (required when authenticating via the OAuth client flow above).
 - `TS_ACCEPT_DNS` (default: `false`): When `true`, the device uses MagicDNS for name resolution. Off by default to avoid clashing with balena's resolver.
 - `TS_EXCLUDED_INTERFACES` (default: `resin-vpn resin-dns`): Interfaces hidden from tailscaled's interface enumeration. The defaults keep Tailscale from picking balena's management-VPN interfaces as default-route candidates; you rarely need to change this.
 - `TS_UPDATE_CHECK` (default: `false`): When `false`, disables tailscaled's outbound update-check probes. Set to `true` if you want tailscaled to notify you about new Tailscale versions in its logs.
@@ -663,6 +663,12 @@ The Supervisor restarts the service when `TS_AUTHKEY` changes, so no fork or red
     ]
   }
   ```
+
+- **tailscaled cannot reach the control plane (TLS or DNS errors in the logs).** Custom upstream DNS — particularly ad-blocking resolvers like Pi-hole, AdGuard, or NextDNS — can block the names tailscaled needs to bootstrap, leaving the daemon unable to talk to the coordination or DERP servers. If the device sits behind such a resolver, allow the names listed in the Tailscale [DNS reference](https://tailscale.com/docs/reference/dns-in-tailscale) through the filter, or temporarily point the device at a public resolver to confirm DNS is the culprit.
+
+- **Service is in a crash-loop after a configuration change.** Because the `tailscale-state` volume persists across restarts, a corrupt or unwanted preferences blob keeps tailscaled crashing on every boot. Two recovery paths:
+  - Set `TS_EXTRA_ARGS=--reset` once (combine with any existing flags, e.g. `--reset --advertise-tags=tag:adsb` when using OAuth). tailscaled clears its preferences on the next start and rejoins the tailnet automatically if `TS_AUTHKEY` is set; remove `--reset` afterwards so subsequent restarts resume normally.
+  - Or wipe the contents of the `tailscale-state` volume. The simplest path is to open a shell in the running container — `balena ssh <device-uuid> tailscale` from the CLI, or the *Web terminal* on the device's balenaCloud page — run `rm -rf /var/lib/tailscale/*`, and restart the service.
 
 # Part 16 – Updating to the latest version
 
