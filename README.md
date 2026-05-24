@@ -688,10 +688,17 @@ Grafana Cloud's UI walks you through several disambiguation screens before it ha
 8. Optionally flip on logs and ADS-B metrics:
    - `OTEL_LOGS_ENABLED = true`
    - `OTEL_DUMP1090_ENABLED = true` — **and** add `dump1090-exporter` to `ENABLED_SERVICES` so the companion exporter actually starts.
+9. Back in the Grafana wizard: click **Next** to advance past *Instrumentation instructions* (nothing to do — `otel-collector` is the instrumentation), then **Next** again to land on **Final Setup**. **Stay on this page** while Grafana waits for the first batch of metrics; the panel updates as soon as data lands and can take up to ~5 minutes the first time. If you navigate away early, you can come back later via *Connections → OpenTelemetry (OTLP) → your stack* — the wait state resumes.
 
 The Supervisor restarts the service whenever any of these variables change, so no fork or redeploy is required after the first deployment.
 
 After a minute or two, telemetry should appear under **Explore → Metrics** (filter by `balena_app_name` or `balena_device_uuid`) and, if you enabled logs, under **Explore → Logs**.
+
+### Troubleshooting
+
+- **Container crashes with `client version 1.xx is too new. Maximum supported API version is 1.41`** — the balena engine caps the Docker Engine API at v1.41. We pin `api_version: "1.41"` on the `docker_stats` receiver out of the box; override `OTEL_DOCKER_API_VERSION` only if you're running on a non-balena host with a different cap.
+- **`<otel-collector> warn ... "otlphttp" alias is deprecated`** — harmless cosmetic warning from otelcol-contrib about a future rename. Safe to ignore until we bump the config syntax.
+- **`<dump1090-exporter> curl: (22) The requested URL returned error: 423`** — transient lock on the balena Supervisor's `stop-service` endpoint while the device deploys. The wrapper retries until it gets `200 OK`; you'll see `OK` in the logs once the service parks cleanly.
 
 ### Acknowledgements
 

@@ -150,9 +150,14 @@ fi
 
 if [ "$OTEL_DOCKER_STATS_ENABLED" = "true" ]; then
 	METRICS_RECEIVERS+=("docker_stats")
+	# balena-engine caps the Docker Engine API at v1.41 — newer otelcol-contrib
+	# defaults to a v1.44 client and crashes the receiver on startup with
+	# "client version 1.44 is too new. Maximum supported API version is 1.41".
+	# Pin it explicitly so any future API bump in the collector doesn't break us.
 	cat >> "$CONFIG_FILE" <<EOF
   docker_stats:
     endpoint: ${OTEL_DOCKER_ENDPOINT}
+    api_version: "${OTEL_DOCKER_API_VERSION:-1.41}"
     collection_interval: ${OTEL_COLLECTION_INTERVAL}
     timeout: 20s
     metrics:
