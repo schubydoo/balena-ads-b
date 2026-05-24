@@ -262,11 +262,25 @@ fi
 
 if [ "$OTEL_LOGS_ENABLED" = "true" ]; then
 	LOGS_RECEIVERS+=("journald")
-	# journalctl auto-discovers both /var/log/journal (persistent logs, see
-	# https://docs.balena.io/learn/manage/device-logs#persistent-logging) and
-	# /run/log/journal (volatile, used when persistent logging is off). Both
-	# directories are mounted read-only by docker-compose.yml; whichever the
-	# host actually populates is what we read.
+	# Detect at runtime which journal directory has data. The
+	# io.balena.features.journal-logs label mounts both /var/log/journal
+	# (persistent, populated only when persistent logging is enabled on the
+	# fleet) and /run/log/journal (volatile tmpfs, always populated when
+	# the device is up). Defaulting to /var/log/journal crashed journalctl
+	# with "No journal boot entry found for the specified boot (+0)" on
+	# fleets without persistent logging, taking the receiver into a tight
+	# restart loop. We could omit --directory and let journalctl
+	# auto-discover, but the OTel receiver always passes whatever directory
+	# we set — so detect explicitly and prefer persistent when present.
+	# See https://docs.balena.io/learn/manage/device-logs#persistent-logging
+	if [ -n "$OTEL_JOURNALD_DIRECTORY" ]; then
+		JOURNALD_DIR="$OTEL_JOURNALD_DIRECTORY"
+	elif find /var/log/journal -maxdepth 2 -name '*.journal' 2>/dev/null | head -1 | grep -q .; then
+		JOURNALD_DIR=/var/log/journal
+	else
+		JOURNALD_DIR=/run/log/journal
+	fi
+	echo "Using journald directory: ${JOURNALD_DIR}"
 	JOURNALD_UNITS_YAML=""
 	if [ -n "$OTEL_LOG_UNITS" ]; then
 		JOURNALD_UNITS_YAML="    units:"$'\n'
@@ -278,7 +292,7 @@ if [ "$OTEL_LOGS_ENABLED" = "true" ]; then
 	fi
 	{
 		echo "  journald:"
-		echo "    directory: /var/log/journal"
+		echo "    directory: ${JOURNALD_DIR}"
 		echo "    priority: ${OTEL_LOG_PRIORITY:-info}"
 		# balena container log lines often arrive as JSON byte arrays
 		# (e.g. \"[123, 45, …]\") instead of strings; convert them so the
