@@ -186,22 +186,38 @@ if [ -n "${TS_UPDATE_CHECK:-}" ] || [ -n "${TS_POST_UP_SET_ARGS:-}" ]; then
 	) &
 fi
 
-# Hand off to upstream containerboot, piping its combined output through
-# awk so we can drop two well-known cosmetic log lines that the upstream
-# image has no knob to silence:
+# Hand off to upstream containerboot, with its combined output funneled
+# through an awk filter that drops three known cosmetic log lines the
+# upstream image has no knob to silence:
 #   * `localapi: [POST] /localapi/v0/debug` — containerboot's own 15s
 #     peerPoll watcher hitting the local LocalAPI debug action. Unix
-#     socket only, no network I/O, fires every 15s for the life of the
-#     container.
+#     socket only, no network I/O.
 #   * `magicsock: derp-NN does not know about peer [XX/YY], removing
 #     route` — disco probe spam against an offline peer's cached home
 #     DERP region; loops every ~5s until that peer reconnects.
-# awk is in busybox, doesn't need GNU-grep's --line-buffered, and we
-# call fflush() to keep balena's log shipper seeing lines promptly.
+#   * `[RATELIMIT] format("magicsock: derp-%d does not know about
+#     peer …")` — tailscaled's rate-limiter meta-line for the above.
+#
+# We route via a FIFO + background awk reader rather than the obvious
+# `exec containerboot | awk` pipeline so that containerboot remains
+# tini's direct child: a pipeline would replace this shell with awk,
+# breaking SIGTERM forwarding to containerboot and masking its exit
+# code. With the FIFO, containerboot is exec'd into the current
+# process (so its PID is tini's child) and writes to the FIFO; awk
+# reads, filters, and emits to the inherited container stdout. When
+# containerboot exits, the FIFO write side closes and awk reaches
+# EOF on its own; tini reaps both. awk is in busybox and we call
+# fflush() per line so balena's log shipper sees output promptly.
 
-exec /usr/local/bin/containerboot 2>&1 | awk '
+LOG_FIFO=/tmp/ts-log.fifo
+rm -f "$LOG_FIFO"
+mkfifo -m 0600 "$LOG_FIFO"
+
+awk '
 	/localapi: \[POST\] \/localapi\/v0\/debug/ { next }
 	/magicsock: derp-[0-9]+ does not know about peer/ { next }
 	/\[RATELIMIT\] format\("magicsock: derp-%d does not know about peer/ { next }
 	{ print; fflush() }
-'
+' < "$LOG_FIFO" &
+
+exec /usr/local/bin/containerboot > "$LOG_FIFO" 2>&1
