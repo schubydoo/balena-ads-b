@@ -57,8 +57,10 @@ NODE_EXPORTER_PORT="${NODE_EXPORTER_PORT:-9100}"
 DUMP1090_EXPORTER_HOST="${DUMP1090_EXPORTER_HOST:-dump1090-exporter}"
 DUMP1090_EXPORTER_PORT="${DUMP1090_EXPORTER_PORT:-9105}"
 # Pretty instance label for Grafana Cloud's prebuilt Linux Server dashboards.
-# Falls back to device UUID if the friendly name isn't injected.
-NODE_EXPORTER_INSTANCE="${NODE_EXPORTER_INSTANCE:-${BALENA_DEVICE_NAME_AT_INIT:-${BALENA_DEVICE_UUID:-balena-device}}}"
+# Falls back to device UUID if the friendly name isn't injected. Exported so
+# the transform/logs processor can reference it via ${env:NODE_EXPORTER_INSTANCE}
+# (the OTel config heredoc is quoted, so shell doesn't substitute here).
+export NODE_EXPORTER_INSTANCE="${NODE_EXPORTER_INSTANCE:-${BALENA_DEVICE_NAME_AT_INIT:-${BALENA_DEVICE_UUID:-balena-device}}}"
 
 CONFIG_FILE=/etc/otelcol/config.yaml
 
@@ -149,30 +151,54 @@ processors:
     # The journald receiver parses each entry's JSON into a map and stores
     # the whole map as the OTel log body — which Grafana Cloud's OTLP→Loki
     # translator serializes back to a JSON blob in the Loki line field.
-    # That dump is unreadable in the Loki UI and the dashboard ends up
-    # with no `service_name` to filter on (defaults to "unknown_service"
-    # because we never set service.name on the logs pipeline).
+    # That dump is unreadable in the Loki UI and the stock Grafana "Linux
+    # node / logs" / "Node Logs" integration dashboards filter on a
+    # specific set of Loki labels (job, cluster, instance, hostname,
+    # transport, unit, level, service_name) that Grafana Alloy / Promtail
+    # would normally set when scraping journald itself.
     #
-    # Rewrite the log records so they look like what a Loki user actually
-    # wants to see:
-    #   1. Promote body.CONTAINER_NAME → resource service.name. balena-engine
-    #      ships container logs through journald with CONTAINER_NAME set to
-    #      the full balena container name like
-    #      "fr24feed_15111189_4082430_9997203b…".
-    #   2. Strip balena's "_<release>_<service_id>_<image_hash>" suffix so
-    #      service.name becomes just "fr24feed", "piaware", etc. Split on
-    #      "_" and keep the first segment (balena service names cannot
-    #      contain underscores; they use hyphens).
-    #   3. For non-container logs (the balena Supervisor, host services),
-    #      fall back to body._SYSTEMD_UNIT.
-    #   4. Replace the body with just body.MESSAGE so Loki shows the
-    #      readable log line instead of the full journal JSON dump.
+    # Rewrite the log records so the stock dashboards work without any
+    # per-dashboard patching, and the Loki body is the human-readable
+    # message instead of a JSON dump:
+    #
+    #   Static / env labels (every record):
+    #     - job=integrations/node_exporter
+    #     - instance, hostname=device name (matches Prometheus instance label)
+    #     - transport=journal (Promtail's marker for journald-sourced logs)
+    #     - cluster=balena fleet name (BALENA_APP_NAME)
+    #
+    #   Journal-derived labels:
+    #     - unit=body._SYSTEMD_UNIT
+    #     - level=mapped from body.PRIORITY (syslog 0-7 → critical/error/
+    #       warning/info/debug)
+    #     - service.name=body.CONTAINER_NAME (balena-engine sets this on
+    #       container logs going through journald), stripped of balena's
+    #       "_<release>_<service_id>_<image_hash>" suffix. Falls back to
+    #       body._SYSTEMD_UNIT for host system logs.
+    #
+    #   Body cleanup:
+    #     - body=body.MESSAGE (the actual log line)
     log_statements:
       - context: log
         statements:
+          # Static / env-derived labels.
+          - set(resource.attributes["job"], "integrations/node_exporter")
+          - set(resource.attributes["instance"], "${env:NODE_EXPORTER_INSTANCE}")
+          - set(resource.attributes["hostname"], "${env:NODE_EXPORTER_INSTANCE}")
+          - set(resource.attributes["transport"], "journal")
+          - set(resource.attributes["cluster"], "${env:BALENA_APP_NAME}")
+          # Journal-derived labels (must run while body is still a map).
+          - set(resource.attributes["unit"], body["_SYSTEMD_UNIT"]) where IsMap(body) and body["_SYSTEMD_UNIT"] != nil
+          - set(resource.attributes["level"], "critical") where IsMap(body) and (body["PRIORITY"] == "0" or body["PRIORITY"] == "1" or body["PRIORITY"] == "2")
+          - set(resource.attributes["level"], "error") where IsMap(body) and body["PRIORITY"] == "3"
+          - set(resource.attributes["level"], "warning") where IsMap(body) and body["PRIORITY"] == "4"
+          - set(resource.attributes["level"], "info") where IsMap(body) and (body["PRIORITY"] == "5" or body["PRIORITY"] == "6")
+          - set(resource.attributes["level"], "debug") where IsMap(body) and body["PRIORITY"] == "7"
+          # service.name: container name (cleaned) or systemd unit fallback.
           - set(resource.attributes["service.name"], body["CONTAINER_NAME"]) where IsMap(body) and body["CONTAINER_NAME"] != nil
           - set(resource.attributes["service.name"], Split(resource.attributes["service.name"], "_")[0]) where resource.attributes["service.name"] != nil and IsMatch(resource.attributes["service.name"], "_")
           - set(resource.attributes["service.name"], body["_SYSTEMD_UNIT"]) where IsMap(body) and body["CONTAINER_NAME"] == nil and body["_SYSTEMD_UNIT"] != nil
+          # Final: replace JSON body with readable MESSAGE.
           - set(body, body["MESSAGE"]) where IsMap(body) and body["MESSAGE"] != nil
 
 exporters:
