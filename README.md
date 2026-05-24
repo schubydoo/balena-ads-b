@@ -702,6 +702,16 @@ Grafana Cloud's UI walks you through several disambiguation screens before it ha
 
 The Supervisor restarts the service whenever any of these variables change, so no fork or redeploy is required after the first deployment.
 
+### Optional: install Grafana Cloud's prebuilt Linux dashboards
+
+The `node-exporter` service emits standard `node_*` Prometheus metrics, which Grafana Cloud's "Linux Server" integration ships dashboards and alert rules for — no dashboard authoring required on your end. Install just the dashboards (the agent install is unnecessary because we already ship the data via OTel):
+
+1. In Grafana Cloud, open **Connections → Add new connection → Linux Server**.
+2. Click **Install** in the *Install Dashboards and Alerts* section near the bottom of the page. **Do not install the agent** — that would deploy Grafana Alloy / a Prometheus scraper, duplicating what `otel-collector` already does.
+3. After install, dashboards appear under **Dashboards → Linux Server** ("Node Exporter / Nodes", "Node Exporter / USE Method / Node", etc.). Filter by the `instance` label, which `start.sh` sets to your balena device name.
+
+Apply the same procedure if you also want the **Docker** integration's prebuilt dashboards — the `docker_stats` receiver emits `container_*` metrics those dashboards understand. Skip the agent install in that flow too.
+
 After a minute or two, telemetry should appear under **Explore → Metrics** (filter by `balena_app_name` or `balena_device_uuid`) and, if you enabled logs, under **Explore → Logs**.
 
 ### Acknowledgements
