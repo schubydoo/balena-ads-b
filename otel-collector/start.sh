@@ -145,6 +145,35 @@ processors:
           - set(attributes["container_service_name"], resource.attributes["container_service_name"]) where resource.attributes["container_service_name"] != nil
           - set(attributes["container_device_uuid"], resource.attributes["container_device_uuid"]) where resource.attributes["container_device_uuid"] != nil
           - set(attributes["container_device_short_uuid"], resource.attributes["container_device_short_uuid"]) where resource.attributes["container_device_short_uuid"] != nil
+  transform/logs:
+    # The journald receiver parses each entry's JSON into a map and stores
+    # the whole map as the OTel log body — which Grafana Cloud's OTLP→Loki
+    # translator serializes back to a JSON blob in the Loki line field.
+    # That dump is unreadable in the Loki UI and the dashboard ends up
+    # with no `service_name` to filter on (defaults to "unknown_service"
+    # because we never set service.name on the logs pipeline).
+    #
+    # Rewrite the log records so they look like what a Loki user actually
+    # wants to see:
+    #   1. Promote body.CONTAINER_NAME → resource service.name. balena-engine
+    #      ships container logs through journald with CONTAINER_NAME set to
+    #      the full balena container name like
+    #      "fr24feed_15111189_4082430_9997203b…".
+    #   2. Strip balena's "_<release>_<service_id>_<image_hash>" suffix so
+    #      service.name becomes just "fr24feed", "piaware", etc. Split on
+    #      "_" and keep the first segment (balena service names cannot
+    #      contain underscores; they use hyphens).
+    #   3. For non-container logs (the balena Supervisor, host services),
+    #      fall back to body._SYSTEMD_UNIT.
+    #   4. Replace the body with just body.MESSAGE so Loki shows the
+    #      readable log line instead of the full journal JSON dump.
+    log_statements:
+      - context: log
+        statements:
+          - set(resource.attributes["service.name"], body["CONTAINER_NAME"]) where IsMap(body) and body["CONTAINER_NAME"] != nil
+          - set(resource.attributes["service.name"], Split(resource.attributes["service.name"], "_")[0]) where resource.attributes["service.name"] != nil and IsMatch(resource.attributes["service.name"], "_")
+          - set(resource.attributes["service.name"], body["_SYSTEMD_UNIT"]) where IsMap(body) and body["CONTAINER_NAME"] == nil and body["_SYSTEMD_UNIT"] != nil
+          - set(body, body["MESSAGE"]) where IsMap(body) and body["MESSAGE"] != nil
 
 exporters:
   otlphttp:
@@ -324,7 +353,9 @@ yaml_list() {
 	if [ ${#LOGS_RECEIVERS[@]} -gt 0 ]; then
 		echo "    logs:"
 		echo "      receivers: $(yaml_list "${LOGS_RECEIVERS[@]}")"
-		echo "      processors: [resourcedetection/system, resource/balena, batch]"
+		# transform/logs runs BEFORE batch so its body and resource changes
+		# are visible to downstream processors and the exporter.
+		echo "      processors: [resourcedetection/system, resource/balena, transform/logs, batch]"
 		echo "      exporters: [otlphttp]"
 	fi
 	if [ ${#METRICS_RECEIVERS[@]} -eq 0 ] && [ ${#LOGS_RECEIVERS[@]} -eq 0 ]; then
