@@ -86,9 +86,15 @@ processors:
     override: false
   resource/balena:
     attributes:
-      - key: service.namespace
-        value: balena-ads-b
-        action: upsert
+      # Intentionally NOT setting service.namespace: Grafana Cloud's
+      # OTLP→Prometheus translator concatenates service.namespace and
+      # service.name into the `job` label (e.g. "balena-ads-b/integrations/
+      # node_exporter"), which then doesn't match the bare
+      # job="integrations/node_exporter" filter that Grafana's prebuilt
+      # Linux Server dashboards (and most community node_exporter
+      # dashboards) use. The balena.* attributes below carry the same
+      # "this came from a balena fleet" information without breaking the
+      # convention dashboards expect.
       - key: balena.device_uuid
         value: ${env:BALENA_DEVICE_UUID}
         action: upsert
