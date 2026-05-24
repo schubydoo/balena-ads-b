@@ -405,15 +405,11 @@ services:
       # default-route candidates.
       - TS_EXCLUDED_INTERFACES=resin-vpn resin-dns
       - TAILSCALE_SERVE_TRAEFIK=false
-      # Disable tailscaled's outbound update-check probes. The check uses
-      # tailscale's userspace dialer, which can pick the tailnet interface
-      # as the source and produce a stream of open-conn-track timeouts to
-      # pkgs.tailscale.com (Cloudflare-fronted). Applied post-up via
+      # Disable tailscaled's outbound update-check probes. Applied post-up via
       # `tailscale set --update-check=$value` in start.sh.
       - TS_UPDATE_CHECK=false
       # Escape hatch for arbitrary post-up `tailscale set` args, appended
-      # verbatim (space-separated). Use the balena dashboard's service
-      # variables to override without editing this file.
+      # verbatim (space-separated).
       - TS_POST_UP_SET_ARGS=
     volumes:
       - 'tailscale-state:/var/lib/tailscale'
