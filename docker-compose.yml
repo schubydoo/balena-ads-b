@@ -444,3 +444,17 @@ services:
       io.balena.features.balena-socket: '1'
       io.balena.features.balena-api: '1'
       io.balena.features.supervisor-api: '1'
+  dump1090-exporter:
+    depends_on:
+      - dump1090-fa
+    build: ./dump1090-exporter
+    image: dump1090-exporter
+    restart: unless-stopped
+    environment:
+      - DUMP1090_RESOURCE_PATH=/run/dump1090-fa
+      - DUMP1090_EXPORTER_PORT=9105
+      - DUMP1090_EXPORTER_LOG_LEVEL=info
+    volumes:
+      - 'aircraft-data:/run/dump1090-fa:ro'
+    labels:
+      io.balena.features.supervisor-api: '1'
