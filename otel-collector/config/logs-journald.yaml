@@ -1,0 +1,18 @@
+# Loaded when OTEL_LOGS_ENABLED=true. Reads journald entries from
+# JOURNAL_DIR (set by start.sh based on whether persistent logging is on).
+# transform/logs in base.yaml rewrites each record so Grafana Cloud's
+# prebuilt Linux node / logs dashboards populate.
+
+receivers:
+  journald:
+    directory: "${env:JOURNAL_DIR}"
+    priority: info
+    # balena container log lines arrive as JSON byte arrays; convert to text.
+    convert_message_bytes: true
+
+service:
+  pipelines:
+    logs/journald:
+      receivers: [journald]
+      processors: [resourcedetection/system, resource/balena, transform/logs, batch]
+      exporters: [otlphttp]

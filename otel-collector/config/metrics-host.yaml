@@ -1,0 +1,24 @@
+# Loaded when OTEL_NODE_METRICS_ENABLED=true. Scrapes the in-container
+# node_exporter (started by start.sh on loopback) so the metrics arrive
+# under job=integrations/node_exporter — what Grafana Cloud's prebuilt
+# Linux Server dashboards filter on.
+
+receivers:
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: integrations/node_exporter
+          scrape_interval: "${env:OTEL_COLLECTION_INTERVAL}"
+          static_configs:
+            - targets: ['127.0.0.1:9100']
+          relabel_configs:
+            - source_labels: [__address__]
+              replacement: "${env:NODE_EXPORTER_INSTANCE}"
+              target_label: instance
+
+service:
+  pipelines:
+    metrics/host:
+      receivers: [prometheus]
+      processors: [resourcedetection/system, resource/balena, batch]
+      exporters: [otlphttp]
