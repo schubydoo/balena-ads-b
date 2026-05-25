@@ -1,0 +1,97 @@
+# Always loaded. Feature fragments add their own pipeline under
+# service.pipelines (e.g. metrics/docker, metrics/host, metrics/dump1090,
+# logs/journald). Each fragment's pipeline uses a distinct name to avoid
+# OTel's deep-merge replacing receivers lists. See
+# https://github.com/open-telemetry/opentelemetry-collector/issues/8754
+
+extensions:
+  health_check:
+    endpoint: 127.0.0.1:13133
+
+processors:
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+
+  resourcedetection/system:
+    detectors: [env, system]
+    timeout: 5s
+    override: false
+
+  resource/balena:
+    # service.namespace is intentionally not set — Grafana Cloud's
+    # OTLP→Prometheus translator concatenates it into the `job` label and
+    # breaks prebuilt dashboard filters.
+    attributes:
+      - { key: balena.device_uuid,    value: "${env:BALENA_DEVICE_UUID}",          action: upsert }
+      - { key: balena.app_id,         value: "${env:BALENA_APP_ID}",               action: upsert }
+      - { key: balena.app_name,       value: "${env:BALENA_APP_NAME}",             action: upsert }
+      - { key: balena.device_name,    value: "${env:BALENA_DEVICE_NAME_AT_INIT}",  action: upsert }
+      - { key: balena.device_type,    value: "${env:BALENA_DEVICE_TYPE}",          action: upsert }
+      - { key: balena.host_os_version,value: "${env:BALENA_HOST_OS_VERSION}",      action: upsert }
+
+  resource/docker:
+    # Short UUID for friendlier Grafana variable dropdowns. No-op on
+    # non-container metrics that lack container_device_uuid.
+    attributes:
+      - key: container_device_uuid
+        pattern: "^(?P<container_device_short_uuid>.{0,7}).*"
+        action: extract
+
+  transform/promote_container_attrs:
+    # Copy resource attrs onto data points so they survive as Prometheus
+    # labels (Grafana Cloud's OTLP→Prom translator only auto-promotes a
+    # small allow-list; the rest get parked in target_info).
+    metric_statements:
+      - context: datapoint
+        statements:
+          - set(attributes["container_service_name"],      resource.attributes["container_service_name"])      where resource.attributes["container_service_name"] != nil
+          - set(attributes["container_device_uuid"],       resource.attributes["container_device_uuid"])       where resource.attributes["container_device_uuid"] != nil
+          - set(attributes["container_device_short_uuid"], resource.attributes["container_device_short_uuid"]) where resource.attributes["container_device_short_uuid"] != nil
+
+  transform/logs:
+    # Rewrites journald records so Grafana Cloud's prebuilt Linux
+    # node_exporter / Loki dashboards populate without per-dashboard
+    # patches. See journald receiver fragment for what feeds this.
+    log_statements:
+      - context: log
+        statements:
+          - set(resource.attributes["job"],       "integrations/node_exporter")
+          - set(resource.attributes["instance"],  "${env:NODE_EXPORTER_INSTANCE}")
+          - set(resource.attributes["hostname"],  "${env:NODE_EXPORTER_INSTANCE}")
+          - set(resource.attributes["transport"], "journal")
+          - set(resource.attributes["cluster"],   "${env:BALENA_APP_NAME}")
+          - set(resource.attributes["unit"],  body["_SYSTEMD_UNIT"]) where IsMap(body) and body["_SYSTEMD_UNIT"] != nil
+          - set(resource.attributes["level"], "critical") where IsMap(body) and (body["PRIORITY"] == "0" or body["PRIORITY"] == "1" or body["PRIORITY"] == "2")
+          - set(resource.attributes["level"], "error")    where IsMap(body) and body["PRIORITY"] == "3"
+          - set(resource.attributes["level"], "warning")  where IsMap(body) and body["PRIORITY"] == "4"
+          - set(resource.attributes["level"], "info")     where IsMap(body) and (body["PRIORITY"] == "5" or body["PRIORITY"] == "6")
+          - set(resource.attributes["level"], "debug")    where IsMap(body) and body["PRIORITY"] == "7"
+          - set(resource.attributes["service.name"], body["CONTAINER_NAME"]) where IsMap(body) and body["CONTAINER_NAME"] != nil
+          # Strip balena's "_<release>_<service_id>_<image_hash>" suffix.
+          - set(resource.attributes["service.name"], Split(resource.attributes["service.name"], "_")[0]) where resource.attributes["service.name"] != nil and IsMatch(resource.attributes["service.name"], "_")
+          - set(resource.attributes["service.name"], body["_SYSTEMD_UNIT"]) where IsMap(body) and body["CONTAINER_NAME"] == nil and body["_SYSTEMD_UNIT"] != nil
+          - set(body, body["MESSAGE"]) where IsMap(body) and body["MESSAGE"] != nil
+
+exporters:
+  otlphttp:
+    endpoint: "${env:OTLP_ENDPOINT}"
+    headers:
+      authorization: "${env:OTLP_AUTH_HEADER}"
+    compression: gzip
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s
+    sending_queue:
+      enabled: true
+      num_consumers: 4
+      queue_size: 100
+
+service:
+  extensions: [health_check]
+  pipelines: {}   # feature fragments add metrics/* and logs/* entries here
+  telemetry:
+    logs:
+      level: info
