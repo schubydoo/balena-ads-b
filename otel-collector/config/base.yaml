@@ -50,23 +50,16 @@ processors:
           - set(attributes["container_device_short_uuid"], resource.attributes["container_device_short_uuid"]) where resource.attributes["container_device_short_uuid"] != nil
 
   transform/logs:
-    # Rewrites journald records so Grafana Cloud's prebuilt Linux
-    # node_exporter / Loki dashboards populate without per-dashboard
-    # patches. See journald receiver fragment for what feeds this.
+    # Per-container service.name + replace the journald map body with just
+    # the MESSAGE string. Grafana Cloud's OTLP→Loki translator promotes
+    # service.name to the `service_name` stream label, so dashboards can
+    # filter on it. Other journald fields (PRIORITY, _SYSTEMD_UNIT, …)
+    # stay in structured metadata via the body's untouched siblings until
+    # the final set(body, body["MESSAGE"]) strips them — keep the LogQL
+    # text search (`|= "…"`) for everything we don't promote.
     log_statements:
       - context: log
         statements:
-          - set(resource.attributes["job"],       "integrations/node_exporter")
-          - set(resource.attributes["instance"],  "${env:NODE_EXPORTER_INSTANCE}")
-          - set(resource.attributes["hostname"],  "${env:NODE_EXPORTER_INSTANCE}")
-          - set(resource.attributes["transport"], "journal")
-          - set(resource.attributes["cluster"],   "${env:BALENA_APP_NAME}")
-          - set(resource.attributes["unit"],  body["_SYSTEMD_UNIT"]) where IsMap(body) and body["_SYSTEMD_UNIT"] != nil
-          - set(resource.attributes["level"], "critical") where IsMap(body) and (body["PRIORITY"] == "0" or body["PRIORITY"] == "1" or body["PRIORITY"] == "2")
-          - set(resource.attributes["level"], "error")    where IsMap(body) and body["PRIORITY"] == "3"
-          - set(resource.attributes["level"], "warning")  where IsMap(body) and body["PRIORITY"] == "4"
-          - set(resource.attributes["level"], "info")     where IsMap(body) and (body["PRIORITY"] == "5" or body["PRIORITY"] == "6")
-          - set(resource.attributes["level"], "debug")    where IsMap(body) and body["PRIORITY"] == "7"
           - set(resource.attributes["service.name"], body["CONTAINER_NAME"]) where IsMap(body) and body["CONTAINER_NAME"] != nil
           # Strip balena's "_<release>_<service_id>_<image_hash>" suffix.
           - set(resource.attributes["service.name"], Split(resource.attributes["service.name"], "_")[0]) where resource.attributes["service.name"] != nil and IsMatch(resource.attributes["service.name"], "_")
@@ -74,7 +67,7 @@ processors:
           - set(body, body["MESSAGE"]) where IsMap(body) and body["MESSAGE"] != nil
 
 exporters:
-  otlphttp:
+  otlp_http:
     endpoint: "${env:OTLP_ENDPOINT}"
     headers:
       authorization: "${env:OTLP_AUTH_HEADER}"
