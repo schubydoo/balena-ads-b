@@ -14,7 +14,12 @@ FROM prom/node-exporter:v${NODE_EXPORTER_VERSION} AS node-exporter-bin
 FROM debian:trixie-slim
 LABEL maintainer="https://github.com/ketilmo"
 
-# `systemd` is required for `journalctl` — the journald receiver shells out to it.
+# `systemd` is here purely for `/usr/bin/journalctl` — otelcol-contrib's
+# journald receiver shells out to it. The package pulls in ~30 MB of init
+# scaffolding we don't use, but extracting just journalctl + its private
+# helpers (libsystemd-shared, dlopen'd at runtime, lives at version-specific
+# paths that move between Debian releases) is brittle across arches. Net:
+# accept the ~30 MB cost in exchange for a single-line dependency.
 ARG PERM_INSTALL="tini ca-certificates curl systemd"
 RUN printf '%s\n' \
         'path-exclude /usr/share/doc/*' \
