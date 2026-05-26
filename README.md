@@ -677,7 +677,7 @@ Two opt-in services ship per-container metrics, host metrics, and journald logs 
 | Service | Image base | What it does |
 | --- | --- | --- |
 | `otel-collector` | `debian:trixie-slim` + `otelcol-contrib` and `node_exporter` binaries copied from upstream releases | Runs the OpenTelemetry Collector in the foreground and backgrounds `node_exporter` on loopback `:9100` under `tini -g` when host metrics are enabled. Receivers: `docker_stats` (balena engine), `prometheus` scrape of the bundled node_exporter, `prometheus` scrape of `dump1090-exporter`, and `journald`. |
-| `dump1090-exporter` | `ghcr.io/schubydoo/dump1090-exporter:0.3.0` (alpine) | Polls dump1090-fa's JSON outputs from the shared `aircraft-data` volume and re-exposes them as Prometheus metrics on `:9105`. |
+| `dump1090-exporter` | [`ghcr.io/schubydoo/dump1090-exporter`](https://github.com/schubydoo/dump1090-exporter) (alpine, version pinned in `dump1090-exporter/Dockerfile.template` and tracked by Renovate) | Polls dump1090-fa's JSON outputs from the shared `aircraft-data` volume and re-exposes them as Prometheus metrics on `:9105`. |
 
 Both names go in `ENABLED_SERVICES` to switch them on — same opt-in pattern as `mlat-client`, `ident`, and the optional feeders. Inside `otel-collector`, `otelcol-contrib` collects from four sources and ships everything to one OTLP/HTTP endpoint: the balena engine's `docker_stats` API (per-container metrics), the bundled `node_exporter` on loopback `:9100` (host metrics), `dump1090-exporter:9105` over the bridge network (ADS-B metrics), and the host journald (every container's stdout plus every systemd unit).
 
@@ -716,7 +716,7 @@ Usually not needed; defaults are correct for stock balena.
 | --- | --- | --- |
 | `OTEL_COLLECTION_INTERVAL` | `30s` | Prometheus scrape interval the collector applies to node_exporter and dump1090-exporter. |
 | `OTEL_DOCKER_ENDPOINT` | `unix:///var/run/balena.sock` | Where `docker_stats` connects. Provided by the `io.balena.features.balena-socket` label. |
-| `NODE_EXPORTER_INSTANCE` | derived from `BALENA_DEVICE_NAME_AT_INIT` (falls back to UUID) | Sets the `instance` label on `node_*` metrics so multi-device fleets group cleanly in dashboards. |
+| `NODE_EXPORTER_INSTANCE` | derived from `BALENA_DEVICE_NAME_AT_INIT`, falling back to `BALENA_DEVICE_UUID`, then to the literal `balena-device` if neither is set | Sets the `instance` label on `node_*` metrics so multi-device fleets group cleanly in dashboards. |
 | `DUMP1090_EXPORTER_HOST` / `DUMP1090_EXPORTER_PORT` | `dump1090-exporter` / `9105` | The cross-container scrape target. |
 | `OTEL_JOURNALD_DIRECTORY` | autodetected (`/var/log/journal` if the host stores persistent journals, otherwise `/run/log/journal`) | Override only if you've redirected the host journal somewhere unusual. |
 
@@ -735,7 +735,7 @@ Two vendored dashboards under [`otel-collector/dashboards/`](otel-collector/dash
 
 Two external dashboards are worth importing alongside the vendored set:
 
-- **`dump1090` (ADS-B receiver health)** — aircraft count, message rate, signal strength, CPU split, directional range. Maintained upstream at [`schubydoo/dump1090-exporter`](https://github.com/schubydoo/dump1090-exporter) (MIT). Import via **Dashboards → New → Import → Import via URL**: `https://raw.githubusercontent.com/schubydoo/dump1090-exporter/v0.3.0/grafana-dashboard/dump1090.json`. Requires `OTEL_DUMP1090_ENABLED=true`.
+- **`dump1090` (ADS-B receiver health)** — aircraft count, message rate, signal strength, CPU split, directional range. Maintained upstream at [`schubydoo/dump1090-exporter`](https://github.com/schubydoo/dump1090-exporter) (MIT) — grab `grafana-dashboard/dump1090.json` from that repo and import it into Grafana. Requires `OTEL_DUMP1090_ENABLED=true`.
 - **Grafana Cloud → Connections → Linux Server → Install Dashboards and Alerts** — host CPU/memory/network/processes from the bundled `node_exporter`'s canonical `node_*` series.
 
 If your backend is something other than Grafana + Loki, the vendored dashboards still work for whatever PromQL- and LogQL-compatible (or equivalent) tooling you're running. For ad-hoc log queries on Grafana/Loki, every journald field reaches Loki as structured metadata, so pipeline filters like `{service_name="dump1090-fa"} | balena_device_name="my-device" | _SYSTEMD_UNIT="…"` work in Explore even though only `service_name` is a stream label.
