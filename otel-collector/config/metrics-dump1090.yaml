@@ -16,4 +16,4 @@ service:
     metrics/dump1090:
       receivers: [prometheus/dump1090]
       processors: [resourcedetection/system, resource/balena, batch]
-      exporters: [otlphttp]
+      exporters: [otlp_http]

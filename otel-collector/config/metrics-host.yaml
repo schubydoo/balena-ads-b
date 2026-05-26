@@ -21,4 +21,4 @@ service:
     metrics/host:
       receivers: [prometheus]
       processors: [resourcedetection/system, resource/balena, batch]
-      exporters: [otlphttp]
+      exporters: [otlp_http]

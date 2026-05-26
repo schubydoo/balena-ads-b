@@ -103,7 +103,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$prometheus_datasource"
+        "uid": "${DS_PROM}"
       },
       "description": "Cumulative cpu time consumed in seconds.",
       "fieldConfig": {
@@ -190,7 +190,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$prometheus_datasource"
+        "uid": "${DS_PROM}"
       },
       "description": "Current memory usage in bytes, including all memory regardless of when it was accessed.",
       "fieldConfig": {
@@ -290,7 +290,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$prometheus_datasource"
+        "uid": "${DS_PROM}"
       },
       "description": "Cpu time consumed in seconds by container.",
       "fieldConfig": {
@@ -392,7 +392,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$prometheus_datasource"
+        "uid": "${DS_PROM}"
       },
       "description": "Current memory usage in bytes, including all memory regardless of when it was accessed by container.",
       "fieldConfig": {
@@ -602,7 +602,7 @@
       "targets": [
         {
           "datasource": {
-            "uid": "$prometheus_datasource"
+            "uid": "${DS_PROM}"
           },
           "editorMode": "code",
           "expr": "sum by (container_service_name) (rate(container_network_io_usage_rx_bytes_total{container_device_short_uuid=~\"$instance\", container_service_name=~\"$service\"}[$__rate_interval]))",
@@ -641,22 +641,11 @@
   "templating": {
     "list": [
       {
-        "current": {},
-        "includeAll": false,
-        "label": "Data Source",
-        "name": "prometheus_datasource",
-        "options": [],
-        "query": "prometheus",
-        "refresh": 1,
-        "regex": "(?!grafanacloud-usage|grafanacloud-ml-metrics).+",
-        "type": "datasource"
-      },
-      {
         "allValue": ".+",
         "current": {},
         "datasource": {
           "type": "prometheus",
-          "uid": "$prometheus_datasource"
+          "uid": "${DS_PROM}"
         },
         "definition": "label_values(container_device_short_uuid)",
         "includeAll": true,
