@@ -26,4 +26,4 @@ service:
     metrics/docker:
       receivers: [docker_stats]
       processors: [resourcedetection/system, resource/balena, resource/docker, transform/promote_container_attrs, batch]
-      exporters: [otlphttp]
+      exporters: [otlp_http]
