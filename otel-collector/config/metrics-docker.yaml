@@ -5,6 +5,8 @@ receivers:
   docker_stats:
     endpoint: "${env:OTEL_DOCKER_ENDPOINT}"
     # balena-engine maxes at Docker API v1.41; newer otelcol defaults break it.
+    # TODO: bump when balena-engine supports Docker API > 1.41 (no Renovate
+    # tracker exists for the engine's API ceiling — has to be checked manually).
     api_version: "1.41"
     collection_interval: "${env:OTEL_COLLECTION_INTERVAL}"
     timeout: 20s
