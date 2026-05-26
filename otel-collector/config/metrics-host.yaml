@@ -16,9 +16,21 @@ receivers:
               replacement: "${env:NODE_EXPORTER_INSTANCE}"
               target_label: instance
 
+processors:
+  resource/host_container_id:
+    # Stamp host metrics with the same container_device_uuid the docker_stats
+    # pipeline carries, so the shared resource/docker processor can derive
+    # container_device_short_uuid here too. Net effect: node_exporter and
+    # docker_stats series end up labelled with the same short UUID, and the
+    # bundled dashboard can filter both metric families on a single variable
+    # without making instance match container_device_short_uuid (which would
+    # break stock Grafana Cloud Linux Server dashboards' hostname display).
+    attributes:
+      - { key: container_device_uuid, value: "${env:BALENA_DEVICE_UUID}", action: upsert }
+
 service:
   pipelines:
     metrics/host:
       receivers: [prometheus]
-      processors: [resourcedetection/system, resource/balena, batch]
+      processors: [resourcedetection/system, resource/balena, resource/host_container_id, resource/docker, transform/promote_container_attrs, batch]
       exporters: [otlp_http]

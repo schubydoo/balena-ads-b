@@ -263,7 +263,7 @@
             "uid": "${DS_PROM}"
           },
           "editorMode": "code",
-          "expr": "sum(container_memory_usage_total_bytes{container_device_short_uuid=~\"$instance\", container_service_name=~\"$service\"}) / avg(node_memory_MemTotal_bytes{instance=~\"$instance\"})",
+          "expr": "sum(container_memory_usage_total_bytes{container_device_short_uuid=~\"$instance\", container_service_name=~\"$service\"}) / avg(node_memory_MemTotal_bytes{container_device_short_uuid=~\"$instance\"})",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "",
