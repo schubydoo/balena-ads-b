@@ -9,10 +9,14 @@ case ",${enabled}," in
     *",${BALENA_SERVICE_NAME},"*) ;;
     *)
         echo "${BALENA_SERVICE_NAME} not in ENABLED_SERVICES; asking supervisor to stop us."
+        # `|| true` so a curl that exhausts its 24h retry budget doesn't trip
+        # `set -e` and skip the sleep — under sustained supervisor failure
+        # this ENABLED_SERVICES opt-out branch would otherwise restart every
+        # 24h instead of idling cleanly.
         curl --fail --retry 86400 --retry-delay 1 --retry-all-errors \
             --header "Content-Type:application/json" \
             "${BALENA_SUPERVISOR_ADDRESS}/v2/applications/${BALENA_APP_ID}/stop-service?apikey=${BALENA_SUPERVISOR_API_KEY}" \
-            -d "{\"serviceName\": \"${BALENA_SERVICE_NAME}\"}"
+            -d "{\"serviceName\": \"${BALENA_SERVICE_NAME}\"}" || true
         sleep infinity
         ;;
 esac
