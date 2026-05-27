@@ -36,6 +36,12 @@ RUN printf '%s\n' \
 COPY --from=otelcol-bin       /otelcol-contrib   /usr/local/bin/otelcol-contrib
 COPY --from=node-exporter-bin /bin/node_exporter /usr/local/bin/node_exporter
 
+# Ship upstream LICENSE/NOTICE files alongside their binaries — Apache-2.0
+# requires distributions to include the license text and any NOTICE file.
+# The upstream Docker images COPY only the binary, so we vendor the files
+# under licenses/ and put them on a well-known path inside the image.
+COPY licenses/ /usr/share/doc/otel-collector/licenses/
+
 COPY config/  /etc/otelcol/config/
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
