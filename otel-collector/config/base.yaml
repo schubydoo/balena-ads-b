@@ -69,8 +69,11 @@ processors:
 exporters:
   otlp_http:
     endpoint: "${env:OTLP_ENDPOINT}"
-    headers:
-      authorization: "${env:OTLP_AUTH_HEADER}"
+    # Headers are populated at runtime via /tmp/otel-headers.yaml (built by
+    # start.sh from OTLP_AUTH_HEADER + OTLP_HEADERS). Empty placeholder here
+    # so non-Authorization-only backends (Honeycomb, Datadog, New Relic, …)
+    # don't ship an empty Authorization header on every request.
+    headers: {}
     compression: gzip
     retry_on_failure:
       enabled: true

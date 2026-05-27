@@ -425,6 +425,11 @@ services:
     environment:
       - OTLP_ENDPOINT=
       - OTLP_AUTH_HEADER=
+      # Comma-separated extra headers for backends that don't use the
+      # Authorization header (Honeycomb x-honeycomb-team, Datadog dd-api-key,
+      # New Relic api-key, …). Format: "name1: value1, name2: value2".
+      # Combines with OTLP_AUTH_HEADER if both are set.
+      - OTLP_HEADERS=
       # Grafana Cloud shortcut: set instance ID + token and start.sh builds
       # the Basic auth header. OTLP_AUTH_HEADER wins if set explicitly.
       - GRAFANA_INSTANCE_ID=

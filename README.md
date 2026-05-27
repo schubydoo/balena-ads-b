@@ -686,7 +686,21 @@ Both names go in `ENABLED_SERVICES` to switch them on — same opt-in pattern as
 | Variable | What it does |
 | --- | --- |
 | `OTLP_ENDPOINT` | Full OTLP/HTTP URL of the receiving collector (e.g. `https://otlp-gateway-prod-<region>.grafana.net/otlp`). The container refuses to start if this is unset. |
-| `OTLP_AUTH_HEADER` | The full `Authorization:` header value the backend expects (e.g. `Basic …`, `Bearer …`, an API-key header, etc.). Required unless you use the Grafana Cloud shortcut below. |
+| `OTLP_AUTH_HEADER` | Value of the `Authorization` header the backend expects (e.g. `Basic …`, `Bearer …`). Required for backends that authenticate via `Authorization`. Skip in favour of `OTLP_HEADERS` for backends that use a different header name (Honeycomb, Datadog, New Relic, …). |
+| `OTLP_HEADERS` | Comma-separated `name: value` pairs for arbitrary extra OTLP headers. Combines with `OTLP_AUTH_HEADER` if both are set. At least one of `OTLP_AUTH_HEADER` or `OTLP_HEADERS` must be set, or the container refuses to start. |
+
+#### Backend examples
+
+| Backend | What to set |
+| --- | --- |
+| Grafana Cloud (recommended) | Use the [shortcut](#grafana-cloud-shortcut) below. |
+| Generic OTLP collector with Bearer auth | `OTLP_AUTH_HEADER=Bearer <token>` |
+| Honeycomb | `OTLP_HEADERS=x-honeycomb-team: <api-key>` |
+| Datadog | `OTLP_HEADERS=dd-api-key: <api-key>` |
+| New Relic | `OTLP_HEADERS=api-key: <license-key>` |
+| Two headers at once | `OTLP_HEADERS=x-honeycomb-team: <key>, x-honeycomb-dataset: prod` |
+
+`OTLP_HEADERS` parses by splitting on commas, then on the first `:` of each pair — so header values may contain colons (e.g. a `Bearer abc:def` token) without needing escaping. Whitespace around names and values is trimmed.
 
 ### Grafana Cloud shortcut
 

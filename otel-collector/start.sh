@@ -27,8 +27,11 @@ if [ -z "${OTLP_AUTH_HEADER}" ] && [ -n "${GRAFANA_INSTANCE_ID}" ] && [ -n "${GR
     export OTLP_AUTH_HEADER
     echo "OTLP_AUTH_HEADER computed from GRAFANA_INSTANCE_ID + GRAFANA_API_KEY."
 fi
-[ -z "${OTLP_ENDPOINT}" ]    && { echo "OTLP_ENDPOINT missing, aborting.";    sleep infinity; }
-[ -z "${OTLP_AUTH_HEADER}" ] && { echo "OTLP_AUTH_HEADER missing (or GRAFANA_INSTANCE_ID + GRAFANA_API_KEY), aborting."; sleep infinity; }
+[ -z "${OTLP_ENDPOINT}" ] && { echo "OTLP_ENDPOINT missing, aborting."; sleep infinity; }
+if [ -z "${OTLP_AUTH_HEADER}" ] && [ -z "${OTLP_HEADERS}" ]; then
+    echo "Neither OTLP_AUTH_HEADER (or GRAFANA_INSTANCE_ID + GRAFANA_API_KEY) nor OTLP_HEADERS is set; aborting."
+    sleep infinity
+fi
 
 # --- Defaults + exports for OTel ${env:...} substitution ---
 export OTEL_NODE_METRICS_ENABLED="${OTEL_NODE_METRICS_ENABLED:-true}"
@@ -52,8 +55,45 @@ else
 fi
 export JOURNAL_DIR
 
+# --- Build the runtime headers fragment for the OTLP exporter ---
+# OTLP_AUTH_HEADER (if set) becomes the `authorization` header for backends
+# that expect Bearer/Basic auth (Grafana Cloud, generic OTel collectors, …).
+# OTLP_HEADERS supplies arbitrary additional headers for backends that need
+# their own header names (Honeycomb's x-honeycomb-team, Datadog's dd-api-key,
+# New Relic's api-key, …). Format: comma-separated "name: value" pairs.
+# Splitting handles a colon-bearing value (e.g. "Bearer abc:def") correctly
+# because we cut on the FIRST `:` only.
+HEADERS_FRAGMENT=/tmp/otel-headers.yaml
+{
+    echo "exporters:"
+    echo "  otlp_http:"
+    echo "    headers:"
+    if [ -n "${OTLP_AUTH_HEADER}" ]; then
+        escaped=$(printf '%s' "${OTLP_AUTH_HEADER}" | sed "s/'/''/g")
+        printf "      authorization: '%s'\n" "${escaped}"
+    fi
+    if [ -n "${OTLP_HEADERS}" ]; then
+        OLDIFS=$IFS
+        IFS=','
+        for pair in ${OTLP_HEADERS}; do
+            pair=$(printf '%s' "${pair}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+            [ -z "${pair}" ] && continue
+            # Skip malformed pairs that have no colon.
+            case "${pair}" in *:*) ;; *) continue ;; esac
+            name=${pair%%:*}
+            value=${pair#*:}
+            name=$(printf '%s' "${name}"  | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+            value=$(printf '%s' "${value}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+            escaped=$(printf '%s' "${value}" | sed "s/'/''/g")
+            printf "      %s: '%s'\n" "${name}" "${escaped}"
+        done
+        IFS=$OLDIFS
+    fi
+} > "${HEADERS_FRAGMENT}"
+
 # --- Build --config flag list ---
 CFG="--config /etc/otelcol/config/base.yaml"
+CFG="${CFG} --config ${HEADERS_FRAGMENT}"
 [ "${OTEL_DOCKER_STATS_ENABLED}" = "true" ] && CFG="${CFG} --config /etc/otelcol/config/metrics-docker.yaml"
 [ "${OTEL_NODE_METRICS_ENABLED}" = "true" ] && CFG="${CFG} --config /etc/otelcol/config/metrics-host.yaml"
 [ "${OTEL_DUMP1090_ENABLED}"     = "true" ] && CFG="${CFG} --config /etc/otelcol/config/metrics-dump1090.yaml"
