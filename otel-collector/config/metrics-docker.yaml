@@ -5,8 +5,14 @@ receivers:
   docker_stats:
     endpoint: "${env:OTEL_DOCKER_ENDPOINT}"
     # balena-engine maxes at Docker API v1.41; newer otelcol defaults break it.
-    # TODO: bump when balena-engine supports Docker API > 1.41 (no Renovate
-    # tracker exists for the engine's API ceiling — has to be checked manually).
+    # Source of truth: https://github.com/balena-os/balena-engine/blob/master/api/common.go
+    # (look for `DefaultVersion`). Checked manually rather than via Renovate
+    # because the API const isn't a release artifact: github-releases datasources
+    # emit balena-engine's own version tags (`v25.x.y`), which Renovate would
+    # try to write into this field; a custom-regex datasource against the raw
+    # Go source works but breaks silently on any upstream refactor. The value
+    # has been pinned at 1.41 since balena-engine forked from Docker, so a
+    # quarterly manual check is a better trade than a fragile auto-bump.
     api_version: "1.41"
     collection_interval: "${env:OTEL_COLLECTION_INTERVAL}"
     timeout: 20s

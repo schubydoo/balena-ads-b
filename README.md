@@ -685,11 +685,11 @@ Both names go in `ENABLED_SERVICES` to switch them on — same opt-in pattern as
 
 | Variable | What it does |
 | --- | --- |
-| `OTLP_ENDPOINT` | Full OTLP/HTTP URL of the receiving collector (e.g. `https://otlp-gateway-prod-<region>.grafana.net/otlp`). The container refuses to start if this is unset. |
+| `OTLP_ENDPOINT` | Full OTLP/HTTP URL of the receiving collector (e.g. `https://otlp-gateway-prod-<region>.grafana.net/otlp`). The container logs the missing variable and idles (stays Running) if this is unset. |
 | `OTLP_AUTH_HEADER` | Value of the `Authorization` header the backend expects (e.g. `Basic …`, `Bearer …`). Required for backends that authenticate via `Authorization`. Skip in favour of `OTLP_HEADERS` for backends that use a different header name (Honeycomb, Datadog, New Relic, …). |
-| `OTLP_HEADERS` | Comma-separated `name: value` pairs for arbitrary extra OTLP headers. Combines with `OTLP_AUTH_HEADER` if both are set. At least one of `OTLP_AUTH_HEADER` or `OTLP_HEADERS` must be set, or the container refuses to start. |
+| `OTLP_HEADERS` | Comma-separated `name: value` pairs for arbitrary extra OTLP headers. Combines with `OTLP_AUTH_HEADER` if both are set. At least one of `OTLP_AUTH_HEADER` or `OTLP_HEADERS` must be set; otherwise the container logs the issue and idles. |
 
-#### Backend examples
+#### Observability platform examples
 
 | Backend | What to set |
 | --- | --- |
@@ -708,8 +708,8 @@ Setting `GRAFANA_INSTANCE_ID` + `GRAFANA_API_KEY` lets `start.sh` compute the `B
 
 | Variable | What it does |
 | --- | --- |
-| `GRAFANA_INSTANCE_ID` | The numeric instance ID Grafana Cloud's "OpenTelemetry Collector" setup wizard hands you. |
-| `GRAFANA_API_KEY` | The API token from the same wizard. |
+| `GRAFANA_INSTANCE_ID` | The numeric instance ID for your Grafana Cloud stack (e.g. `1234567`). See the [official Grafana Cloud OTLP setup guide](https://grafana.com/docs/grafana-cloud/send-data/otlp/send-data-otlp/#recommended-opentelemetry-setup-via-grafana-cloud-integrations) for where to find it. |
+| `GRAFANA_API_KEY` | The API token from the same setup screen. |
 
 ### Per-signal toggles
 
@@ -733,6 +733,7 @@ Usually not needed; defaults are correct for stock balena.
 | `NODE_EXPORTER_INSTANCE` | derived from `BALENA_DEVICE_NAME_AT_INIT`, falling back to `BALENA_DEVICE_UUID`, then to the literal `balena-device` if neither is set | Sets the `instance` label on `node_*` metrics so multi-device fleets group cleanly in dashboards. |
 | `DUMP1090_EXPORTER_HOST` / `DUMP1090_EXPORTER_PORT` | `dump1090-exporter` / `9105` | The cross-container scrape target. |
 | `OTEL_JOURNALD_DIRECTORY` | autodetected (`/var/log/journal` if the host stores persistent journals, otherwise `/run/log/journal`) | Override only if you've redirected the host journal somewhere unusual. |
+| `OTEL_JOURNALD_PRIORITY` | `info` | Lowest journald priority level the receiver forwards. Set to `debug` if you want debug-level messages too. |
 
 ### Visualization
 
@@ -752,7 +753,7 @@ Two external dashboards are worth importing alongside the vendored set:
 - **`dump1090` (ADS-B receiver health)** — aircraft count, message rate, signal strength, CPU split, directional range. Maintained upstream at [`schubydoo/dump1090-exporter`](https://github.com/schubydoo/dump1090-exporter) (MIT) — grab `grafana-dashboard/dump1090.json` from that repo and import it into Grafana. Requires `OTEL_DUMP1090_ENABLED=true`.
 - **Grafana Cloud → Connections → Linux Server → Install Dashboards and Alerts** — host CPU/memory/network/processes from the bundled `node_exporter`'s canonical `node_*` series.
 
-If your backend is something other than Grafana + Loki, the vendored dashboards still work for whatever PromQL- and LogQL-compatible (or equivalent) tooling you're running. For ad-hoc log queries on Grafana/Loki, every journald field reaches Loki as structured metadata, so pipeline filters like `{service_name="dump1090-fa"} | balena_device_name="my-device" | _SYSTEMD_UNIT="…"` work in Explore even though only `service_name` is a stream label.
+If your backend is something other than Grafana + Loki, the vendored dashboards still work for whatever PromQL- and LogQL-compatible (or equivalent) tooling you're running. On Grafana/Loki, the `service.name` resource attribute lands as the `service_name` stream label and the `resource/balena` attributes (`balena.device_name`, `balena.app_name`, `balena.device_uuid`, `balena.app_id`, `balena.device_type`, `balena.host_os_version`) ride along as structured metadata, so pipeline filters like `{service_name="dump1090-fa"} | balena_device_name="my-device"` work in Explore. Other journald siblings (`PRIORITY`, `_SYSTEMD_UNIT`, `_PID`, …) get stripped when the transform replaces the journald-map body with just `MESSAGE`; reach for LogQL text search (`\|= "..."`) for those.
 
 # Part 16 – Updating to the latest version
 
