@@ -419,7 +419,7 @@ services:
     restart: unless-stopped
     # Cap RAM so a runaway scrape config can't OOM the device. otelcol-contrib
     # + node_exporter steady-state is ~50–80 MB; 256 MB is generous headroom.
-    mem_limit: 256m
+    mem_limit: 268435456
     # pid: host lets the bundled node_exporter see all host processes.
     pid: host
     environment:
