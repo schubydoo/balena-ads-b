@@ -1,9 +1,4 @@
-# Wrap the maintained schubydoo/dump1090-exporter image
-# (https://github.com/schubydoo/dump1090-exporter, MIT) with the ADS-B project's
-# ENABLED_SERVICES opt-in gate. The base image is multi-arch (linux/amd64,
-# linux/arm64, linux/arm/v7) and runs as non-root (UID 1000), so we install
-# curl as root for the supervisor API stop-service call and then hand control
-# back to the existing d1090exp user.
+# Wraps ghcr.io/schubydoo/dump1090-exporter (MIT) with the ENABLED_SERVICES gate.
 # renovate: datasource=docker depName=ghcr.io/schubydoo/dump1090-exporter versioning=semver
 ARG DUMP1090_EXPORTER_VERSION=0.3.1
 FROM ghcr.io/schubydoo/dump1090-exporter:${DUMP1090_EXPORTER_VERSION}
