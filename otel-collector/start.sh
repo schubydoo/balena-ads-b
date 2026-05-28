@@ -9,10 +9,6 @@ case ",${enabled}," in
     *",${BALENA_SERVICE_NAME},"*) ;;
     *)
         echo "${BALENA_SERVICE_NAME} not in ENABLED_SERVICES; asking supervisor to stop us."
-        # `|| true` so a curl that exhausts its 24h retry budget doesn't trip
-        # `set -e` and skip the sleep — under sustained supervisor failure
-        # this ENABLED_SERVICES opt-out branch would otherwise restart every
-        # 24h instead of idling cleanly.
         curl --fail --retry 86400 --retry-delay 1 --retry-all-errors \
             --header "Content-Type:application/json" \
             "${BALENA_SUPERVISOR_ADDRESS}/v2/applications/${BALENA_APP_ID}/stop-service?apikey=${BALENA_SUPERVISOR_API_KEY}" \
@@ -38,6 +34,7 @@ export OTEL_NODE_METRICS_ENABLED="${OTEL_NODE_METRICS_ENABLED:-true}"
 export OTEL_DOCKER_STATS_ENABLED="${OTEL_DOCKER_STATS_ENABLED:-true}"
 export OTEL_DUMP1090_ENABLED="${OTEL_DUMP1090_ENABLED:-false}"
 export OTEL_LOGS_ENABLED="${OTEL_LOGS_ENABLED:-false}"
+export OTEL_JOURNALD_PRIORITY="${OTEL_JOURNALD_PRIORITY:-info}"
 export OTEL_COLLECTION_INTERVAL="${OTEL_COLLECTION_INTERVAL:-30s}"
 export OTEL_DOCKER_ENDPOINT="${OTEL_DOCKER_ENDPOINT:-unix:///var/run/balena.sock}"
 export DUMP1090_EXPORTER_HOST="${DUMP1090_EXPORTER_HOST:-dump1090-exporter}"
@@ -75,18 +72,29 @@ HEADERS_FRAGMENT=/tmp/otel-headers.yaml
     if [ -n "${OTLP_HEADERS}" ]; then
         OLDIFS=$IFS
         IFS=','
+        set -f  # disable globbing while iterating unquoted ${OTLP_HEADERS}
         for pair in ${OTLP_HEADERS}; do
             pair=$(printf '%s' "${pair}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
             [ -z "${pair}" ] && continue
-            # Skip malformed pairs that have no colon.
-            case "${pair}" in *:*) ;; *) continue ;; esac
+            case "${pair}" in
+                *:*) ;;
+                *) echo "OTLP_HEADERS: skipping malformed entry (no ':' separator): '${pair}'" >&2; continue ;;
+            esac
             name=${pair%%:*}
             value=${pair#*:}
             name=$(printf '%s' "${name}"  | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
             value=$(printf '%s' "${value}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+            # Validate header name against RFC 7230 token grammar.
+            case "${name}" in
+                ''|*[!A-Za-z0-9!#\$%\&\'*+.^_\`\|~-]*)
+                    echo "OTLP_HEADERS: skipping invalid header name: '${name}'" >&2
+                    continue
+                    ;;
+            esac
             escaped=$(printf '%s' "${value}" | sed "s/'/''/g")
             printf "      %s: '%s'\n" "${name}" "${escaped}"
         done
+        set +f
         IFS=$OLDIFS
     fi
 } > "${HEADERS_FRAGMENT}"

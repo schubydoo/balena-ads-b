@@ -6,7 +6,7 @@
 receivers:
   journald:
     directory: "${env:JOURNAL_DIR}"
-    priority: info
+    priority: "${env:OTEL_JOURNALD_PRIORITY}"
     # balena container log lines arrive as JSON byte arrays; convert to text.
     convert_message_bytes: true
 
