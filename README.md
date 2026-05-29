@@ -553,6 +553,8 @@ By default, dump1090 will run with adaptive gain in dynamic range mode. You can 
 ## Device reboot on service exit
 dump978 and dump1090 can restart the device if it hits an error. You can enable this feature by setting a *Device Variable* named `REBOOT_DEVICE_ON_SERVICE_EXIT` with the value of `true`.
 
+By default, the reboot is delayed by 60 seconds so any log shipper running on the device (`otel-collector`, balena's own log stream, etc.) has time to flush the crash details upstream before the kernel comes down. Override the delay by setting a *Device Variable* named `REBOOT_DEVICE_DELAY` to the desired number of seconds (set to `0` to reboot immediately).
+
 ## Automatic balenaOS host and Supervisor updates
 
 Automatically keep your balenaOS host release and/or the balena Supervisor up-to-date. This service runs the prebuilt [`schubydoo/autohupr`](https://github.com/schubydoo/autohupr) block.
