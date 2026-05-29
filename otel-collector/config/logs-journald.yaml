@@ -14,5 +14,5 @@ service:
   pipelines:
     logs/journald:
       receivers: [journald]
-      processors: [resourcedetection/system, resource/balena, transform/logs, batch]
+      processors: [resourcedetection/system, resource/balena, transform/logs, groupbyattrs/logs, batch]
       exporters: [otlp_http]
