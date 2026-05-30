@@ -94,6 +94,8 @@ fi
 wait -n
 
 if [[ "$REBOOT_DEVICE_ON_SERVICE_EXIT" == "true" ]]; then
-        echo "Service exited, rebooting the device..."
+        REBOOT_DEVICE_DELAY="${REBOOT_DEVICE_DELAY:-60}"
+        echo "Service exited, rebooting the device in ${REBOOT_DEVICE_DELAY}s to allow log shipping to flush..."
+        sleep "$REBOOT_DEVICE_DELAY"
         curl --fail --retry 86400 --retry-delay 1 --retry-all-errors -X POST --header "Content-Type:application/json" "$BALENA_SUPERVISOR_ADDRESS/v1/reboot?apikey=$BALENA_SUPERVISOR_API_KEY"
 fi

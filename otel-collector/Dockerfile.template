@@ -1,0 +1,45 @@
+# Bundles otelcol-contrib + node_exporter into one image. Both are static
+# Go binaries copied from upstream releases. dump1090-exporter stays in
+# its own service (see /dump1090-exporter and docker-compose.yml).
+
+# Global ARGs must be declared before the first FROM to be visible to every stage.
+# renovate: datasource=docker depName=otel/opentelemetry-collector-contrib versioning=semver
+ARG OTELCOL_VERSION=0.152.1
+# renovate: datasource=docker depName=prom/node-exporter versioning=semver
+ARG NODE_EXPORTER_VERSION=1.11.1
+
+FROM otel/opentelemetry-collector-contrib:${OTELCOL_VERSION} AS otelcol-bin
+FROM prom/node-exporter:v${NODE_EXPORTER_VERSION} AS node-exporter-bin
+
+FROM debian:trixie-slim
+LABEL maintainer="https://github.com/ketilmo"
+
+# `systemd` is here purely for `/usr/bin/journalctl` — otelcol-contrib's
+# journald receiver shells out to it. The package pulls in ~30 MB of init
+# scaffolding we don't use, but extracting just journalctl + its private
+# helpers (libsystemd-shared, dlopen'd at runtime, lives at version-specific
+# paths that move between Debian releases) is brittle across arches. Net:
+# accept the ~30 MB cost in exchange for a single-line dependency.
+ARG PERM_INSTALL="tini ca-certificates curl systemd"
+RUN printf '%s\n' \
+        'path-exclude /usr/share/doc/*' \
+        'path-exclude /usr/share/man/*' \
+        'path-exclude /usr/share/info/*' \
+        'path-exclude /usr/share/locale/*' \
+        'path-include /usr/share/locale/en*' \
+        > /etc/dpkg/dpkg.cfg.d/01_nodoc && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends ${PERM_INSTALL} && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=otelcol-bin       /otelcol-contrib   /usr/local/bin/otelcol-contrib
+COPY --from=node-exporter-bin /bin/node_exporter /usr/local/bin/node_exporter
+
+COPY config/  /etc/otelcol/config/
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+# tini -g forwards signals to the whole process group so the backgrounded
+# node_exporter exits cleanly when balena stops the container.
+ENTRYPOINT ["/usr/bin/tini", "-g", "--", "/start.sh"]

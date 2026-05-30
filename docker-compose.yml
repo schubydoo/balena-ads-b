@@ -1,3 +1,4 @@
+version: '2.4'
 volumes:
   settings:
   airnav-radar:
@@ -410,3 +411,50 @@ services:
     labels:
       io.balena.features.supervisor-api: '1'
       io.balena.features.kernel-modules: '1'
+  otel-collector:
+    depends_on:
+      - dump1090-fa
+    build: ./otel-collector
+    image: otel-collector
+    restart: unless-stopped
+    # Cap RAM so a runaway scrape config can't OOM the device. otelcol-contrib
+    # + node_exporter steady-state is ~50–80 MB; 256 MB is generous headroom.
+    mem_limit: 268435456
+    # pid: host lets the bundled node_exporter see all host processes.
+    pid: host
+    environment:
+      - OTLP_ENDPOINT=
+      - OTLP_AUTH_HEADER=
+      - OTLP_HEADERS=
+      - GRAFANA_INSTANCE_ID=
+      - GRAFANA_API_KEY=
+      - OTEL_NODE_METRICS_ENABLED=true
+      - OTEL_DOCKER_STATS_ENABLED=true
+      - OTEL_LOGS_ENABLED=false
+      - OTEL_JOURNALD_PRIORITY=info
+      - OTEL_DUMP1090_ENABLED=false
+      - OTEL_COLLECTION_INTERVAL=30s
+      - OTEL_DOCKER_ENDPOINT=unix:///var/run/balena.sock
+      - NODE_EXPORTER_INSTANCE=
+      - DUMP1090_EXPORTER_HOST=dump1090-exporter
+      - DUMP1090_EXPORTER_PORT=9105
+    labels:
+      # procfs label omitted: with pid:host it crashes in-container ps (ketilmo/balena-ads-b#488).
+      io.balena.features.sysfs: '1'
+      io.balena.features.journal-logs: '1'
+      io.balena.features.balena-socket: '1'
+      io.balena.features.supervisor-api: '1'
+  dump1090-exporter:
+    depends_on:
+      - dump1090-fa
+    build: ./dump1090-exporter
+    image: dump1090-exporter
+    restart: unless-stopped
+    environment:
+      - DUMP1090_RESOURCE_PATH=/run/dump1090-fa
+      - DUMP1090_EXPORTER_PORT=9105
+      - DUMP1090_EXPORTER_LOG_LEVEL=info
+    volumes:
+      - 'aircraft-data:/run/dump1090-fa:ro'
+    labels:
+      io.balena.features.supervisor-api: '1'

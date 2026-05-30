@@ -553,6 +553,8 @@ By default, dump1090 will run with adaptive gain in dynamic range mode. You can 
 ## Device reboot on service exit
 dump978 and dump1090 can restart the device if it hits an error. You can enable this feature by setting a *Device Variable* named `REBOOT_DEVICE_ON_SERVICE_EXIT` with the value of `true`.
 
+By default, the reboot is delayed by 60 seconds so any log shipper running on the device (`otel-collector`, balena's own log stream, etc.) has time to flush the crash details upstream before the kernel comes down. Override the delay by setting a *Device Variable* named `REBOOT_DEVICE_DELAY` to the desired number of seconds (set to `0` to reboot immediately).
+
 ## Automatic balenaOS host and Supervisor updates
 
 Automatically keep your balenaOS host release and/or the balena Supervisor up-to-date. This service runs the prebuilt [`schubydoo/autohupr`](https://github.com/schubydoo/autohupr) block.
@@ -669,6 +671,91 @@ The Supervisor restarts the service when `TS_AUTHKEY` changes, so no fork or red
 - **Service is in a crash-loop after a configuration change.** Because the `tailscale-state` volume persists across restarts, a corrupt or unwanted preferences blob keeps tailscaled crashing on every boot. Two recovery paths:
   - Set `TS_EXTRA_ARGS=--reset` once (combine with any existing flags, e.g. `--reset --advertise-tags=tag:adsb` when using OAuth). tailscaled clears its preferences on the next start and rejoins the tailnet automatically if `TS_AUTHKEY` is set; remove `--reset` afterwards so subsequent restarts resume normally.
   - Or wipe the contents of the `tailscale-state` volume. The simplest path is to open a shell in the running container — `balena ssh <device-uuid> tailscale` from the CLI, or the *Web terminal* on the device's balenaCloud page — run `rm -rf /var/lib/tailscale/*`, and restart the service.
+
+## OpenTelemetry: ship metrics and logs to any OTLP backend
+
+Two opt-in services ship per-container metrics, host metrics, and journald logs over OTLP/HTTP to any compatible backend (Grafana Cloud, Honeycomb, Datadog, a self-hosted Prometheus + Loki stack, …):
+
+| Service | Image base | What it does |
+| --- | --- | --- |
+| `otel-collector` | `debian:trixie-slim` + `otelcol-contrib` and `node_exporter` binaries copied from upstream releases | Runs the OpenTelemetry Collector in the foreground and backgrounds `node_exporter` on loopback `:9100` under `tini -g` when host metrics are enabled. Receivers: `docker_stats` (balena engine), `prometheus` scrape of the bundled node_exporter, `prometheus` scrape of `dump1090-exporter`, and `journald`. |
+| `dump1090-exporter` | [`ghcr.io/schubydoo/dump1090-exporter`](https://github.com/schubydoo/dump1090-exporter) (alpine, version pinned in `dump1090-exporter/Dockerfile.template` and tracked by Renovate) | Polls dump1090-fa's JSON outputs from the shared `aircraft-data` volume and re-exposes them as Prometheus metrics on `:9105`. |
+
+Both names go in `ENABLED_SERVICES` to switch them on — same opt-in pattern as `mlat-client`, `ident`, and the optional feeders. Inside `otel-collector`, `otelcol-contrib` collects from four sources and ships everything to one OTLP/HTTP endpoint: the balena engine's `docker_stats` API (per-container metrics), the bundled `node_exporter` on loopback `:9100` (host metrics), `dump1090-exporter:9105` over the bridge network (ADS-B metrics), and the host journald (every container's stdout plus every systemd unit).
+
+### Required variables
+
+| Variable | What it does |
+| --- | --- |
+| `OTLP_ENDPOINT` | Full OTLP/HTTP URL of the receiving collector (e.g. `https://otlp-gateway-prod-<region>.grafana.net/otlp`). The container logs the missing variable and idles (stays Running) if this is unset. |
+| `OTLP_AUTH_HEADER` | Value of the `Authorization` header the backend expects (e.g. `Basic …`, `Bearer …`). Required for backends that authenticate via `Authorization`. Skip in favour of `OTLP_HEADERS` for backends that use a different header name (Honeycomb, Datadog, New Relic, …). |
+| `OTLP_HEADERS` | Comma-separated `name: value` pairs for arbitrary extra OTLP headers. Combines with `OTLP_AUTH_HEADER` if both are set. At least one of `OTLP_AUTH_HEADER` or `OTLP_HEADERS` must be set; otherwise the container logs the issue and idles. |
+
+#### Observability platform examples
+
+| Backend | What to set |
+| --- | --- |
+| Grafana Cloud (recommended) | Use the [shortcut](#grafana-cloud-shortcut) below. |
+| Generic OTLP collector with Bearer auth | `OTLP_AUTH_HEADER=Bearer <token>` |
+| Honeycomb | `OTLP_HEADERS=x-honeycomb-team: <api-key>` |
+| Datadog | `OTLP_HEADERS=dd-api-key: <api-key>` |
+| New Relic | `OTLP_HEADERS=api-key: <license-key>` |
+| Two headers at once | `OTLP_HEADERS=x-honeycomb-team: <key>, x-honeycomb-dataset: prod` |
+
+`OTLP_HEADERS` parses by splitting on commas, then on the first `:` of each pair — so header values may contain colons (e.g. a `Bearer abc:def` token) without needing escaping. Whitespace around names and values is trimmed.
+
+### Grafana Cloud shortcut
+
+Setting `GRAFANA_INSTANCE_ID` + `GRAFANA_API_KEY` lets `start.sh` compute the `Basic <base64(id:key)>` header for you, so you never have to construct `OTLP_AUTH_HEADER` by hand. An explicit `OTLP_AUTH_HEADER` always wins if both are set.
+
+| Variable | What it does |
+| --- | --- |
+| `GRAFANA_INSTANCE_ID` | The numeric instance ID for your Grafana Cloud stack (e.g. `1234567`). See the [official Grafana Cloud OTLP setup guide](https://grafana.com/docs/grafana-cloud/send-data/otlp/send-data-otlp/#recommended-opentelemetry-setup-via-grafana-cloud-integrations) for where to find it. |
+| `GRAFANA_API_KEY` | The API token from the same setup screen. |
+
+### Per-signal toggles
+
+Each signal is independently switchable. The defaults below ship in `docker-compose.yml`.
+
+| Variable | Default | Gates |
+| --- | --- | --- |
+| `OTEL_NODE_METRICS_ENABLED` | `true` | Host CPU/memory/disk/network/etc. from the bundled `node_exporter`. |
+| `OTEL_DOCKER_STATS_ENABLED` | `true` | Per-container CPU/memory/network from balena-engine via the `docker_stats` receiver. |
+| `OTEL_DUMP1090_ENABLED` | `false` | ADS-B receiver metrics from `dump1090-exporter`. Also requires `dump1090-exporter` in `ENABLED_SERVICES`. |
+| `OTEL_LOGS_ENABLED` | `false` | journald → your OTLP backend. Off by default because log volume drives ingestion cost faster than metrics on most hosted backends. |
+
+### Advanced overrides
+
+Usually not needed; defaults are correct for stock balena.
+
+| Variable | Default | What it does |
+| --- | --- | --- |
+| `OTEL_COLLECTION_INTERVAL` | `30s` | Prometheus scrape interval the collector applies to node_exporter and dump1090-exporter. |
+| `OTEL_DOCKER_ENDPOINT` | `unix:///var/run/balena.sock` | Where `docker_stats` connects. Provided by the `io.balena.features.balena-socket` label. |
+| `NODE_EXPORTER_INSTANCE` | derived from `BALENA_DEVICE_NAME_AT_INIT`, falling back to `BALENA_DEVICE_UUID`, then to the literal `balena-device` if neither is set | Sets the `instance` label on `node_*` metrics so multi-device fleets group cleanly in dashboards. |
+| `DUMP1090_EXPORTER_HOST` / `DUMP1090_EXPORTER_PORT` | `dump1090-exporter` / `9105` | The cross-container scrape target. |
+| `OTEL_JOURNALD_DIRECTORY` | autodetected (`/var/log/journal` if the host stores persistent journals, otherwise `/run/log/journal`) | Override only if you've redirected the host journal somewhere unusual. |
+| `OTEL_JOURNALD_PRIORITY` | `info` | Lowest journald priority level the receiver forwards. Set to `debug` if you want debug-level messages too. |
+
+### Visualization
+
+Two vendored dashboards under [`otel-collector/dashboards/`](otel-collector/dashboards/) — drop into Grafana via **Dashboards → New → Import → Upload JSON file**:
+
+| File | Title | Datasource(s) | What it shows |
+| --- | --- | --- | --- |
+| `services.json` | **balena-ads-b — Services** | Prometheus | Per-service CPU, memory, network rx/tx, aggregated by `container_service_name` so each compose service rolls up to one row regardless of replicas. |
+| `node-logs.json` | **balena-ads-b — Logs** | Loki + Prometheus | Journald logs from every service on the device. Multi-select dropdowns for service, app, device, and detected level; click a series in the rate chart to scope the log panel to that service. |
+
+`services.json` originates from [`balena-io-experimental/otel-collector-device-prom`](https://github.com/balena-io-experimental/otel-collector-device-prom) (Apache-2.0, © balena). The local copy has the `_total` suffix appended to the network counter queries (Grafana Cloud's OTLP→Prometheus translator adds that suffix to monotonic counters on ingest) and the Disk I/O panel removed — modern balenaOS uses the `mq-deadline` I/O scheduler, which doesn't populate per-cgroup blkio byte counters under cgroup v1, so `container_blockio_*` is always empty.
+
+`node-logs.json` is written for this project from scratch; the stock Grafana Cloud Linux Server logs dashboards filter on `job`/`instance`/`unit` stream labels that the OTLP→Loki translator never promotes for our data. The App/Device dropdowns query Prometheus's `target_info` series because Loki's label-values API only sees stream labels (and our balena metadata reaches Loki as structured metadata only). If your Prometheus is something other than Grafana Cloud — `target_info` is created by the Grafana Cloud OTLP→Prom translator — the App and Device dropdowns will be empty; use ad-hoc pipeline filters in Explore instead, or swap those variables for `label_values()` against whatever stream labels your setup does expose.
+
+Two external dashboards are worth importing alongside the vendored set:
+
+- **`dump1090` (ADS-B receiver health)** — aircraft count, message rate, signal strength, CPU split, directional range. Maintained upstream at [`schubydoo/dump1090-exporter`](https://github.com/schubydoo/dump1090-exporter) (MIT) — grab `grafana-dashboard/dump1090.json` from that repo and import it into Grafana. Requires `OTEL_DUMP1090_ENABLED=true`.
+- **Grafana Cloud → Connections → Linux Server → Install Dashboards and Alerts** — host CPU/memory/network/processes from the bundled `node_exporter`'s canonical `node_*` series.
+
+If your backend is something other than Grafana + Loki, the vendored dashboards still work for whatever PromQL- and LogQL-compatible (or equivalent) tooling you're running. On Grafana/Loki, the `service.name` resource attribute lands as the `service_name` stream label and the `resource/balena` attributes (`balena.device_name`, `balena.app_name`, `balena.device_uuid`, `balena.app_id`, `balena.device_type`, `balena.host_os_version`) ride along as structured metadata, so pipeline filters like `{service_name="dump1090-fa"} | balena_device_name="my-device"` work in Explore. Other journald siblings (`PRIORITY`, `_SYSTEMD_UNIT`, `_PID`, …) get stripped when the transform replaces the journald-map body with just `MESSAGE`; reach for LogQL text search (`\|= "..."`) for those.
 
 # Part 16 – Updating to the latest version
 

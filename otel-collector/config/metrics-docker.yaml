@@ -1,0 +1,37 @@
+# Loaded when OTEL_DOCKER_STATS_ENABLED=true. Scrapes per-container stats
+# from balena-engine.
+
+receivers:
+  docker_stats:
+    endpoint: "${env:OTEL_DOCKER_ENDPOINT}"
+    # balena-engine maxes at Docker API v1.41; newer otelcol defaults break it.
+    # Source of truth: https://github.com/balena-os/balena-engine/blob/master/api/common.go
+    # (look for `DefaultVersion`). Checked manually rather than via Renovate
+    # because the API const isn't a release artifact: github-releases datasources
+    # emit balena-engine's own version tags (`v25.x.y`), which Renovate would
+    # try to write into this field; a custom-regex datasource against the raw
+    # Go source works but breaks silently on any upstream refactor. The value
+    # has been pinned at 1.41 since balena-engine forked from Docker, so a
+    # quarterly manual check is a better trade than a fragile auto-bump.
+    api_version: "1.41"
+    collection_interval: "${env:OTEL_COLLECTION_INTERVAL}"
+    timeout: 20s
+    container_labels_to_metric_labels:
+      io.balena.service-name: container_service_name
+    env_vars_to_metric_labels:
+      BALENA_DEVICE_UUID: container_device_uuid
+    metrics:
+      container.cpu.utilization:                  { enabled: true }
+      container.memory.percent:                   { enabled: true }
+      container.memory.usage.total:               { enabled: true }
+      container.blockio.io_service_bytes_recursive: { enabled: true }
+      container.network.io.usage.tx_bytes:        { enabled: true }
+      container.network.io.usage.rx_bytes:        { enabled: true }
+      container.restarts:                         { enabled: true }
+
+service:
+  pipelines:
+    metrics/docker:
+      receivers: [docker_stats]
+      processors: [resourcedetection/system, resource/balena, resource/docker, transform/promote_container_attrs, batch]
+      exporters: [otlp_http]

@@ -1,0 +1,19 @@
+# Loaded when OTEL_DUMP1090_ENABLED=true. Scrapes the sibling
+# dump1090-exporter service over the balena compose bridge network.
+# The service must also be listed in ENABLED_SERVICES on the fleet.
+
+receivers:
+  prometheus/dump1090:
+    config:
+      scrape_configs:
+        - job_name: dump1090
+          scrape_interval: "${env:OTEL_COLLECTION_INTERVAL}"
+          static_configs:
+            - targets: ["${env:DUMP1090_EXPORTER_HOST}:${env:DUMP1090_EXPORTER_PORT}"]
+
+service:
+  pipelines:
+    metrics/dump1090:
+      receivers: [prometheus/dump1090]
+      processors: [resourcedetection/system, resource/balena, batch]
+      exporters: [otlp_http]
