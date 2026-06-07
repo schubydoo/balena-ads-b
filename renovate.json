@@ -235,6 +235,16 @@
       "separateMajorMinor": false,
       "separateMinorPatch": false,
       "separateMultipleMajor": false
+    },
+    {
+      "matchDatasources": [
+        "custom.wingbits-meta",
+        "custom.wingbits-binary"
+      ],
+      "matchUpdateTypes": [
+        "digest"
+      ],
+      "enabled": false
     }
   ],
   "logLevelRemap": [
