@@ -21,14 +21,14 @@ ENV WINGBITS_CONFIG_VERSION=0.2.1
 # — Renovate returns them verbatim and the installer decodes them at
 # build time. Keep the "# wingbits-rev" markers in sync with
 # WINGBITS_COMMIT_ID; Renovate does this automatically on update.
-ENV WINGBITS_COMMIT_ID=v1.12.0
-ENV WINGBITS_DATE=2026-05-12T13:27:03.248603202Z
-# wingbits-rev v1.12.0
-ENV WINGBITS_SHA256_AMD64=IJxqhEFAgnlMmnHv+kA3muQW9f98RVHTZrjvuAV8L3g=
-# wingbits-rev v1.12.0
-ENV WINGBITS_SHA256_ARM64=/rE+0E4nJMVvATDjccj5HxwGU1dmyW7d9wh/VerTFDI=
-# wingbits-rev v1.12.0
-ENV WINGBITS_SHA256_ARM=3Jv/zlPKVR8jShmR1RO1Rs9rgU5VqPArnztMQZ0cFwo=
+ENV WINGBITS_COMMIT_ID=v1.12.1
+ENV WINGBITS_DATE=2026-06-01T09:17:04.130504909Z
+# wingbits-rev v1.12.1
+ENV WINGBITS_SHA256_AMD64=240A+zr5rufi7VkBTCuAp2sYHD+naH1YXgUFRNGgIV0=
+# wingbits-rev v1.12.1
+ENV WINGBITS_SHA256_ARM64=aexUZcB4XskSwOvITRqApBh0UhSgQMVxZyQTwGK8yAA=
+# wingbits-rev v1.12.1
+ENV WINGBITS_SHA256_ARM=cA0GRqJ1q/miM7gm5xAL9CIL68044VDDqJctoDjTq+I=
 
 ARG PERM_INSTALL="curl ca-certificates gettext-base tini ncurses-dev zlib1g jq python3-pip python3-venv wget"
 
