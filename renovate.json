@@ -239,6 +239,15 @@
       "separateMajorMinor": false,
       "separateMinorPatch": false,
       "separateMultipleMajor": false
+    },
+    {
+      "matchDatasources": [
+        "custom.wingbits-meta",
+        "custom.wingbits-binary"
+      ],
+      "digest": {
+        "enabled": false
+      }
     }
   ],
   "logLevelRemap": [
