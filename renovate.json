@@ -22,11 +22,10 @@
       "managerFilePatterns": [
         "/(^|/)wingbits/Dockerfile\\.template$/"
       ],
-      "matchStringsStrategy": "combination",
       "matchStrings": [
-        "ENV WINGBITS_COMMIT_ID=(?<currentValue>.*?)\\n",
-        "ENV WINGBITS_DATE=(?<currentDigest>.*?)\\n"
+        "ENV WINGBITS_COMMIT_ID=(?<currentValue>.*?)\\nENV WINGBITS_DATE=(?<currentDigest>.*?)\\n"
       ],
+      "autoReplaceStringTemplate": "ENV WINGBITS_COMMIT_ID={{{newValue}}}\nENV WINGBITS_DATE={{{newDigest}}}\n",
       "depNameTemplate": "wingbits-meta",
       "datasourceTemplate": "custom.wingbits-meta"
     },
@@ -35,11 +34,10 @@
       "managerFilePatterns": [
         "/(^|/)wingbits/Dockerfile\\.template$/"
       ],
-      "matchStringsStrategy": "combination",
       "matchStrings": [
-        "ENV WINGBITS_COMMIT_ID=(?<currentValue>.*?)\\n",
-        "ENV WINGBITS_SHA256_AMD64=(?<currentDigest>.*?)\\n"
+        "# wingbits-rev (?<currentValue>.*?)\\nENV WINGBITS_SHA256_AMD64=(?<currentDigest>.*?)\\n"
       ],
+      "autoReplaceStringTemplate": "# wingbits-rev {{{newValue}}}\nENV WINGBITS_SHA256_AMD64={{{newDigest}}}\n",
       "depNameTemplate": "wingbits-binary-amd64",
       "packageNameTemplate": "amd64",
       "datasourceTemplate": "custom.wingbits-binary"
@@ -49,11 +47,10 @@
       "managerFilePatterns": [
         "/(^|/)wingbits/Dockerfile\\.template$/"
       ],
-      "matchStringsStrategy": "combination",
       "matchStrings": [
-        "ENV WINGBITS_COMMIT_ID=(?<currentValue>.*?)\\n",
-        "ENV WINGBITS_SHA256_ARM64=(?<currentDigest>.*?)\\n"
+        "# wingbits-rev (?<currentValue>.*?)\\nENV WINGBITS_SHA256_ARM64=(?<currentDigest>.*?)\\n"
       ],
+      "autoReplaceStringTemplate": "# wingbits-rev {{{newValue}}}\nENV WINGBITS_SHA256_ARM64={{{newDigest}}}\n",
       "depNameTemplate": "wingbits-binary-arm64",
       "packageNameTemplate": "arm64",
       "datasourceTemplate": "custom.wingbits-binary"
@@ -63,11 +60,10 @@
       "managerFilePatterns": [
         "/(^|/)wingbits/Dockerfile\\.template$/"
       ],
-      "matchStringsStrategy": "combination",
       "matchStrings": [
-        "ENV WINGBITS_COMMIT_ID=(?<currentValue>.*?)\\n",
-        "ENV WINGBITS_SHA256_ARM=(?<currentDigest>.*?)\\n"
+        "# wingbits-rev (?<currentValue>.*?)\\nENV WINGBITS_SHA256_ARM=(?<currentDigest>.*?)\\n"
       ],
+      "autoReplaceStringTemplate": "# wingbits-rev {{{newValue}}}\nENV WINGBITS_SHA256_ARM={{{newDigest}}}\n",
       "depNameTemplate": "wingbits-binary-arm",
       "packageNameTemplate": "arm",
       "datasourceTemplate": "custom.wingbits-binary"
