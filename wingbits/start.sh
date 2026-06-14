@@ -108,8 +108,13 @@ if [ "$version" != "$local_version" ] || [ "$json_version" != "$local_json_versi
     rm -rf $WINGBITS_PATH/wingbits.gz
     curl -s -o $WINGBITS_PATH/wingbits.gz "https://install.wingbits.com/$json_version/$GOOS-$GOARCH.gz"
     rm -rf $WINGBITS_PATH/wingbits
-    gunzip $WINGBITS_PATH/wingbits.gz 
+    gunzip $WINGBITS_PATH/wingbits.gz
     chmod +x $WINGBITS_PATH/wingbits
+    # Decompress the UPX-packed client so its code pages are demand-paged and
+    # reclaimable instead of fully resident in RAM (see wingbits_installer.sh).
+    if grep -qa 'UPX!' "$WINGBITS_PATH/wingbits"; then
+        upx -d "$WINGBITS_PATH/wingbits"
+    fi
     echo "$version" > $WINGBITS_VERSION_PATH/version
     echo "$json_version" > $WINGBITS_VERSION_PATH/json-version
     echo "New Wingbits version installed: $version"

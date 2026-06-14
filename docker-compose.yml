@@ -42,6 +42,17 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+    # Bound the Go runtime on low-RAM devices: GOMEMLIMIT is a soft cap that
+    # makes the GC reclaim before growing further; GOGC trims heap headroom
+    # (default 100 = grow to 2x live). Cuts RSS without the CPU cost of very
+    # aggressive GC. Starting values — tune per device.
+    environment:
+      - GOGC=75
+      - GOMEMLIMIT=64MiB
+      # traefik's RSS is dominated by non-heap (per-thread stacks + mmap), so
+      # GC tuning alone barely moved it. Cap the Go runtime's P/thread count —
+      # light proxy load tolerates 2 and it trims the thread-stack overhead.
+      - GOMAXPROCS=2
     labels:
       io.balena.features.balena-socket: '1'
       io.balena.features.supervisor-api: '1'
@@ -147,6 +158,11 @@ services:
     environment:
       - FLIGHTAWARE_FEEDER_ID=
       - DUMP978_ENABLED=false
+      # glibc malloc tuning: cap per-thread arenas (default 8xCPU) and trim
+      # freed memory back to the OS sooner. Lowers RSS for threaded Python on
+      # multi-core SBCs at negligible cost.
+      - MALLOC_ARENA_MAX=2
+      - MALLOC_TRIM_THRESHOLD_=131072
     labels:
       io.balena.features.supervisor-api: '1'
   fr24feed:
@@ -309,6 +325,13 @@ services:
   autohupr:
     build: ./autohupr
     restart: unless-stopped
+    # No NODE_OPTIONS/UV_THREADPOOL_SIZE override here on purpose: the autohupr
+    # image bakes its own memory tuning (--max-semi-space-size=2,
+    # --max-old-space-size=48, --jitless, UV_THREADPOOL_SIZE=2), with the
+    # critical flags on the node CLI. A container env var fully OVERRIDES a
+    # Dockerfile ENV (no merge), so setting NODE_OPTIONS here would mask the
+    # image's --jitless. The tuned image is pinned via AUTOHUPR_VERSION in
+    # autohupr/Dockerfile.template.
     tmpfs:
       - /tmp/work
     labels:
@@ -351,6 +374,9 @@ services:
       - ALT=
       - MLAT_CLIENT_USER=
       - MLAT_SERVER=
+      # glibc malloc tuning (see piaware).
+      - MALLOC_ARENA_MAX=2
+      - MALLOC_TRIM_THRESHOLD_=131072
     labels:
       io.balena.features.supervisor-api: '1'
   ident:
@@ -364,6 +390,9 @@ services:
       - IDENT_DATA_DIR=/run/dump1090-fa
       - IDENT_UPSTREAM_TYPE=dump1090-fa
       - IDENT_BASE_PATH=/ident
+      # Bound the Go runtime (see frontend-proxy). Starting values — tune.
+      - GOGC=75
+      - GOMEMLIMIT=56MiB
     # expose: kept for docs, see dump1090-fa note
     # expose:
     #   - "8080"
@@ -423,6 +452,13 @@ services:
     # pid: host lets the bundled node_exporter see all host processes.
     pid: host
     environment:
+      # Soft-cap the Go heap below the 256 MB mem_limit so the GC reclaims
+      # before hitting the hard cap. 200MiB is the measured sweet spot
+      # (~217 MB RSS @ normal CPU); 160MiB regressed — too far below otelcol's
+      # working set, so the GC thrashed (CPU up, RSS crept to ~247 MB). Also
+      # read by the bundled node_exporter, which stays far below it.
+      - GOGC=75
+      - GOMEMLIMIT=200MiB
       - OTLP_ENDPOINT=
       - OTLP_AUTH_HEADER=
       - OTLP_HEADERS=

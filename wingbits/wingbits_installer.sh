@@ -46,6 +46,17 @@ function setup_wingbits_client() {
 	echo "$expected_sha256_hex  $WINGBITS_PATH/wingbits" | sha256sum -c -
 
 	chmod +x $WINGBITS_PATH/wingbits
+
+	# The upstream client is UPX-packed, which forces the whole ~36 MB
+	# executable to be resident in anonymous RAM at startup (non-shareable,
+	# non-reclaimable). Decompress it AFTER the checksum check (the published
+	# SHA256 is for the packed binary) so its code pages become demand-paged
+	# and reclaimable — a meaningful RSS saving on low-RAM devices. Guarded by
+	# the UPX magic so it's a no-op if upstream ever ships an unpacked binary.
+	if grep -qa 'UPX!' "$WINGBITS_PATH/wingbits"; then
+		upx -d "$WINGBITS_PATH/wingbits"
+	fi
+
 	PATH=$WINGBITS_PATH:$PATH
 }
 
