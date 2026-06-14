@@ -110,10 +110,10 @@ if [ "$version" != "$local_version" ] || [ "$json_version" != "$local_json_versi
     rm -rf $WINGBITS_PATH/wingbits
     gunzip $WINGBITS_PATH/wingbits.gz
     chmod +x $WINGBITS_PATH/wingbits
-    # Decompress the UPX-packed client so its code pages are demand-paged and
-    # reclaimable instead of fully resident in RAM (see wingbits_installer.sh).
+    # Decompress UPX (see wingbits_installer.sh); best-effort so an upx
+    # failure doesn't crash-loop the container — the packed binary works.
     if grep -qa 'UPX!' "$WINGBITS_PATH/wingbits"; then
-        upx -d "$WINGBITS_PATH/wingbits"
+        upx -d "$WINGBITS_PATH/wingbits" || echo "wingbits: upx -d failed; using packed binary"
     fi
     echo "$version" > $WINGBITS_VERSION_PATH/version
     echo "$json_version" > $WINGBITS_VERSION_PATH/json-version
