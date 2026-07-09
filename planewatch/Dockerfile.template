@@ -3,7 +3,7 @@ LABEL maintainer="https://github.com/ketilmo"
 
 # specify plane.watch pw-feeder version
 # renovate: datasource=github-tags depName=plane-watch/pw-feeder versioning=loose
-ARG PLANEWATCH_VERSION=v0.0.7
+ARG PLANEWATCH_VERSION=v0.0.9
 
 # specify mlat-client version
 # renovate: datasource=github-tags depName=mutability/mlat-client versioning=loose
@@ -31,12 +31,6 @@ RUN git clone --branch "$MLAT_CLIENT_VERSION" https://github.com/mutability/mlat
     python3 -m venv /usr/local/share/mlat-client/venv/ && \
     /usr/local/share/mlat-client/venv/bin/pip install --no-cache-dir setuptools pyasyncore && \
     /usr/local/share/mlat-client/venv/bin/pip install --no-cache-dir --no-build-isolation .
-
-# download let's encrypt CA certs in parallel — xargs propagates child failures,
-# so a single 404 fails the build instead of leaving the bundle incomplete.
-WORKDIR /tmp/letsencrypt
-RUN printf '%s\n' e5 e6 e7 e8 e9 r10 r11 r12 r13 r14 | \
-    xargs -P10 -I{} curl -fsSL -o "lets-encrypt-{}.crt" "https://letsencrypt.org/certs/2024/{}.pem"
 
 FROM debian:trixie-slim AS release
 
@@ -71,9 +65,6 @@ RUN printf '%s\n' \
 # copy pw-feeder binary from buildstep
 COPY --from=buildstep /tmp/pw-feeder/pw-feeder/pw-feeder /usr/local/sbin/pw-feeder
 
-# copy let's encrypt ca certificates from buildstep
-COPY --from=buildstep /tmp/letsencrypt/*.crt /usr/local/share/ca-certificates/
-
 # copy mlat-client from buildstep
 RUN mkdir -p /usr/local/share/mlat-client/venv
 COPY --from=buildstep /usr/local/share/mlat-client/venv/ /usr/local/share/mlat-client/venv/
@@ -83,8 +74,7 @@ COPY start.sh /
 
 WORKDIR /tmp
 
-RUN update-ca-certificates --verbose && \
-	chmod +x /start.sh && \
+RUN chmod +x /start.sh && \
     # fail if feeder binaries don't work \
     /usr/local/sbin/pw-feeder --version && \
     /usr/local/share/mlat-client/venv/bin/mlat-client -h
