@@ -60,7 +60,11 @@ services:
       - LAT=
       - LON=
     devices:
-      - "/dev/bus/usb"
+      # Long HOST:CONTAINER form is required by core-next (balena's Rust
+      # supervisor, helios). Its parser rejects the single-path short form
+      # that compose-go, docker run and the legacy supervisor all accept,
+      # and it refuses the whole release when it sees one.
+      - "/dev/bus/usb:/dev/bus/usb"
     # `expose:` is informational only on the default Compose bridge network and
     # balena-cli strips it from the composition at push time. Kept commented as
     # documentation of which ports each service makes available to peers.
@@ -114,13 +118,19 @@ services:
     build: ./dump978-fa
     image: dump978-fa
     restart: unless-stopped
+    # privileged is required so librtlsdr can detach dvb_usb_rtl28xxu from the
+    # UAT dongle and keep it. Unprivileged, the kernel re-probes the device
+    # mid-stream, the sample source reports TIMEOUT and the container
+    # crash-loops, preceded by "usb_claim_interface error -6".
+    privileged: true
     environment:
       - LAT=
       - LON=
       - DUMP978_DEVICE=00000978
       - DUMP978_ENABLED=false
     devices:
-      - "/dev/bus/usb"
+      # Long HOST:CONTAINER form, see the dump1090-fa note above.
+      - "/dev/bus/usb:/dev/bus/usb"
     # expose: kept for docs, see dump1090-fa note
     # expose:
     #   - "30978"
