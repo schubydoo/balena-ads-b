@@ -311,6 +311,18 @@ services:
       - LON=
       - ALT=
       - PLANEWATCH_API_KEY=
+      # pw-feeder reads these directly, so they are runtime toggles set from the
+      # dashboard rather than flags in start.sh. DEBUG turns on debug logging.
+      # PW_METRICSHOST defaults to 127.0.0.1; set it to 0.0.0.0 to let another
+      # container scrape pwfeeder_* metrics on PW_METRICSPORT (default 2112).
+      # INSECURE skips TLS certificate verification against plane.watch. Leave
+      # it empty except when testing whether a TLS fault explains a disconnect.
+      # Parsing is strict: the two booleans take 1, true, 0 or false, and any
+      # other value (DEBUG=yes) exits the container fatally at startup.
+      - DEBUG=
+      - PW_METRICSHOST=
+      - PW_METRICSPORT=
+      - INSECURE=
     # expose: kept for docs, see dump1090-fa note
     # expose:
     #   - '30105'
