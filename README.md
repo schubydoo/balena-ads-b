@@ -1,9 +1,9 @@
 
 ![balena ADS-B Flight Tracker](https://raw.githubusercontent.com/ketilmo/balena-ads-b/master/docs/images/header.svg)
 
-**ADS-B Flight Tracker running on balena with support for FlightAware, Flightradar24, Plane Finder, OpenSky Network, AirNav Radar, ADSB Exchange, Wingbits, adsb.fi, ADSB.lol, ADS-B One, airplanes.live, Planespotters.net, TheAirTraffic, AvDelphi, HP Radar, Fly Italy ADSB and plane.watch.**
+**ADS-B Flight Tracker running on balena with support for FlightAware, Flightradar24, Plane Finder, OpenSky Network, AirNav Radar, ADSB Exchange, Wingbits, adsb.fi, ADSB.lol, ADS-B One, airplanes.live, Planespotters.net, TheAirTraffic, AvDelphi, HP Radar, Fly Italy ADSB, PlaneTrack and plane.watch.**
 
-Contribute to the flight tracking community! Feed your local [ADS-B data](https://mode-s.org/1090mhz/content/ads-b/1-basics.html) from an [RTL-SDR](https://www.rtl-sdr.com/) USB dongle (or various other radio types) and a supported device (see below) running balenaOS to the tracking services [FlightAware](https://flightaware.com/), [Flightradar24](https://www.flightradar24.com/), [Plane Finder](https://planefinder.net/), [OpenSky Network](https://opensky-network.org/), [AirNav Radar](https://www.airnavradar.com/), [ADSB Exchange](https://adsbexchange.com), [Wingbits](https://wingbits.com), [adsb.fi](https://adsb.fi/), [ADSB.lol](https://adsb.lol/), [ADS-B One](https://adsb.one), [airplanes.live](https://airplanes.live/), [Planespotters.net](https://www.planespotters.net/), [TheAirTraffic](https://theairtraffic.com/), [AvDelphi](https://www.avdelphi.com/), [HP Radar](https://hpradar.com/), [Fly Italy ADSB](https://flyitalyadsb.com/) and [plane.watch](https://plane.watch/). In return, you can receive complimentary premium accounts (or cryptocurrency tokens) worth several hundred dollars annually!
+Contribute to the flight tracking community! Feed your local [ADS-B data](https://mode-s.org/1090mhz/content/ads-b/1-basics.html) from an [RTL-SDR](https://www.rtl-sdr.com/) USB dongle (or various other radio types) and a supported device (see below) running balenaOS to the tracking services [FlightAware](https://flightaware.com/), [Flightradar24](https://www.flightradar24.com/), [Plane Finder](https://planefinder.net/), [OpenSky Network](https://opensky-network.org/), [AirNav Radar](https://www.airnavradar.com/), [ADSB Exchange](https://adsbexchange.com), [Wingbits](https://wingbits.com), [adsb.fi](https://adsb.fi/), [ADSB.lol](https://adsb.lol/), [ADS-B One](https://adsb.one), [airplanes.live](https://airplanes.live/), [Planespotters.net](https://www.planespotters.net/), [TheAirTraffic](https://theairtraffic.com/), [AvDelphi](https://www.avdelphi.com/), [HP Radar](https://hpradar.com/), [Fly Italy ADSB](https://flyitalyadsb.com/), [PlaneTrack](https://planetrack.ai/) and [plane.watch](https://plane.watch/). In return, you can receive complimentary premium accounts (or cryptocurrency tokens) worth several hundred dollars annually!
 
 # Stay in the loop
 
@@ -13,7 +13,7 @@ Contribute to the flight tracking community! Feed your local [ADS-B data](https:
 
 💬&nbsp; [Ask a question](https://github.com/ketilmo/balena-ads-b/discussions) in our discussion board
 
-🖥️&nbsp; Join the [SDR Enthusiasts Discord Server](https://discord.gg/bqDDwwfM) and chat to us in the [balena-ads-b channel](https://discord.com/channels/734090820684349521/1328170413859012609)
+🖥️&nbsp; Join the [SDR Enthusiasts Discord Server](https://discord.gg/sTf9uYF) and chat to us in the [balena-ads-b channel](https://discord.com/channels/734090820684349521/1328170413859012609)
 
 ✏️&nbsp; [Create a post](https://forums.balena.io/t/the-balena-ads-b-thread/272290) in our balena forum thread
 
@@ -338,7 +338,7 @@ If you have not previously set up a AirNav Radar receiver that you want to reuse
 If you want to turn on debug mode, you can add a variable named `ADSB_EXCHANGE_DEBUG` with the following values: `n` for network, `P` for CPR or `S` for speed check.
 
 # Enable ADSB Exchange clones
-This project supports a number of ADSB Exchange clones that arose after the sale of ADSB Exchange. Currently there is support for [adsb.fi](https://adsb.fi/), [ADSB.lol](https://adsb.lol/), [ADS-B One](https://adsb.one/), [airplanes.live](https://airplanes.live/), [Planespotters.net](https://www.planespotters.net/), [TheAirTraffic](https://theairtraffic.com/), [AvDelphi](https://www.avdelphi.com/), [HP Radar](https://hpradar.com/), and [Fly Italy ADSB](https://flyitalyadsb.com/). If you would like any new services adding, please create a PR adding the new service or if you do not know how then please [open an issue](https://github.com/ketilmo/balena-ads-b/issues/new) with your request.
+This project supports a number of ADSB Exchange clones that arose after the sale of ADSB Exchange. Currently there is support for [adsb.fi](https://adsb.fi/), [ADSB.lol](https://adsb.lol/), [ADS-B One](https://adsb.one/), [airplanes.live](https://airplanes.live/), [Planespotters.net](https://www.planespotters.net/), [TheAirTraffic](https://theairtraffic.com/), [AvDelphi](https://www.avdelphi.com/), [HP Radar](https://hpradar.com/), and [Fly Italy ADSB](https://flyitalyadsb.com/). The same feed client can also send data to [PlaneTrack](https://planetrack.ai/), an independent commercial flight tracker with a free tier. If you would like any new services adding, please create a PR adding the new service or if you do not know how then please [open an issue](https://github.com/ketilmo/balena-ads-b/issues/new) with your request.
 
 For these services, you currently do not need any login or API credentials so there is no need to make an account with them (although some of them do offer this) and no credentials to add in balenaCloud. However, you do have to selectively enable each service (or you can enable all of them, or all but ADSB Exchange).
 
@@ -361,8 +361,11 @@ To enable a single service, you would need to add a *Device Variable* with one o
 - `AV_DELPHI_ENABLE=true`
 - `HPRADAR_ENABLE=true`
 - `FLY_ITALY_ADSB_ENABLE=true`
+- `PLANETRACK_ENABLE=true` (PlaneTrack is a commercial service, so it is not included in `ADSB_EXCHANGE_ENABLE_ALL` or `ADSB_EXCHANGE_ENABLE_ALL_BUT_ADSBX` and has to be enabled on its own)
 
 Lastly, these services all require a UUID to be passed to identify devices in their system. If you have set an `ADSB_EXCHANGE_UUID` the same UUID will be used for all services. If you do not have ADSB Exchange enabled and the `ADSB_EXCHANGE_UUID` variable set, the system will automatically generate one for you. However, if you would like, you can also set a UUID manually using the *Device Variable* with name `UUID` and with a UUID as a value (e.g. 2ddf6698-ea34-4c39-bbce-a8c3ddaf9bbd). You can use an [online UUID generator](https://www.uuidgenerator.net/) to generate one should you want to.
+
+If you feed PlaneTrack, you can link the station to a PlaneTrack account at `https://planetrack.ai/myip?uuid=<your UUID>` (run `cat /run/uuid` in a terminal session on the *adsb-exchange* service to see the UUID in use); claimed stations get PlaneTrack Premium free while they feed. An automatically generated UUID can change when the service container is recreated, so set `UUID` (or `ADSB_EXCHANGE_UUID` if ADSB Exchange is also enabled) first if you want the claim to stick.
 
 # Part 9 – Configure Wingbits
 
@@ -443,7 +446,23 @@ In order to manually set the gain. click on the *Device Variables*-button in the
 By default, these viewers are fed with ADS-B data from the dump1090 container and with MLAT data from the adsb-exchange container, however you can also manually configure these. You can use the *Device Variables* `BEASTHOST` and `BEASTPORT` (default `dump1090-fa` and `30005` respectively) for ADS-B data input and the *Device Variables* `MLATHOST` and `MLATPORT` (default `adsb-exchange` and `30157` respectively) to configure the inputs you desire.
 
 # Part 13 – Add a digital display (Optional)
-balena also produces a project that can be easily configured to display a webpage in kiosk mode on a digital display called balenaDash. By dropping that project into this one, we can automatically display a feeder page directly from the Pi. We can then set a `LAUNCH_URL` device variable configured to connect to `http://{{YOURIP or YOURSERVICENAME}}:YOURSERVICEPORT` (where the service/port is one of the frontends above, like `http://planefinder:30053`) and that will automatically be displayed on the attached display. The balenaDash service can be configured locally by accessing the webserver on port 8081.
+The `kiosk` service is a Chromium browser (the balena [browser](https://github.com/balenasolutions/browser) block) that displays a webpage in kiosk mode on a digital display attached to your device. It renders through the `display` service, a [Weston](https://wayland.freedesktop.org/) Wayland compositor (the balena [display](https://github.com/balenasolutions/display) block) that owns the screen. Both services are included in this project. By setting a `LAUNCH_URL` device variable configured to connect to `http://{{YOURIP or YOURSERVICENAME}}:YOURSERVICEPORT` (where the service/port is one of the frontends above, like `http://planefinder:30053`), that page is automatically displayed on the attached display. The kiosk can be configured locally by accessing the management API on port 8081, for example `curl -X POST --data "url=http://planefinder:30053" http://YOURIP:8081/url`. See the [browser block documentation](https://github.com/balenasolutions/browser#environment-variables) for all supported variables, such as `KIOSK`, `ENABLE_GPU` and `EXTRA_FLAGS`.
+
+**Rotating the screen and setting the resolution.** The `display` service owns the screen, so rotation and resolution are set on it, not on `kiosk`. Create the following *Device Variables* for the `display` service:
+
+| Variable | Options | Description |
+|----------|---------|-------------|
+| `DISPLAY_ROTATION` | `0`, `90`, `180`, `270` | Rotates the picture clockwise by this many degrees. Touch input follows the rotation automatically. |
+| `DISPLAY_RESOLUTION` | `WIDTHxHEIGHT` or `WIDTHxHEIGHT@REFRESH` | For example `1920x1080`. Leave unset to use the display's native mode. When using `DISPLAY_ROTATION` of `90` or `270`, set this to the panel's native resolution. |
+| `DISPLAY_SCALE` | Integer ≥ 1 | Output scaling factor, for example `2` for HiDPI displays. |
+
+See the [display block documentation](https://github.com/balenasolutions/display#display-geometry--rotation) for details. Only the first connected display is configured.
+
+**Hardware acceleration.** Set the `ENABLE_GPU` variable to `1` on the `kiosk` service to turn on GPU rendering and hardware video decode. On the Raspberry Pi 3 and 4, hardware video decode also needs additional device configuration, as described [here](https://github.com/balenasolutions/browser#raspberry-pi-3--4-device-configuration).
+
+**Disabling the display.** If you do not have a display attached, you can stop both services by adding `kiosk, display` to the `DISABLED_SERVICES` variable. See [Disabling specific services](#disabling-specific-services).
+
+**Upgrading from the previous kiosk.** The browser block moved from X11 to Wayland. The `ROTATE_DISPLAY`, `ROTATE_DELAY`, `TOUCHSCREEN`, `WINDOW_SIZE`, `WINDOW_POSITION`, `SHOW_CURSOR` and `DISPLAY_NUM` variables no longer exist on `kiosk`. Use `DISPLAY_ROTATION` (degrees clockwise: `left` is `270`, `right` is `90`, `inverted` is `180`) and `DISPLAY_RESOLUTION` on the `display` service instead. Custom `FLAGS` values now replace *all* of the block's default flags, so move any flags you want to add to `EXTRA_FLAGS`. Audio now plays directly through ALSA, and the `audio` block is no longer wired in automatically. 32-bit Raspberry Pi OS (`armv7hf`) is no longer supported by the kiosk; use the 64-bit OS to get a display.
 
 # Part 14 – Exploring flight traffic locally on your device
 If the setup goes well, you should feed flight traffic data to several online services. You will receive access to the providers' premium services in return for your efforts. But in addition to this, you can explore the data straight from your device, raw and unedited. And that's part of the magic, right?

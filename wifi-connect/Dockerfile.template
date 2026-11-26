@@ -1,4 +1,4 @@
-FROM debian:trixie-slim
+FROM debian:13.8-slim
 LABEL maintainer="https://github.com/ketilmo"
 ARG BALENA_ARCH=%%BALENA_ARCH%%
 
@@ -18,7 +18,7 @@ RUN printf '%s\n' \
     rm -rf /var/lib/apt/lists/*
 
 # renovate: datasource=github-releases depName=balena-os/wifi-connect
-ARG WIFI_CONNECT_VERSION=v4.11.84
+ARG WIFI_CONNECT_VERSION=v4.11.91
 
 WORKDIR /usr/src/app/ui
 WORKDIR /usr/src/app
